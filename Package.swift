@@ -9,6 +9,7 @@ let package = Package(
   
   products: [
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
+    .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
@@ -35,6 +36,15 @@ let package = Package(
     .target(name: "ClientFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       "SharedFeature"
+    ]),
+    
+    // FlexApiFeature
+    .target(name: "FlexApiFeature", dependencies: [
+      "ListenerFeature",
+      "TcpFeature",
+      "UdpFeature",
+      "VitaFeature",
+      "SharedFeature",
     ]),
     
     // ListenerFeature
