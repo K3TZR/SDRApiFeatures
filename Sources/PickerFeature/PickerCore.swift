@@ -10,6 +10,8 @@ import Foundation
 
 @Reducer
 public struct PickerFeature {
+  
+  public init() {}
 
   @ObservableState
   public struct State {

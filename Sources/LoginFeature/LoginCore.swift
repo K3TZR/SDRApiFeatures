@@ -11,6 +11,8 @@ import Foundation
 @Reducer
 public struct LoginFeature {
 
+  public init() {}
+
   @ObservableState
   public struct State {
     var heading: String

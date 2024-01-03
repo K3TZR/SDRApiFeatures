@@ -13,6 +13,8 @@ import SharedFeature
 @Reducer
 public struct ClientFeature {
 
+  public init() {}
+
   @ObservableState
   public struct State {
     var heading: String
