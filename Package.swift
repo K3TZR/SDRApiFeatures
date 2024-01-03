@@ -44,6 +44,7 @@ let package = Package(
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
       "SharedFeature",
       "XCGLogFeature",
+      "VitaFeature",
     ]),
 
     // LoginFeature
