@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "ViewFeatures",
+  name: "SDRApiFeatures",
   platforms: [.macOS(.v14),],
   
   products: [
