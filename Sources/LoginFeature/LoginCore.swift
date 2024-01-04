@@ -34,6 +34,7 @@ public struct LoginFeature {
   }
   
   public enum Action {
+    case cancelButtonTapped
     case loginButtonTapped(String, String)
   }
   

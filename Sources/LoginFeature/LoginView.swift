@@ -39,6 +39,7 @@ public struct LoginView: View {
       
       HStack( spacing: 60 ) {
         Button( "Cancel" ) {
+          store.send(.cancelButtonTapped)
           dismiss()
         }
           .keyboardShortcut( .cancelAction )
