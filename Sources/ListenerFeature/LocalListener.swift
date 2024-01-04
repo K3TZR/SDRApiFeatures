@@ -74,7 +74,7 @@ public final class LocalListener: NSObject, ObservableObject {
   
   func start(checkInterval: TimeInterval = 1.0, timeout: TimeInterval = broadcastTimeout) {
     try! _udpSocket.beginReceiving()
-    log("Lan Listener: STARTED", .info, #function, #file, #line)
+    log("Local Listener: STARTED", .info, #function, #file, #line)
 
     // setup a timer to watch for Radio timeouts
     Timer.publish(every: checkInterval, on: .main, in: .default)
@@ -92,7 +92,7 @@ public final class LocalListener: NSObject, ObservableObject {
   func stop() {
     _cancellables = Set<AnyCancellable>()
     _udpSocket?.close()
-    log("Lan Listener: STOPPED", .info, #function, #file, #line)
+    log("Local Listener: STOPPED", .info, #function, #file, #line)
   }
   
 //  func start(checkInterval: TimeInterval = 1.0, timeout: TimeInterval = 10.0) {

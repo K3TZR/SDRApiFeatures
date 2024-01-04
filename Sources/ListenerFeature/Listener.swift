@@ -96,8 +96,11 @@ final public class Listener: Equatable {
         _smartlinkListener = nil
         return false
       }
+      log("Smartlink Listener: STARTED", .debug, #function, #file, #line)
+
     } else {
       removePackets(condition: {$0.source == .smartlink})
+      log("Smartlink Listener: STOPPED", .debug, #function, #file, #line)
     }
     return true
   }
@@ -105,7 +108,12 @@ final public class Listener: Equatable {
   public func startSmartlink(_ user: String, _ pwd: String) async -> Bool {
     _smartlinkListener = SmartlinkListener(self)
     let status = await _smartlinkListener!.start(user: user, pwd: pwd)
-    if status == false { _smartlinkListener = nil }
+    if status {
+      log("Smartlink Listener: Login SUCCESS", .debug, #function, #file, #line)
+    } else {
+      log("Smartlink Listener: Login FAILURE", .debug, #function, #file, #line)
+      _smartlinkListener = nil
+    }
     return status
   }
   
