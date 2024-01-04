@@ -151,24 +151,16 @@ final public class Listener: Equatable {
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial) handle=\(handle.hex)")
   }
   
-//  public func findSelection(for guiDefault: SettingsModel.DefaultConnection?, _ nonGuiDefault: SettingsModel.DefaultConnection?, _ isGui: Bool) -> String? {
-//    if isGui {
-//      guard guiDefault != nil else { return nil }
-//      for packet in packets where packet.serial == guiDefault!.serial && packet.source.rawValue == guiDefault!.source {
-//        return packet.serial + packet.publicIp
-//      }
-//      
-//    } else {
-//      guard nonGuiDefault != nil else { return nil }
-//      
-//      for packet in packets where packet.serial == nonGuiDefault!.serial
-//      && packet.source.rawValue == nonGuiDefault!.source
-//      && packet.guiClients.map({ $0.station }).contains(nonGuiDefault!.station!) {
-//        return packet.serial + packet.publicIp + nonGuiDefault!.station!
-//      }
-//    }
-//    return nil
-//  }
+  public func isValidDefault(for guiDefault: String?, _ nonGuiDefault: String?, _ isGui: Bool) -> Bool {
+    if isGui {
+      guard guiDefault != nil else { return false }
+      return packets[id: guiDefault!] != nil
+      
+    } else {
+      guard nonGuiDefault != nil else { return false }
+      return stations[id: nonGuiDefault!] != nil
+    }
+  }
   
 //  public func sendGuiClientCompletion(_ guiClient: GuiClient) {
 //    _clientStream( ClientEvent(.completed, client: guiClient) )
