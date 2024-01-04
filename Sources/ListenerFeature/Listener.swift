@@ -85,6 +85,7 @@ final public class Listener: Equatable {
     }
   }
   
+  
   public func smartlinkMode(_ enable: Bool, _ smartlinkUser: String = "", _ requireSmartlinkLogin: Bool = false) async -> Bool {
     _smartlinkListener?.stop()
     _smartlinkListener = nil
@@ -95,14 +96,13 @@ final public class Listener: Equatable {
         _smartlinkListener = nil
         return false
       }
-      return true
     } else {
       removePackets(condition: {$0.source == .smartlink})
     }
     return true
   }
   
-  public func startWan(_ user: String, _ pwd: String) async -> Bool {
+  public func startSmartlink(_ user: String, _ pwd: String) async -> Bool {
     _smartlinkListener = SmartlinkListener(self)
     let status = await _smartlinkListener!.start(user: user, pwd: pwd)
     if status == false { _smartlinkListener = nil }
