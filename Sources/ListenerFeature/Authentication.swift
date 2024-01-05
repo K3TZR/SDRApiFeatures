@@ -9,6 +9,9 @@ import Foundation
 import JWTDecode
 import SwiftUI
 
+import SharedFeature
+import XCGLogFeature
+
 public final class Authentication {
   
   // ----------------------------------------------------------------------------
@@ -78,6 +81,8 @@ public final class Authentication {
     _smartlinkEmail = smartlinkEmail
     // is there a previous idToken which has not expired?
     if _previousIdToken != nil, isValid(_previousIdToken) {
+
+      log("---->>>> Unexpired previous token", .debug, #function, #file, #line)
       // YES, use the previous idToken
       updateClaims(from: _previousIdToken)
       return _previousIdToken
@@ -86,8 +91,15 @@ public final class Authentication {
     // is there an email and a refresh token in the Keychain?
 //    if _smartlinkEmail != nil, let refreshToken = _secureStore.get(account: _smartlinkEmail) {
     if _smartlinkEmail != nil, let refreshToken = _refreshToken {
+
+      log("---->>>> Refresh token", .debug, #function, #file, #line)
+
       // YES, can we get an Id Token from the Refresh Token?
       if let idToken = await requestIdToken(from: _refreshToken!, smartlinkEmail: _smartlinkEmail!), isValid(idToken) {
+
+        log("---->>>> Id Token obtained from Refresh token", .debug, #function, #file, #line)
+
+
         // YES, update the claims and use the Id Token
         updateClaims(from: idToken)
         _previousIdToken = idToken

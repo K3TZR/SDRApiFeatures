@@ -13,6 +13,8 @@ let package = Package(
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
+    .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
+    .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
@@ -68,6 +70,15 @@ let package = Package(
       "ListenerFeature"
     ]),
 
+    // RingBufferFeature
+    .target( name: "RingBufferFeature", dependencies: []),
+    
+    // RxAudioFeature
+    .target( name: "RxAudioFeature", dependencies: [
+      "RingBufferFeature",
+      "XCGLogFeature",
+    ]),
+    
     // SharedFeature
     .target(name: "SharedFeature", dependencies: [
       .product(name: "IdentifiedCollections", package: "swift-identified-collections"),

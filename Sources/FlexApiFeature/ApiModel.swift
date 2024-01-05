@@ -220,16 +220,16 @@ public final class ApiModel {
   ///   - program: program name
   ///   - testerMode: whether Tester is active
   @MainActor
-  public func connect(pickerSelection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, stationName: String, mtuValue: Int) async throws {
-    var packet: Packet
-    var station = ""
+  public func connect(listener: Listener, packet: Packet, station: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, stationName: String, mtuValue: Int) async throws {
+//    var packet = packet
+//    var station = station
     
-    if isGui {
-      packet = Listener.shared.packets[id: pickerSelection]!
-    } else {
-      packet = Listener.shared.stations[id: pickerSelection]!.packet
-      station = Listener.shared.stations[id: pickerSelection]!.station
-    }
+//    if isGui {
+//      packet = Listener.shared.packets[id: pickerSelection]!
+//    } else {
+//      packet = Listener.shared.stations[id: pickerSelection]!.packet
+//      station = Listener.shared.stations[id: pickerSelection]!.station
+//    }
     nthPingReceived = false
     
     _isGui = isGui
@@ -258,7 +258,7 @@ public final class ApiModel {
     if packet.source == .smartlink {
       // YES, send Wan Connect message & wait for the reply
       _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
-        try await Listener.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
+        try await listener.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
       }
       
       log("Api: wanHandle received", .debug, #function, #file, #line)

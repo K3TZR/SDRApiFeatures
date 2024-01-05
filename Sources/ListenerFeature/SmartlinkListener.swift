@@ -46,7 +46,6 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   private var _authentication = Authentication()
   private var _cancellables = Set<AnyCancellable>()
   private var _domain: String?
-  private var _idToken: IdToken? = nil
   private let _pingQ = DispatchQueue(label: "WanListener.pingQ")
   private var _platform: String?
   private var _previousIdToken: IdToken?
@@ -94,8 +93,16 @@ public final class SmartlinkListener: NSObject, ObservableObject {
       _authentication.deleteTokens()
       return false
     }
-    if let idToken = await _authentication.authenticate(user) {
+    if _listener.previousIdToken != nil {
+      log("---->>>> Previous idToken found", .debug, #function, #file, #line)
+      return start(using: _listener.previousIdToken!)
+      
+    } else if let idToken = await _authentication.authenticate(user) {
+      log("---->>>> idToken found using authenticate", .debug, #function, #file, #line)
       return start(using: idToken)
+      
+    } else {
+      log("---->>>> idToken NOT found", .debug, #function, #file, #line)
     }
     return false
   }
@@ -138,7 +145,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   /// - Parameters:
   ///   - idToken:           a valid IdToken
   private func start(using idToken: IdToken) -> Bool {
-    _previousIdToken = idToken
+    _listener.previousIdToken = idToken
     // use the ID Token to connect to the Smartlink service
     do {
       try connect(using: idToken)
@@ -153,7 +160,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   ///   - idToken:        an ID Token
   ///   - timeout:        timeout (seconds)
   private func connect(using idToken: IdToken) throws {
-    _idToken = idToken    // used later by socketDidSecure
+    _listener.previousIdToken = idToken    // used later by socketDidSecure
     
     // try to connect
     do {
@@ -213,7 +220,7 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
     startPinging()
     
     // register the Application / token pair with the SmartLink server
-    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_idToken!)", timeout: _timeout, tag: 0)
+    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_listener.previousIdToken!)", timeout: _timeout, tag: 0)
     log("Wan Listener: Application registered, name=\(_appName!) platform=\(kPlatform)", .debug, #function, #file, #line)
 
     // start reading

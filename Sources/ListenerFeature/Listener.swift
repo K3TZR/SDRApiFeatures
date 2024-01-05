@@ -27,7 +27,8 @@ final public class Listener: Equatable {
   public var guiClients = IdentifiedArrayOf<GuiClient>()
   
   public var smartlinkTestResult = SmartlinkTestResult()
-  
+  public var previousIdToken: String?
+
   public var clientStream: AsyncStream<ClientEvent> {
     AsyncStream { continuation in _clientStream = { clientEvent in continuation.yield(clientEvent) }
       continuation.onTermination = { @Sendable _ in } }}
@@ -67,8 +68,10 @@ final public class Listener: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public static var shared = Listener()
-  private init() {}
+//  public static var shared = Listener()
+  public init(previousIdToken: String?) {
+    self.previousIdToken = previousIdToken
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods

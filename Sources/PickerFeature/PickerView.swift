@@ -24,9 +24,9 @@ public struct PickerView: View {
   @MainActor private var isSmartlink: Bool {
     if let selection {
       if store.isGui {
-        return Listener.shared.packets[id: selection]?.source == .smartlink
+        return store.listener.packets[id: selection]?.source == .smartlink
       } else {
-        return Listener.shared.stations[id: selection]?.packet.source == .smartlink
+        return store.listener.stations[id: selection]?.packet.source == .smartlink
       }
     }
     return false
@@ -37,7 +37,7 @@ public struct PickerView: View {
       HeaderView(store: store)
       
       Divider()
-      if store.isGui && Listener.shared.packets.count == 0 || !store.isGui && Listener.shared.stations.count == 0{
+      if store.isGui && store.listener.packets.count == 0 || !store.isGui && store.listener.stations.count == 0{
         VStack {
           HStack {
             Spacer()
@@ -53,7 +53,7 @@ public struct PickerView: View {
       else {
         if store.isGui {
           // ----- List of Radios -----
-          List(Listener.shared.packets, id: \.id, selection: $selection) { packet in
+          List(store.listener.packets, id: \.id, selection: $selection) { packet in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {
@@ -73,7 +73,7 @@ public struct PickerView: View {
           
         } else {
           // ----- List of Stations -----
-          List(Listener.shared.stations, id: \.id, selection: $selection) { station in
+          List(store.listener.stations, id: \.id, selection: $selection) { station in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {
@@ -168,12 +168,12 @@ private struct FooterView: View {
 // MARK: - Preview
 
 #Preview("Picker Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: true, guiDefault: nil, nonGuiDefault: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State(isGui: true, listener: Listener(previousIdToken: nil), guiDefault: nil, nonGuiDefault: nil)) {
     PickerFeature()
   })
 }
 #Preview("Picker NON-Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: false, guiDefault: nil, nonGuiDefault: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State(isGui: false, listener: Listener(previousIdToken: nil), guiDefault: nil, nonGuiDefault: nil)) {
     PickerFeature()
   })
 }
