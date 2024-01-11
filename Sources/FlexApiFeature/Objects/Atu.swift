@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Atu: Equatable {
   public nonisolated static func == (lhs: Atu, rhs: Atu) -> Bool {
     lhs === rhs
@@ -20,8 +20,10 @@ public final class Atu: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
-  
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -32,6 +34,11 @@ public final class Atu: Equatable {
   public var status: Status = .none
   public var usingMemory: Bool = false
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -97,8 +104,8 @@ public final class Atu: Equatable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .enabled:            ApiModel.shared.sendCommand("atu \(value == "1" ? "start": "bypass")")
-    case .memoriesEnabled:    ApiModel.shared.sendCommand("atu set \(property.rawValue)=\(value)")
+    case .enabled:            _apiModel.sendCommand("atu \(value == "1" ? "start": "bypass")")
+    case .memoriesEnabled:    _apiModel.sendCommand("atu set \(property.rawValue)=\(value)")
     default:                  break
     }
   }

@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Transmit: Equatable {
   public nonisolated static func == (lhs: Transmit, rhs: Transmit) -> Bool {
     lhs === rhs
@@ -20,8 +20,10 @@ public final class Transmit: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
-  
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -141,7 +143,11 @@ public final class Transmit: Equatable {
     .txFilterLow : "filter_low",
     .txMonitorEnabled : "mon"
   ]
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -236,21 +242,21 @@ public final class Transmit: Equatable {
     
     switch property {
     case .mox:
-      ApiModel.shared.sendCommand("xmit \(value)")
+      _apiModel.sendCommand("xmit \(value)")
       
     case .cwBreakInEnabled, .cwBreakInDelay, .cwlEnabled, .cwIambicEnabled,
         .cwPitch, .cwSidetoneEnabled, .cwSyncCwxEnabled, .cwIambicMode,
         .cwSwapPaddles, .cwSpeed:
-      ApiModel.shared.sendCommand("cw \(rawProperty) \(value)")
+      _apiModel.sendCommand("cw \(rawProperty) \(value)")
       
     case .micBiasEnabled, .micBoostEnabled, .micSelection, .micAccEnabled:
-      ApiModel.shared.sendCommand("mic \(rawProperty) \(value)")
+      _apiModel.sendCommand("mic \(rawProperty) \(value)")
       
     case .tune:
-      ApiModel.shared.sendCommand("transmit \(rawProperty) \(value)")
+      _apiModel.sendCommand("transmit \(rawProperty) \(value)")
       
     default:
-      ApiModel.shared.sendCommand("transmit set \(rawProperty)=\(value)")
+      _apiModel.sendCommand("transmit set \(rawProperty)=\(value)")
     }
   }
 

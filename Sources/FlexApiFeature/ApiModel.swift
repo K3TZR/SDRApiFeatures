@@ -29,6 +29,9 @@ public final class ApiModel {
   
   public static var shared = ApiModel()
   private init() {
+    listener = Listener(previousIdToken: nil)
+    
+
     subscribeToMessages()
     //    subscribeToTcpStatus()    // not currently active
     //    subscribeToUdpStatus()    // not currently active
@@ -49,11 +52,20 @@ public final class ApiModel {
     streamStatus[id: Vita.PacketClassCodes.waterfall] = VitaStatus(Vita.PacketClassCodes.waterfall)
     
     subscribeToStreams()
+
+    atu = Atu(self)
+    cwx = Cwx(self)
+    gps = Gps(self)
+    interlock = Interlock(self)
+    transmit = Transmit(self)
+    wan = Wan(self)
+    waveform = Waveform(self)
   }
   
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
+  public var listener: Listener
   
   public internal(set) var antList = [String]()
   public internal(set) var radio: Radio?
@@ -88,18 +100,18 @@ public final class ApiModel {
   public var waterfalls = IdentifiedArrayOf<Waterfall>()
   public var xvtrs = IdentifiedArrayOf<Xvtr>()
   
-  public var packets = IdentifiedArrayOf<Packet>()
-  public var stations = IdentifiedArrayOf<Station>()
-  public var guiClients = IdentifiedArrayOf<GuiClient>()
+//  public var packets = IdentifiedArrayOf<Packet>()
+//  public var stations = IdentifiedArrayOf<Station>()
+//  public var guiClients = IdentifiedArrayOf<GuiClient>()
 
   // Static Models
-  public var atu = Atu()
-  public var cwx = Cwx()
-  public var gps = Gps()
-  public var interlock = Interlock()
-  public var transmit = Transmit()
-  public var wan = Wan()
-  public var waveform = Waveform()
+  public var atu: Atu!
+  public var cwx: Cwx!
+  public var gps: Gps!
+  public var interlock: Interlock!
+  public var transmit: Transmit!
+  public var wan: Wan!
+  public var waveform: Waveform!
   
   public var lowBandwidthConnect = false
 
@@ -213,29 +225,22 @@ public final class ApiModel {
 
   /// Connect to a Radio
   /// - Parameters:
-  ///   - selection: a Picker selection
+  ///   - listener: a reference to the packet lisstener
+  ///   - packet: the packet of the radio
+  ///   - station: a station, if any
   ///   - isGui: type of connection
   ///   - disconnectHandle: handle to another connection to be disconnected (if any)
-  ///   - station: station name
-  ///   - program: program name
-  ///   - testerMode: whether Tester is active
+  ///   - programName: program name
+  ///   - stationName: station name
+  ///   - mtuValue: max transort unit
   @MainActor
-  public func connect(listener: Listener, packet: Packet, station: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, stationName: String, mtuValue: Int) async throws {
-//    var packet = packet
-//    var station = station
-    
-//    if isGui {
-//      packet = Listener.shared.packets[id: pickerSelection]!
-//    } else {
-//      packet = Listener.shared.stations[id: pickerSelection]!.packet
-//      station = Listener.shared.stations[id: pickerSelection]!.station
-//    }
+  public func connect(packet: Packet, station: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, stationName: String, mtuValue: Int) async throws {
     nthPingReceived = false
     
     _isGui = isGui
     
     // Instantiate a Radio
-    radio = Radio(packet)
+    radio = Radio(packet, self)
     // connect to it
     guard radio != nil else { throw ApiError.instantiation }
     log("Api: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
@@ -258,7 +263,7 @@ public final class ApiModel {
     if packet.source == .smartlink {
       // YES, send Wan Connect message & wait for the reply
       _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
-        try await listener.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
+        try await self.listener.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
       }
       
       log("Api: wanHandle received", .debug, #function, #file, #line)
@@ -382,7 +387,7 @@ public final class ApiModel {
     // tell the Radio to expect pings
     sendCommand("keepalive enable")
     // start pinging the Radio
-    _pinger = Pinger()
+    _pinger = Pinger(self)
   }
 
   private func sendInitialCommands(_ programName: String, _ stationName: String, _ mtuValue: Int) {
@@ -393,11 +398,10 @@ public final class ApiModel {
     }
     if _isGui && guiClientId != nil {
       sendCommand("client gui \(guiClientId!)")
-      bindToGuiClient(UUID(uuidString: guiClientId!))
+//      bindToGuiClient(UUID(uuidString: guiClientId!))
     }
     sendCommand("client program " + programName)
     if _isGui { sendCommand("client station " + stationName) }
-//    if _isGui && guiClientId != nil { bindToGuiClient(UUID(uuidString: guiClientId!)) }
     if lowBandwidthConnect { requestLowBandwidthConnect() }
     requestInfo()
     requestVersion()

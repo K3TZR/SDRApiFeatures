@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Equalizer: Identifiable, Equatable {
   public nonisolated static func == (lhs: Equalizer, rhs: Equalizer) -> Bool {
     lhs.id == rhs.id
@@ -20,8 +20,11 @@ public final class Equalizer: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) { self.id = id }
-  
+  public init(_ id: String, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -66,8 +69,12 @@ public final class Equalizer: Identifiable, Equatable {
     .hz4000 : "4000Hz",
     .hz8000 : "8000Hz"
   ]
-
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -132,7 +139,7 @@ public final class Equalizer: Identifiable, Equatable {
       // YES
       rawProperty = altValue
     }
-    ApiModel.shared.sendCommand("eq \(id) \(rawProperty)=\(value)")
+    _apiModel.sendCommand("eq \(id) \(rawProperty)=\(value)")
   }
 
   /* ----- from FlexApi -----

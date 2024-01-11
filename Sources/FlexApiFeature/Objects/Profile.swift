@@ -12,7 +12,7 @@ import SharedFeature
 import XCGLogFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Profile: Identifiable, Equatable{
   public nonisolated static func == (lhs: Profile, rhs: Profile) -> Bool {
     lhs.id == rhs.id
@@ -21,8 +21,11 @@ public final class Profile: Identifiable, Equatable{
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) { self.id = id }
-  
+  public init(_ id: String, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -37,7 +40,11 @@ public final class Profile: Identifiable, Equatable{
     case current = "current"
   }
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -87,16 +94,16 @@ public final class Profile: Identifiable, Equatable{
     
     switch cmd {
     case "delete":
-      ApiModel.shared.sendCommand("profile \(id) delete \"\(profileName)\"")
+      _apiModel.sendCommand("profile \(id) delete \"\(profileName)\"")
       list.removeAll(where: { $0 == profileName })
     case "create":
       list.append(profileName)
-      ApiModel.shared.sendCommand("profile \(id) " + "create \"\(profileName)\"")
+      _apiModel.sendCommand("profile \(id) " + "create \"\(profileName)\"")
     case "reset":
-      ApiModel.shared.sendCommand("profile \(id) " + "reset \"\(profileName)\"")
+      _apiModel.sendCommand("profile \(id) " + "reset \"\(profileName)\"")
     default:
       current = profileName
-      ApiModel.shared.sendCommand("profile \(id) " + "load \"\(profileName)\"")
+      _apiModel.sendCommand("profile \(id) " + "load \"\(profileName)\"")
     }
   }
 

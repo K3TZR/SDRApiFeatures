@@ -19,14 +19,17 @@ public final class Pinger {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(pingInterval: Int = 1, pingTimeout: Double = 10, initializationCount: Int = 2) {
+  public init(pingInterval: Int = 1, pingTimeout: Double = 10, initializationCount: Int = 2, _ apiModel: ApiModel) {
     _lastPingRxTime = Date(timeIntervalSinceNow: 0)
     _initializationCount = initializationCount
+    _apiModel = apiModel
     startPinging(interval: pingInterval, timeout: pingTimeout)
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
   
   private var _initializationCount = 0
   private var _lastPingRxTime: Date!
@@ -65,11 +68,11 @@ public final class Pinger {
         
       } else {
         Task(priority: .low) {
-          await MainActor.run { ApiModel.shared.sendCommand("ping", replyTo: self.pingReply) }
+          await MainActor.run { _apiModel.sendCommand("ping", replyTo: self.pingReply) }
           if _pingCount < _initializationCount {
             _pingCount += 1
           } else if _pingCount == _initializationCount {
-            await MainActor.run { ApiModel.shared.nthPingReceived = true }
+            await MainActor.run { _apiModel.nthPingReceived = true }
           }
         }
       }

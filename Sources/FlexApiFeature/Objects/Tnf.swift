@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Tnf: Identifiable, Equatable {
   public nonisolated static func == (lhs: Tnf, rhs: Tnf) -> Bool {
     lhs.id == rhs.id
@@ -20,8 +20,11 @@ public final class Tnf: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init(_ id: UInt32) { self.id = id }
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -46,6 +49,10 @@ public final class Tnf: Identifiable, Equatable {
     case veryDeep = 3
   }
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -79,10 +86,10 @@ public final class Tnf: Identifiable, Equatable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendCommand("tnf remove " + " \(id)", replyTo: callback)
+    _apiModel.sendCommand("tnf remove " + " \(id)", replyTo: callback)
 
     // remove it immediately (Tnf does not send status on removal)
-    ApiModel.shared.tnfs.remove(id: id)
+    _apiModel.tnfs.remove(id: id)
     log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
   }
 
@@ -95,7 +102,7 @@ public final class Tnf: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: Tnf.Property, _ value: String) {
-    ApiModel.shared.sendCommand("tnf set \(id) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("tnf set \(id) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

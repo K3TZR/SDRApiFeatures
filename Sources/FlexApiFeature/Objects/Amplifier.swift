@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//
+@Observable
 public final class Amplifier: Identifiable, Equatable{
   public nonisolated static func == (lhs: Amplifier, rhs: Amplifier) -> Bool {
     lhs.id == rhs.id
@@ -20,7 +20,10 @@ public final class Amplifier: Identifiable, Equatable{
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -47,6 +50,11 @@ public final class Amplifier: Identifiable, Equatable{
     case state
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   

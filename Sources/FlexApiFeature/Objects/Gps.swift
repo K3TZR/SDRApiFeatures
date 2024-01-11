@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Gps: Equatable {
   public nonisolated static func == (lhs: Gps, rhs: Gps) -> Bool {
     lhs === rhs
@@ -20,8 +20,10 @@ public final class Gps: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
-  
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -53,6 +55,11 @@ public final class Gps: Equatable {
     case visible
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   

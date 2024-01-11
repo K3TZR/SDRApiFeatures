@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Wan: Equatable {
   public nonisolated static func == (lhs: Wan, rhs: Wan) -> Bool {
     lhs === rhs
@@ -20,8 +20,10 @@ public final class Wan: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
-  
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -44,7 +46,12 @@ public final class Wan: Equatable {
     case serverConnected    = "server_connected"
     case upnpSupported      = "upnp_supported"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   

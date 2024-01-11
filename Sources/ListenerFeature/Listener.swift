@@ -24,7 +24,7 @@ final public class Listener: Equatable {
   
   public var packets = IdentifiedArrayOf<Packet>()
   public var stations = IdentifiedArrayOf<Station>()
-  public var guiClients = IdentifiedArrayOf<GuiClient>()
+//  public var guiClients = IdentifiedArrayOf<GuiClient>()
   
   public var smartlinkTestResult = SmartlinkTestResult()
   public var previousIdToken: String?
@@ -225,7 +225,7 @@ final public class Listener: Equatable {
         
         stations.append(Station(packet: newPacket, station: guiClient.station))
 
-        guiClients[id: guiClient.handle] = guiClient
+//        guiClients[id: guiClient.handle] = guiClient
         
         _clientStream( ClientEvent(.added, client: guiClient))
         log("Listener: guiClient ADDED, \(guiClient.station)", .info, #function, #file, #line)
@@ -239,7 +239,7 @@ final public class Listener: Equatable {
             
             stations.append(Station(packet: newPacket, station: guiClient.station))
 
-            guiClients[id: guiClient.handle] = guiClient
+//            guiClients[id: guiClient.handle] = guiClient
 
             _clientStream( ClientEvent(.added, client: guiClient))
             log("Listener: guiClient ADDED, \(guiClient.station)", .info, #function, #file, #line)
@@ -250,7 +250,7 @@ final public class Listener: Equatable {
             
             stations.remove(id: oldPacket!.serial + oldPacket!.publicIp + guiClient.station)
             
-            guiClients.remove(id: guiClient.handle)
+//            guiClients.remove(id: guiClient.handle)
 
             _clientStream( ClientEvent(.removed, client: guiClient))
             log("Listener: guiClient REMOVED, \(guiClient.station)", .info, #function, #file, #line)

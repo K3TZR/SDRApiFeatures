@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Memory: Identifiable, Equatable {
   public nonisolated static func == (lhs: Memory, rhs: Memory) -> Bool {
     lhs.id == rhs.id
@@ -20,8 +20,11 @@ public final class Memory: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -74,8 +77,12 @@ public final class Memory: Identifiable, Equatable {
     case toneMode                   = "tone_mode"
     case toneValue                  = "tone_value"
   }
-
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -131,17 +138,16 @@ public final class Memory: Identifiable, Equatable {
     send(property, value)
   }
   
-  
   // ----------------------------------------------------------------------------
   // MARK: - Private Send methods
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .apply, .remove:   ApiModel.shared.sendCommand("memory \(property.rawValue) \(id)")
-    case .create:           ApiModel.shared.sendCommand("memory create")
-    default:                ApiModel.shared.sendCommand("memory set \(id) \(property.rawValue)=\(value)")
+    case .apply, .remove:   _apiModel.sendCommand("memory \(property.rawValue) \(id)")
+    case .create:           _apiModel.sendCommand("memory create")
+    default:                _apiModel.sendCommand("memory set \(id) \(property.rawValue)=\(value)")
     }
-    ApiModel.shared.sendCommand("memory set \(id) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("memory set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

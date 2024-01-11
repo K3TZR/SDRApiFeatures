@@ -5,7 +5,7 @@
 //  Created by Douglas Adams on 3/19/22.
 //
 
-import AppKit
+//import AppKit
 import Foundation
 import SwiftUI
 
@@ -234,27 +234,27 @@ public extension UInt32 {
 // ----------------------------------------------------------------------------
 // MARK: - NSColor Extensions
 
-public extension NSColor {
-  // return a float4 version of an rgba NSColor
-  var float4Color: SIMD4<Float> { return SIMD4<Float>( Float(self.redComponent),
-                                                       Float(self.greenComponent),
-                                                       Float(self.blueComponent),
-                                                       Float(self.alphaComponent))
-  }
-  // return a bgr8Unorm version of an rgba NSColor
-  var bgra8Unorm: UInt32 {
-    
-    // capture the component values (assumes that the Blue & Red are swapped)
-    //      see the Note at the top of this class
-    let alpha = UInt32( UInt8( self.alphaComponent * CGFloat(UInt8.max) ) ) << 24
-    let red = UInt32( UInt8( self.redComponent * CGFloat(UInt8.max) ) ) << 16
-    let green = UInt32( UInt8( self.greenComponent * CGFloat(UInt8.max) ) ) << 8
-    let blue = UInt32( UInt8( self.blueComponent * CGFloat(UInt8.max) ) )
-    
-    // return the UInt32 (in bgra format)
-    return alpha + red + green + blue
-  }
-}
+//public extension NSColor {
+//  // return a float4 version of an rgba NSColor
+//  var float4Color: SIMD4<Float> { return SIMD4<Float>( Float(self.redComponent),
+//                                                       Float(self.greenComponent),
+//                                                       Float(self.blueComponent),
+//                                                       Float(self.alphaComponent))
+//  }
+//  // return a bgr8Unorm version of an rgba NSColor
+//  var bgra8Unorm: UInt32 {
+//    
+//    // capture the component values (assumes that the Blue & Red are swapped)
+//    //      see the Note at the top of this class
+//    let alpha = UInt32( UInt8( self.alphaComponent * CGFloat(UInt8.max) ) ) << 24
+//    let red = UInt32( UInt8( self.redComponent * CGFloat(UInt8.max) ) ) << 16
+//    let green = UInt32( UInt8( self.greenComponent * CGFloat(UInt8.max) ) ) << 8
+//    let blue = UInt32( UInt8( self.blueComponent * CGFloat(UInt8.max) ) )
+//    
+//    // return the UInt32 (in bgra format)
+//    return alpha + red + green + blue
+//  }
+//}
 
 // ----------------------------------------------------------------------------
 // MARK: - NumberFormatter Extensions

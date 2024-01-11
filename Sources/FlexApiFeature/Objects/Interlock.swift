@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Interlock: Equatable {
   public nonisolated static func == (lhs: Interlock, rhs: Interlock) -> Bool {
     lhs === rhs
@@ -20,7 +20,9 @@ public final class Interlock: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -97,8 +99,12 @@ public final class Interlock: Equatable {
     case clientTxInhibit    = "CLIENT_TX_INHIBIT"
     case xvtrRxOnly         = "XVTR_RX_OLY"
   }
-
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -155,7 +161,7 @@ public final class Interlock: Equatable {
   // MARK: - Private Send methods
   
   public func send(_ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("interlock \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("interlock \(property.rawValue)=\(value)")
   }
     
   /* ----- from FlexApi -----

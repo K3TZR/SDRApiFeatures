@@ -16,13 +16,14 @@ import SharedFeature
 //      by the incoming TCP messages.
 //
 @MainActor
-//@Observable
+@Observable
 public final class Cwx {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization (singleton)
 
 //  public static var shared = Cwx()
-  public init() {
+  public init(_ apiModel: ApiModel) {
+    _apiModel = apiModel
     macros = [String](repeating: "", count: kMaxNumberOfMacros)
   }
   
@@ -56,6 +57,11 @@ public final class Cwx {
     case wpm            = "wpm"
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   

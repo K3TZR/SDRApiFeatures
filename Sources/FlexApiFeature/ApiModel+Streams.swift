@@ -124,7 +124,7 @@ extension ApiModel {
           
         case .meter:
           Meter.vitaProcessor(vita)
-          
+
         case .opus:
           if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
@@ -193,7 +193,7 @@ extension ApiModel {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if remoteRxAudioStreams[id: id] == nil { remoteRxAudioStreams.append( RemoteRxAudioStream(id) ) }
+      if remoteRxAudioStreams[id: id] == nil { remoteRxAudioStreams.append( RemoteRxAudioStream(id, self) ) }
       // parse the properties
       remoteRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(2)) )
     }
@@ -215,7 +215,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if meters[id: id] == nil { meters.append( Meter(id) ) }
+        if meters[id: id] == nil { meters.append( Meter(id, self) ) }
         // parse the properties
         meters[id: id]!.parse(properties )
         

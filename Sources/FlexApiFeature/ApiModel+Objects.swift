@@ -141,7 +141,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id) ) }
+        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id, self) ) }
         // parse the properties
         amplifiers[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -159,7 +159,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id) ) }
+        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id, self) ) }
         // parse the properties
         bandSettings[id: id]!.parse(Array(properties.dropFirst(1)) )
       } else {
@@ -177,7 +177,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if equalizers[id: id] == nil { equalizers.append( Equalizer(id) ) }
+      if equalizers[id: id] == nil { equalizers.append( Equalizer(id, self) ) }
       // parse the properties
       equalizers[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -194,7 +194,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if memories[id: id] == nil { memories.append( Memory(id) ) }
+        if memories[id: id] == nil { memories.append( Memory(id, self) ) }
         // parse the properties
         memories[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -232,7 +232,7 @@ extension ApiModel {
         // parse the properties
         // YES, add it if not already present
         if panadapters[id: id] == nil {
-          panadapters.append( Panadapter(id) )
+          panadapters.append( Panadapter(id, self) )
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -250,7 +250,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if profiles[id: id] == nil { profiles.append( Profile(id) ) }
+      if profiles[id: id] == nil { profiles.append( Profile(id, self) ) }
       // parse the properties
       profiles[id: id]!.parse(statusMessage )
       
@@ -267,7 +267,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if slices[id: id] == nil { slices.append(Slice(id)) }
+        if slices[id: id] == nil { slices.append(Slice(id, self)) }
         // parse the properties
         slices[id: id]!.parse(Array(properties.dropFirst(1)) )
         if slices[id: id]!.active { activeSlice = slices[id: id] }
@@ -286,7 +286,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if tnfs[id: id] == nil { tnfs.append( Tnf(id) ) }
+        if tnfs[id: id] == nil { tnfs.append( Tnf(id, self) ) }
         // parse the properties
         tnfs[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -304,7 +304,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if usbCables[id: id] == nil { usbCables.append( UsbCable(id) ) }
+      if usbCables[id: id] == nil { usbCables.append( UsbCable(id, self) ) }
       // parse the properties
       usbCables[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -321,7 +321,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if waterfalls[id: id] == nil { waterfalls.append( Waterfall(id) ) }
+        if waterfalls[id: id] == nil { waterfalls.append( Waterfall(id, self) ) }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -339,7 +339,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id) ) }
+        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id, self) ) }
         // parse the properties
         xvtrs[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -436,7 +436,7 @@ extension ApiModel {
       }
     }
     
-    if let originalPacket = activePacket, let packet = packets[id: originalPacket.serial + originalPacket.publicIp] {
+    if let originalPacket = activePacket, let packet = listener.packets[id: originalPacket.serial + originalPacket.publicIp] {
       // is this GuiClient already in GuiClients?
       if let myGuiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
@@ -449,9 +449,9 @@ extension ApiModel {
           myGuiClient.station = station
           myGuiClient.isLocalPtt = isLocalPtt
           
-          guiClients[id: handle] = myGuiClient
+          packet.guiClients[id: handle] = myGuiClient
           
-          if !_isGui && station == "K3TZR" {
+          if !_isGui && station == activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }
@@ -466,7 +466,7 @@ extension ApiModel {
                                   clientId: clientId,
                                   isLocalPtt: isLocalPtt,
                                   isThisClient: handle == connectionHandle)
-        packets[id: originalPacket.serial + originalPacket.publicIp]!.guiClients[id: handle] = guiClient
+        packet.guiClients[id: handle] = guiClient
         
         // log the addition
         log("ObjectModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
@@ -474,9 +474,9 @@ extension ApiModel {
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
 
-          guiClients[id: handle] = guiClient
+          packet.guiClients[id: handle] = guiClient
 
-          if !_isGui && handle == connectionHandle {
+          if !_isGui && station == activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }

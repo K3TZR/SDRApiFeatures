@@ -10,7 +10,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Slice: Identifiable, Equatable {
   public nonisolated static func == (lhs: Slice, rhs: Slice) -> Bool {
     lhs.id == rhs.id
@@ -19,8 +19,10 @@ public final class Slice: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
     self.id = id
+    _apiModel = apiModel
+
     // set filterLow & filterHigh to default values
     setupDefaultFilters(mode)
   }
@@ -130,7 +132,11 @@ public final class Slice: Identifiable, Equatable {
     "RTTY": [(-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115)]
   ]
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -242,7 +248,7 @@ public final class Slice: Identifiable, Equatable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendCommand("slice remove " + " \(id)", replyTo: callback)
+    _apiModel.sendCommand("slice remove " + " \(id)", replyTo: callback)
   }
 
   public func setProperty(_ property: Slice.Property, _ value: String) {
@@ -261,15 +267,15 @@ public final class Slice: Identifiable, Equatable {
   private func send(_ property: Slice.Property, _ value: String) {
     switch property {
     case .filterLow, .filterHigh:
-      ApiModel.shared.sendCommand("filt \(id) \(filterLow) \(filterHigh)")
+      _apiModel.sendCommand("filt \(id) \(filterLow) \(filterHigh)")
     case .frequency:
-      ApiModel.shared.sendCommand("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
+      _apiModel.sendCommand("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
     case .locked:
-      ApiModel.shared.sendCommand("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
+      _apiModel.sendCommand("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
     case .audioGain, .audioLevel:
-      ApiModel.shared.sendCommand("slice set \(id) audio_level=\(value)")
+      _apiModel.sendCommand("slice set \(id) audio_level=\(value)")
     default:
-      ApiModel.shared.sendCommand("slice set \(id) \(property.rawValue)=\(value)")
+      _apiModel.sendCommand("slice set \(id) \(property.rawValue)=\(value)")
     }
   }
   

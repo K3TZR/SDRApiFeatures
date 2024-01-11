@@ -17,7 +17,7 @@ import VitaFeature
 //      structs are added / removed by the incoming TCP messages. DaxIqStream
 //      objects periodically receive IQ data in a UDP stream. They are collected
 //      in the Model.daxIqStreams collection.
-//@Observable
+@Observable
 public final class DaxIqStream: Identifiable, Equatable {
   public static func == (lhs: DaxIqStream, rhs: DaxIqStream) -> Bool {
     lhs.id == rhs.id

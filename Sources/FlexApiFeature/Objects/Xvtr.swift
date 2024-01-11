@@ -19,8 +19,11 @@ public final class Xvtr: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -54,6 +57,11 @@ public final class Xvtr: Identifiable, Equatable {
     case rxOnly         = "rx_only"
     case twoMeterInt    = "two_meter_int"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -106,9 +114,9 @@ public final class Xvtr: Identifiable, Equatable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .create:     ApiModel.shared.sendCommand("xvtr create")
-    case .remove:     ApiModel.shared.sendCommand("xvtr remove \(id.hex)")
-    default:          ApiModel.shared.sendCommand("xvtr set \(id.hex) \(property.rawValue)=\(value)")
+    case .create:     _apiModel.sendCommand("xvtr create")
+    case .remove:     _apiModel.sendCommand("xvtr remove \(id.hex)")
+    default:          _apiModel.sendCommand("xvtr set \(id.hex) \(property.rawValue)=\(value)")
     }
   }
   

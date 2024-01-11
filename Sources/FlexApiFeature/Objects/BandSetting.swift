@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class BandSetting: Identifiable, Equatable {
   public nonisolated static func == (lhs: BandSetting, rhs: BandSetting) -> Bool {
     lhs.id == rhs.id
@@ -20,9 +20,10 @@ public final class BandSetting: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
-  
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
   // ------------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -54,6 +55,11 @@ public final class BandSetting: Identifiable, Equatable {
     case tx2Enabled         = "tx2_enabled"
     case tx3Enabled         = "tx3_enabled"
   }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -102,7 +108,7 @@ public final class BandSetting: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ id: UInt32, _ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("eq \(id) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("eq \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

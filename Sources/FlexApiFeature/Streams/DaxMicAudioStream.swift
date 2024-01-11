@@ -17,7 +17,7 @@ import VitaFeature
 //      instances are added / removed by the incoming TCP messages. DaxMicAudioStream
 //      instances periodically receive Mic Audio in a UDP stream. They are collected
 //      in the Model.daxMicAudioStreams collection.
-//@Observable
+@Observable
 public final class DaxMicAudioStream: Identifiable, Equatable {
   public static func == (lhs: DaxMicAudioStream, rhs: DaxMicAudioStream) -> Bool {
     lhs.id == rhs.id

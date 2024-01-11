@@ -11,7 +11,7 @@ import SwiftUI
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Radio: Equatable {
   public nonisolated static func == (lhs: Radio, rhs: Radio) -> Bool {
     lhs === rhs
@@ -20,12 +20,11 @@ public final class Radio: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization & Dependencies
   
-  public init(_ packet: Packet) {
+  public init(_ packet: Packet, _ apiModel: ApiModel) {
     self.packet = packet
+    _apiModel = apiModel
   }
   
-  var _api = ApiModel.shared
-
   // ----------------------------------------------------------------------------
   // MARK: - Published properties
   
@@ -202,9 +201,11 @@ public final class Radio: Equatable {
     
     case addressType
   }
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
+  
+  var _apiModel: ApiModel
   
   private var _cw = false
   private var _digital = false
@@ -337,13 +338,13 @@ public final class Radio: Equatable {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      _api.sendCommand("radio set \(property.rawValue)=\(value)")
+      _apiModel.sendCommand("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      _api.sendCommand("radio \(property.rawValue) \(value)")
+      _apiModel.sendCommand("radio \(property.rawValue) \(value)")
     case .calibrate:
-      _api.sendCommand("radio pll_start")
+      _apiModel.sendCommand("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      _api.sendCommand("mixer \(property.rawValue) \(value)")
+      _apiModel.sendCommand("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       
@@ -368,7 +369,7 @@ public final class Radio: Equatable {
   }
 
   private func filterSend(_ type: Property, _ property: Property, _ value: String) {
-    _api.sendCommand("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

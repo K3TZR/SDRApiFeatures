@@ -10,7 +10,7 @@ import Foundation
 import SharedFeature
 import VitaFeature
 
-//@Observable
+@Observable
 public final class RemoteRxAudioStream: Identifiable, Equatable {
   public static func == (lhs: RemoteRxAudioStream, rhs: RemoteRxAudioStream) -> Bool {
     lhs.id == rhs.id
@@ -19,8 +19,9 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
     self.id = id
+    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -55,8 +56,7 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-//  private var _rxAudioStream: (RemoteRxAudioFrame) -> Void = { _ in }
-
+  private var _apiModel: ApiModel
   private var _rxLostPacketCount = 0
   private var _rxPacketCount = 0
   private var _rxSequenceNumber = -1
@@ -110,7 +110,7 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
       // log the start of the stream
       log("RemoteRxAudioStream \(vita.streamId.hex) STARTED: compression = \(vita.classCode == .opus ? "opus" : "none")", .info, #function, #file, #line)
       
-      Task { await MainActor.run {  ApiModel.shared.remoteRxAudioStreams[id: vita.streamId]?.isStreaming = true }}
+      Task { await MainActor.run {  _apiModel.remoteRxAudioStreams[id: vita.streamId]?.isStreaming = true }}
     }
     // is this the first packet?
     if _rxSequenceNumber == -1 {

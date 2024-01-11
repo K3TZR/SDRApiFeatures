@@ -11,7 +11,7 @@ import Foundation
 import SharedFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class UsbCable: Identifiable, Equatable {
   public nonisolated static func == (lhs: UsbCable, rhs: UsbCable) -> Bool {
     lhs.id == rhs.id
@@ -20,8 +20,11 @@ public final class UsbCable: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) { self.id = id }
-  
+  public init(_ id: String, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -78,7 +81,12 @@ public final class UsbCable: Identifiable, Equatable {
     case usbLog      = "log"
     //        case usbLogLine = "log_line"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -142,7 +150,7 @@ public final class UsbCable: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: UsbCable.Property, _ value: String) {
-    ApiModel.shared.sendCommand("usb_cable set \(id) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("usb_cable set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

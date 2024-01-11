@@ -5,10 +5,11 @@ import PackageDescription
 
 let package = Package(
   name: "SDRApiFeatures",
-  platforms: [.macOS(.v14),],
+  platforms: [.macOS(.v14)],
   
   products: [
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
+    .library(name: "DirectFeature", targets: ["DirectFeature"]),
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
@@ -40,6 +41,11 @@ let package = Package(
       "SharedFeature"
     ]),
     
+    // DirectFeature
+    .target(name: "DirectFeature", dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+
     // FlexApiFeature
     .target(name: "FlexApiFeature", dependencies: [
       "ListenerFeature",
@@ -67,7 +73,8 @@ let package = Package(
     // PickerFeature
     .target(name: "PickerFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      "ListenerFeature"
+      "ListenerFeature",
+      "FlexApiFeature",
     ]),
 
     // RingBufferFeature

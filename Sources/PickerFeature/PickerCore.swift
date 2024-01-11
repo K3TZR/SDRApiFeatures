@@ -18,14 +18,12 @@ public struct PickerFeature {
   @ObservableState
   public struct State {
     var isGui: Bool
-    var listener: Listener
     var guiDefault: String?
     var nonGuiDefault: String?
     var testResult = false
 
-    public init(isGui: Bool, listener: Listener, guiDefault: String?, nonGuiDefault: String?, testResult: Bool = false) {
+    public init(isGui: Bool, guiDefault: String?, nonGuiDefault: String?, testResult: Bool = false) {
       self.isGui = isGui
-      self.listener = listener
       self.guiDefault = guiDefault
       self.nonGuiDefault = nonGuiDefault
       self.testResult = testResult

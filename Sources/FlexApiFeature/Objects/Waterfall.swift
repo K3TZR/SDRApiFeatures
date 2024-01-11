@@ -11,7 +11,7 @@ import SharedFeature
 import VitaFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Waterfall: Identifiable, Equatable {
   public nonisolated static func == (lhs: Waterfall, rhs: Waterfall) -> Bool {
     lhs.id == rhs.id
@@ -20,8 +20,11 @@ public final class Waterfall: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Published properties
   
@@ -39,7 +42,7 @@ public final class Waterfall: Identifiable, Equatable {
   public var panadapterId: UInt32?
   
   public var selectedGradient = Waterfall.gradients[0]
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -115,16 +118,17 @@ public final class Waterfall: Identifiable, Equatable {
     case xPixels              = "x_pixels"
     case xvtr
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
   
+  private var _apiModel: ApiModel
+
+
+
   public func setIsStreaming() {
     Task { await MainActor.run { isStreaming = true }}
   }
-
-  // ------------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private let _api = ApiModel.shared
-//  private let _objectModel = ObjectModel.shared
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -262,7 +266,7 @@ public final class Waterfall: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: Waterfall.Property, _ value: String) {
-    _api.sendCommand("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

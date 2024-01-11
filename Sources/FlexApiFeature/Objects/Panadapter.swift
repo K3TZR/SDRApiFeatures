@@ -12,7 +12,7 @@ import SharedFeature
 import VitaFeature
 
 @MainActor
-//@Observable
+@Observable
 public final class Panadapter: Identifiable, Equatable {
   public nonisolated static func == (lhs: Panadapter, rhs: Panadapter) -> Bool {
     lhs.id == rhs.id
@@ -21,8 +21,11 @@ public final class Panadapter: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
-  
+  public init(_ id: UInt32, _ apiModel: ApiModel) {
+    self.id = id
+    _apiModel = apiModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Published properties
   
@@ -136,7 +139,10 @@ public final class Panadapter: Identifiable, Equatable {
     public var lineCount: CGFloat
   }
 
-  private static let kNumberOfFrames = 16
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _apiModel: ApiModel
 
   private struct PayloadHeader {      // struct to mimic payload layout
     var startingBinNumber: UInt16
@@ -156,6 +162,7 @@ public final class Panadapter: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Private Static properties
   
+  private static let kNumberOfFrames = 16
   private static let dbmMax: CGFloat = 20
   private static let dbmMin: CGFloat = -180
   
@@ -215,7 +222,7 @@ public final class Panadapter: Identifiable, Equatable {
       log("Panadapter \(id.hex): ADDED, center = \(center.hzToMhz), bandwidth = \(bandwidth.hzToMhz)", .debug, #function, #file, #line)
       
       // FIXME: ????
-      ApiModel.shared.activePanadapter = self
+      _apiModel.activePanadapter = self
     }
   }
   
@@ -235,7 +242,7 @@ public final class Panadapter: Identifiable, Equatable {
       // log the start of the stream
       log("Panadapter \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
       
-      Task { await MainActor.run {  ApiModel.shared.panadapters[id: vita.streamId]?.setIsStreaming() }}
+      Task { await MainActor.run {  _apiModel.panadapters[id: vita.streamId]?.setIsStreaming() }}
     }
     
     // Bins are just beyond the payload
@@ -388,7 +395,7 @@ public final class Panadapter: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("display pan set \(id.hex) \(property.rawValue)=\(value)")
+    _apiModel.sendCommand("display pan set \(id.hex) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----
