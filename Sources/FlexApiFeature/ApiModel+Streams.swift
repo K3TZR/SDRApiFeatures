@@ -123,7 +123,8 @@ extension ApiModel {
           if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
         case .meter:
-          Meter.vitaProcessor(vita)
+          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+          meterStream!.vitaProcessor(vita)
 
         case .opus:
           if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
@@ -371,10 +372,11 @@ extension ApiModel {
    */
 }
 
-public class VitaStatus: Identifiable, ObservableObject {
-  @Published public var type: Vita.PacketClassCodes
-  @Published public var packets = 0
-  @Published public var errors = 0
+@Observable
+public class VitaStatus: Identifiable {
+  public var type: Vita.PacketClassCodes
+  public var packets = 0
+  public var errors = 0
   
   public var id: Vita.PacketClassCodes { type }
   

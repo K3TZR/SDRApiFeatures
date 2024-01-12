@@ -154,6 +154,8 @@ public final class ApiModel {
 
   public var streamStatus = IdentifiedArrayOf<VitaStatus>()
   
+  public var meterStream: MeterStream?
+  
   public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
   public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
   public var daxTxAudioStreams = IdentifiedArrayOf<DaxTxAudioStream>()

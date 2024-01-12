@@ -447,3 +447,18 @@ public enum ObjectFilter: String, CaseIterable {
   case waveforms
   case xvtrs
 }
+
+public enum MeterUnits : String {
+  case none
+  case amps
+  case db
+  case dbfs
+  case dbm
+  case degc
+  case degf
+  case percent
+  case rpm
+  case swr
+  case volts
+  case watts
+}

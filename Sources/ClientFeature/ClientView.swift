@@ -60,13 +60,13 @@ public struct ClientView: View {
 // MARK: - Preview(s)
 
 #Preview("Gui connect (disconnect not required)") {
-  ClientView(store: Store(initialState: ClientFeature.State(selection: "", guiClients: IdentifiedArrayOf<GuiClient>())) {
+  ClientView(store: Store(initialState: ClientFeature.State(selection: "", guiClients: IdentifiedArrayOf<GuiClient>(arrayLiteral: GuiClient(handle: 1, station: "Station_1")))) {
     ClientFeature()
   })
 }
 
 #Preview("Gui connect (disconnect required)") {
-  ClientView(store: Store(initialState: ClientFeature.State(selection: "", guiClients: IdentifiedArrayOf<GuiClient>())) {
+  ClientView(store: Store(initialState: ClientFeature.State(selection: "", guiClients: IdentifiedArrayOf<GuiClient>(arrayLiteral: GuiClient(handle: 1, station: "Station_1"), GuiClient(handle: 2, station: "Station_2")))) {
     ClientFeature()
   })
 }

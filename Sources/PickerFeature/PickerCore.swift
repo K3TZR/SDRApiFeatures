@@ -20,13 +20,11 @@ public struct PickerFeature {
     var isGui: Bool
     var guiDefault: String?
     var nonGuiDefault: String?
-    var testResult = false
 
-    public init(isGui: Bool, guiDefault: String?, nonGuiDefault: String?, testResult: Bool = false) {
+    public init(isGui: Bool, guiDefault: String?, nonGuiDefault: String?) {
       self.isGui = isGui
       self.guiDefault = guiDefault
       self.nonGuiDefault = nonGuiDefault
-      self.testResult = testResult
     }
   }
   
@@ -34,7 +32,6 @@ public struct PickerFeature {
     case connectButtonTapped(String)
     case defaultButtonTapped(String)
     case testButtonTapped(String)
-    
   }
   
   public var body: some ReducerOf<Self> {

@@ -131,6 +131,7 @@ private struct FooterView: View {
   let selection: String?
   let selectionIsSmartlink: Bool
 
+  @Environment(ApiModel.self) var apiModel
   @Environment(\.dismiss) var dismiss
 
   var body: some View {
@@ -139,7 +140,7 @@ private struct FooterView: View {
       Button("Test") { store.send(.testButtonTapped(selection!)) }
         .disabled(!selectionIsSmartlink)
       Circle()
-        .fill(store.testResult ? Color.green : Color.red)
+        .fill(apiModel.listener.smartlinkTestResult.success ? Color.green : Color.red)
         .frame(width: 20, height: 20)
       
       Spacer()
@@ -174,9 +175,12 @@ private struct FooterView: View {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: true, guiDefault: nil, nonGuiDefault: nil)) {
     PickerFeature()
   })
+  .environment(ApiModel.shared)
 }
+
 #Preview("Picker NON-Gui") {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: false, guiDefault: nil, nonGuiDefault: nil)) {
     PickerFeature()
   })
+  .environment(ApiModel.shared)
 }

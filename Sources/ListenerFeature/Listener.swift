@@ -123,7 +123,8 @@ final public class Listener: Equatable {
   /// Send a Test message
   /// - Parameter serial:     radio serial number
   /// - Returns:              success / failure
-  public func smartlinkTest(_ serial: String) {
+  public func smartlinkTest(_ selection: String) {
+    let serial = selection.prefix(19)
     log("Smartlink Listener: test initiated to serial number, \(serial)", .debug, #function, #file, #line)
     // send a command to SmartLink to test the connection for the specified Radio
     _smartlinkListener?.sendTlsCommand("application test_connection serial=\(serial)")
