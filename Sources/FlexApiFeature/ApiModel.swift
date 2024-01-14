@@ -21,16 +21,24 @@ public typealias ReplyHandler = (_ command: String, _ seqNumber: UInt, _ respons
 public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String, continuation: CheckedContinuation<String,Error>?)
 //public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
 
+//extension ApiModel: DependencyKey {
+//  public static let liveValue = ApiModel.shared
+//}
+//
+//extension DependencyValues {
+//  public var apiModel: ApiModel {
+//    get { self[ApiModel.self] }
+//  }
+//}
+
 @MainActor
 @Observable
 public final class ApiModel {
   // ----------------------------------------------------------------------------
-  // MARK: - Initialization & Dependencies
+  // MARK: - Singleton
   
   public static var shared = ApiModel()
   private init() {
-    listener = Listener(previousIdToken: nil)
-    
 
     subscribeToMessages()
     //    subscribeToTcpStatus()    // not currently active
@@ -65,8 +73,6 @@ public final class ApiModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
-  public var listener: Listener
-  
   public internal(set) var antList = [String]()
   public internal(set) var radio: Radio?
   public internal(set) var boundClientId: String?
@@ -75,16 +81,8 @@ public final class ApiModel {
 
   public var knownRadios = IdentifiedArrayOf<KnownRadio>()
   
-  // public var radio: Radio?
-  public var activeAmplifier: Amplifier?
-  public var activeBandSetting: BandSetting?
-  public var activeEqualizer: Equalizer?
-  public var activeMemory: Memory?
-  public var activePanadapter: Panadapter?
-  public var activeSlice: Slice?
-  public var activeStation: String?
-  public var activeUsbCable: UsbCable?
-  public var activeXvtr: Xvtr?
+//  public var activePacket: Packet?
+//  public var activeStation: String?
   
   // Dynamic Models
   public var amplifiers = IdentifiedArrayOf<Amplifier>()
@@ -100,10 +98,6 @@ public final class ApiModel {
   public var waterfalls = IdentifiedArrayOf<Waterfall>()
   public var xvtrs = IdentifiedArrayOf<Xvtr>()
   
-//  public var packets = IdentifiedArrayOf<Packet>()
-//  public var stations = IdentifiedArrayOf<Station>()
-//  public var guiClients = IdentifiedArrayOf<GuiClient>()
-
   // Static Models
   public var atu: Atu!
   public var cwx: Cwx!
@@ -115,7 +109,6 @@ public final class ApiModel {
   
   public var lowBandwidthConnect = false
 
-  public internal(set) var activePacket: Packet?
   public internal(set) var atuPresent = false
   public internal(set) var callsign = ""
   public internal(set) var chassisSerial = ""
@@ -236,91 +229,88 @@ public final class ApiModel {
   ///   - stationName: station name
   ///   - mtuValue: max transort unit
   @MainActor
-  public func connect(packet: Packet, station: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, stationName: String, mtuValue: Int) async throws {
+  public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false) async throws {
     nthPingReceived = false
     
-    _isGui = isGui
-    
-    // Instantiate a Radio
-    radio = Radio(packet, self)
-    // connect to it
-    guard radio != nil else { throw ApiError.instantiation }
-    log("Api: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
-    
-    guard connect(packet) else { throw ApiError.connection }
-    log("Api: Tcp connection established ", .debug, #function, #file, #line)
-    
-    if disconnectHandle != nil {
-      // pending disconnect
-      sendCommand("client disconnect \(disconnectHandle!.hex)")
-    }
-    
-    // wait for the first Status message with my handle
-    try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
-      await awaitFirstStatusMessage()
-    }
-    log("Api: First status message received", .debug, #function, #file, #line)
-    
-    // is this a Wan connection?
-    if packet.source == .smartlink {
-      // YES, send Wan Connect message & wait for the reply
-      _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
-        try await self.listener.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
+    if let packet = Listener.shared.activePacket, let station = Listener.shared.activeStation {
+      // Instantiate a Radio
+      radio = Radio(packet, self)
+      // connect to it
+      guard radio != nil else { throw ApiError.instantiation }
+      log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
+      
+      guard connect(packet) else { throw ApiError.connection }
+      log("ApiModel: Tcp connection established ", .debug, #function, #file, #line)
+      
+      if disconnectHandle != nil {
+        // pending disconnect
+        sendCommand("client disconnect \(disconnectHandle!.hex)")
       }
       
-      log("Api: wanHandle received", .debug, #function, #file, #line)
-      
-      // send Wan Validate & wait for the reply
-      log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
-      try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self, _wanHandle] in
-        _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
+      // wait for the first Status message with my handle
+      try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
+        await awaitFirstStatusMessage()
       }
-      log("Api: Wan validation received", .debug, #function, #file, #line)
-    }
-    // bind UDP
-    let ports = Udp.shared.bind(packet.source == .smartlink,
-                                packet.publicIp,
-                                packet.requiresHolePunch,
-                                packet.negotiatedHolePunchPort,
-                                packet.publicUdpPort)
-    
-    guard ports != nil else { Tcp.shared.disconnect() ; throw ApiError.udpBind }
-    log("Api: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)", .debug, #function, #file, #line)
-    
-    // is this a Wan connection?
-    if packet.source == .smartlink {
-      // send Wan Register (no reply)
-      sendUdp(string: "client udp_register handle=" + connectionHandle!.hex )
-      log("Api: UDP registration sent", .debug, #function, #file, #line)
+      log("ApiModel: First status message received", .debug, #function, #file, #line)
       
-      // send Client Ip & wait for the reply
-      let reply = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
-        try await sendCommandAwaitReply("client ip")
+      // is this a Wan connection?
+      if packet.source == .smartlink {
+        // YES, send Wan Connect message & wait for the reply
+        _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
+          try await Listener.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
+        }
+        
+        log("ApiModel: wanHandle received", .debug, #function, #file, #line)
+        
+        // send Wan Validate & wait for the reply
+        log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
+        try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self, _wanHandle] in
+          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
+        }
+        log("ApiModel: Wan validation received", .debug, #function, #file, #line)
       }
-      log("Api: Client ip = \(reply)", .debug, #function, #file, #line)
+      // bind UDP
+      let ports = Udp.shared.bind(packet.source == .smartlink,
+                                  packet.publicIp,
+                                  packet.requiresHolePunch,
+                                  packet.negotiatedHolePunchPort,
+                                  packet.publicUdpPort)
+      
+      guard ports != nil else { Tcp.shared.disconnect() ; throw ApiError.udpBind }
+      log("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)", .debug, #function, #file, #line)
+      
+      // is this a Wan connection?
+      if packet.source == .smartlink {
+        // send Wan Register (no reply)
+        sendUdp(string: "client udp_register handle=" + connectionHandle!.hex )
+        log("ApiModel: UDP registration sent", .debug, #function, #file, #line)
+        
+        // send Client Ip & wait for the reply
+        let reply = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
+          try await sendCommandAwaitReply("client ip")
+        }
+        log("ApiModel: Client ip = \(reply)", .debug, #function, #file, #line)
+      }
+      
+      // send the initial commands
+      sendInitialCommands(programName, station, mtuValue, lowBandwidthDax)
+      log("ApiModel: initial commands sent", .info, #function, #file, #line)
+      
+      startPinging()
+      log("ApiModel: pinging \(packet.publicIp)", .info, #function, #file, #line)
+      
+      // set the UDP port for a Local connection
+      if packet.source == .local {
+        sendCommand("client udpport " + "\(Udp.shared.sendPort)")
+        log("ApiModel: Client Udp port set to \(Udp.shared.sendPort)", .info, #function, #file, #line)
+      }
     }
-    
-    // send the initial commands
-    sendInitialCommands(programName, stationName, mtuValue)
-    log("Api: initial commands sent", .info, #function, #file, #line)
-    
-    startPinging()
-    log("Api: pinging \(packet.publicIp)", .info, #function, #file, #line)
-    
-    // set the UDP port for a Local connection
-    if packet.source == .local {
-      sendCommand("client udpport " + "\(Udp.shared.sendPort)")
-      log("Api: Client Udp port set to \(Udp.shared.sendPort)", .info, #function, #file, #line)
-    }
-    
-    activePacket = packet
-    activeStation = station
   }
 
   /// Disconnect the current Radio and remove all its objects / references
   /// - Parameter reason: an optional reason
   public func disconnect(_ reason: String? = nil) {
-    log("Api: Disconnect, \((reason == nil ? "User initiated" : reason!))", reason == nil ? .debug : .warning, #function, #file, #line)
+    log("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))", reason == nil ? .debug : .warning, #function, #file, #line)
     
     clientInitialized = false
     firstStatusMessageReceived = false
@@ -328,24 +318,24 @@ public final class ApiModel {
     
     // stop pinging (if active)
     stopPinging()
-    log("Api: Pinging STOPPED", .debug, #function, #file, #line)
+    log("ApiModel: Pinging STOPPED", .debug, #function, #file, #line)
     
     connectionHandle = nil
     
     // stop udp
     Udp.shared.unbind()
-    log("Api: Disconnect, UDP unbound", .debug, #function, #file, #line)
+    log("ApiModel: Disconnect, UDP unbound", .debug, #function, #file, #line)
     
     //    streamModel.unSubscribeToStreams()
     
     Tcp.shared.disconnect()
     
-    activePacket = nil
-    activeStation = nil
+    Listener.shared.activePacket = nil
+    Listener.shared.activeStation = nil
     
     // remove all of radio's objects
     removeAllObjects()
-    log("Api: Disconnect, Objects removed", .debug, #function, #file, #line)
+    log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
     
     smartSdrMB = ""
     psocMbtrxVersion = ""
@@ -362,18 +352,6 @@ public final class ApiModel {
       }
     }
   }
-  
-//  public func addStation(_ station: String) {
-//    var stations = activeStations
-//    stations.insert(station)
-//    activeStations = stations
-//  }
-
-//  public func removeStation(_ station: String) {
-//    var stations = activeStations
-//      stations.remove(station)
-//      activeStations = stations
-//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Internal / Private Helper methods
@@ -381,7 +359,7 @@ public final class ApiModel {
   func awaitFirstStatusMessage() async {
     return await withCheckedContinuation{ continuation in
       _awaitFirstStatusMessage = continuation
-      log("Radio: waiting for first status message", .debug, #function, #file, #line)
+      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
     }
   }
   
@@ -392,7 +370,7 @@ public final class ApiModel {
     _pinger = Pinger(self)
   }
 
-  private func sendInitialCommands(_ programName: String, _ stationName: String, _ mtuValue: Int) {
+  private func sendInitialCommands(_ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool) {
     let guiClientId = UserDefaults.standard.string(forKey: "guiClientId")
     
     if _isGui && guiClientId == nil {
@@ -400,7 +378,6 @@ public final class ApiModel {
     }
     if _isGui && guiClientId != nil {
       sendCommand("client gui \(guiClientId!)")
-//      bindToGuiClient(UUID(uuidString: guiClientId!))
     }
     sendCommand("client program " + programName)
     if _isGui { sendCommand("client station " + stationName) }
@@ -415,8 +392,7 @@ public final class ApiModel {
     requestDisplayProfile()
     requestSubAll()
     requestMtuLimit(mtuValue)
-//    requestLowBandwidthDax(SettingsModel.shared.daxReducedBandwidth)
-    requestLowBandwidthDax(false)         // FIXME:
+    requestLowBandwidthDax(lowBandwidthDax)
     requestUptime()
   }
 

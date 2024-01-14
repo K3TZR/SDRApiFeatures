@@ -33,11 +33,11 @@ extension ApiModel {
   /// Process the AsyncStream of inbound TCP messages
   func subscribeToMessages()  {
     Task(priority: .high) {
-      log("Api: TcpMessage subscription STARTED", .debug, #function, #file, #line)
+      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
       for await tcpMessage in Tcp.shared.inboundMessagesStream {
         tcpInbound(tcpMessage.text)
       }
-      log("Api: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
+      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
     }
   }
 
@@ -81,7 +81,7 @@ extension ApiModel {
     case "R", "r":  parseReply( message )
     case "S", "s":  parseStatus( message.dropFirst() )
     case "V", "v":  Task { await MainActor.run { radio?.hardwareVersion = String(message.dropFirst()) }}
-    default:        log("Radio: unexpected message = \(message)", .warning, #function, #file, #line)
+    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
     }
   }
 
@@ -94,13 +94,13 @@ extension ApiModel {
     
     // ignore incorrectly formatted messages
     if components.count < 2 {
-      log("Radio: incomplete message = c\(msg)", .warning, #function, #file, #line)
+      log("ApiModel: incomplete message = c\(msg)", .warning, #function, #file, #line)
       return
     }
     let msgText = components[1]
     
     // log it
-    log("Radio: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
+    log("ApiModel: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
     
     // FIXME: Take action on some/all errors?
   }
@@ -116,7 +116,7 @@ extension ApiModel {
     let components = replySuffix.components(separatedBy: "|")
     // ignore incorrectly formatted replies
     if components.count < 2 {
-      log("Radio: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
+      log("ApiModel: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
       return
     }
     
@@ -138,7 +138,7 @@ extension ApiModel {
       guard reply == kNoError else {
         // ignore non-zero reply from "client program" command
         if !command.hasPrefix("client program ") {
-          log("Radio: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
         }
         return
       }
@@ -173,7 +173,7 @@ extension ApiModel {
         handler(command, seqNum, reply, suffix)
       }
     } else {
-      log("Radio: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+      log("ApiModel: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
     }
   }
   
@@ -187,7 +187,7 @@ extension ApiModel {
     
     // ignore incorrectly formatted status
     guard components.count > 1 else {
-      log("Radio: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
+      log("ApiModel: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
       return
     }
     
@@ -202,7 +202,7 @@ extension ApiModel {
     // Check for unknown Object Types
     guard let objectType = ObjectType(rawValue: statusType)  else {
       // log it and ignore the message
-      log("Radio: unknown status token = \(statusType)", .warning, #function, #file, #line)
+      log("ApiModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
       return
     }
     
@@ -296,7 +296,7 @@ extension ApiModel {
           // check for unknown Keys
           guard let token = Property(rawValue: property.key) else {
               // log it and ignore the Key
-              log("Radio, unknown info token: \(property.key) = \(property.value)", .warning, #function, #file, #line)
+              log("ApiModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
               continue
           }
           // Known keys, in alphabetical order
@@ -340,7 +340,7 @@ extension ApiModel {
       // check for unknown Keys
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Radio: unknown version property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        log("ApiModel: unknown version property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
         continue
       }
       // Known tokens, in alphabetical order

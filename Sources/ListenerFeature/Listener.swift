@@ -13,6 +13,16 @@ import XCGLogFeature
 
 public typealias IdToken = String
 
+//extension Listener: DependencyKey {
+//  public static let liveValue = Listener(previousIdToken: nil)
+//}
+//
+//extension DependencyValues {
+//  public var listener: Listener {
+//    get { self[Listener.self] }
+//  }
+//}
+
 @Observable
 final public class Listener: Equatable {
   public static func == (lhs: Listener, rhs: Listener) -> Bool {
@@ -24,8 +34,9 @@ final public class Listener: Equatable {
   
   public var packets = IdentifiedArrayOf<Packet>()
   public var stations = IdentifiedArrayOf<Station>()
-//  public var guiClients = IdentifiedArrayOf<GuiClient>()
-  
+  public var activePacket: Packet?
+  public var activeStation: String?
+
   public var smartlinkTestResult = SmartlinkTestResult()
   public var previousIdToken: String?
 
@@ -66,15 +77,23 @@ final public class Listener: Equatable {
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Initialization
+  // MARK: - Singleton
   
-//  public static var shared = Listener()
-  public init(previousIdToken: String?) {
-    self.previousIdToken = previousIdToken
-  }
+  public static var shared = Listener()
+  private init() {}
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
+  
+  public func setActive(_ isGui: Bool, _ selection: String) {
+    if isGui {
+      activePacket = packets[id: selection]!
+      activeStation = "SDRApi"
+    } else {
+      activePacket  = stations[id: selection]!.packet
+      activeStation = stations[id: selection]!.station
+    }
+  }
   
   public func localMode(_ enable: Bool) {
     _localListener?.stop()
@@ -252,6 +271,10 @@ final public class Listener: Equatable {
             stations.remove(id: oldPacket!.serial + oldPacket!.publicIp + guiClient.station)
             
 //            guiClients.remove(id: guiClient.handle)
+            
+//            if guiClient.station == activeStation {
+//              print("----->>>>> Skould disconnect")
+//            }
 
             _clientStream( ClientEvent(.removed, client: guiClient))
             log("Listener: guiClient REMOVED, \(guiClient.station)", .info, #function, #file, #line)
@@ -259,10 +282,6 @@ final public class Listener: Equatable {
         }
       }
     }
-    
-//    for station in stations {
-//      print("----->>>>> Station ", station.packet.nickname, station.station)
-//    }
   }
   
   

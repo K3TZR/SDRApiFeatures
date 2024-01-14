@@ -213,7 +213,7 @@ extension ApiModel {
     // remove it immediately (Tnf does not send status on removal)
     Task {
       await _ = MainActor.run { tnfs.remove(id: id) }
-      log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
+      log("ApiModel: Tnf removed, id = \(id)", .debug, #function, #file, #line)
     }
   }
   

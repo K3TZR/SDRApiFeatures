@@ -7,15 +7,16 @@
 
 import Foundation
 
+import ListenerFeature
 import SharedFeature
 
 extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func setActiveStation(_ station: String?) {
-    self.activeStation = station
-  }
+//  public func setActiveStation(_ station: String?) {
+//    self.activeStation = station
+//  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
@@ -52,17 +53,8 @@ extension ApiModel {
   }
   
   /// Remove all Radio objects
-  func removeAllObjects() {
-    
-    // FIXME: these may not be necessary
+  func removeAllObjects() {    
     radio = nil
-    activeEqualizer = nil
-    activeSlice = nil
-    activeStation = nil
-    //    activePacket = nil
-    activePanadapter = nil
-    log("ObjectModel: removed Model properties", .debug, #function, #file, #line)
-    
     removeAll(of: .amplifier)
     removeAll(of: .bandSetting)
     removeAll(of: .daxIqStream)
@@ -81,10 +73,7 @@ extension ApiModel {
     removeAll(of: .usbCable)
     removeAll(of: .waterfall)
     removeAll(of: .xvtr)
-    
     replyHandlers.removeAll()
-    log("ObjectModel: removed all reply handlers", .debug, #function, #file, #line)
-    
   }
   
   func removeAll(of type: ObjectType) {
@@ -111,7 +100,7 @@ extension ApiModel {
     case .xvtr:                 xvtrs.removeAll()
     default:            break
     }
-    log("ObjectModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
+    log("ApiModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
   }
   
 //  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
@@ -270,7 +259,7 @@ extension ApiModel {
         if slices[id: id] == nil { slices.append(Slice(id, self)) }
         // parse the properties
         slices[id: id]!.parse(Array(properties.dropFirst(1)) )
-        if slices[id: id]!.active { activeSlice = slices[id: id] }
+//        if slices[id: id]!.active { activeSlice = slices[id: id] }
         
       } else {
         // NO, remove it
@@ -423,7 +412,7 @@ extension ApiModel {
       // check for unknown properties
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore this Key
-        log("ObjectModel: unknown client property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+        log("ApiModel: unknown client property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
         continue
       }
       // Known properties, in alphabetical order
@@ -436,28 +425,29 @@ extension ApiModel {
       }
     }
     
-    if let originalPacket = activePacket, let packet = listener.packets[id: originalPacket.serial + originalPacket.publicIp] {
+    if let packet = Listener.shared.activePacket {
       // is this GuiClient already in GuiClients?
-      if let myGuiClient = packet.guiClients[id: handle] {
+      if let guiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
-        if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
+//        if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
           
           // update the packet's GuiClients collection
-          myGuiClient.clientId = clientId
-          myGuiClient.program = program
-          myGuiClient.station = station
-          myGuiClient.isLocalPtt = isLocalPtt
+          guiClient.clientId = clientId
+          guiClient.program = program
+          guiClient.station = station
+          guiClient.isLocalPtt = isLocalPtt
           
-          packet.guiClients[id: handle] = myGuiClient
+          packet.guiClients[id: handle] = guiClient
           
-          if !_isGui && station == activeStation {
+          // log the addition
+          log("ApiModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+
+          if !_isGui && station == Listener.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }
-          
-//          sendGuiClientCompletion(myGuiClient)
-        }
+//        }
       } else {
         // NO
         let guiClient = GuiClient(handle: handle,
@@ -469,19 +459,17 @@ extension ApiModel {
         packet.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ObjectModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+        log("ApiModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
 
           packet.guiClients[id: handle] = guiClient
 
-          if !_isGui && station == activeStation {
+          if !_isGui && station == Listener.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }
-
-//          sendGuiClientCompletion(guiClient)
         }
       }
     }
@@ -507,7 +495,7 @@ extension ApiModel {
         // check for unknown property
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore this Key
-          log("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+          log("ApiModel: unknown client disconnection property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
           continue
         }
         // Known properties, in alphabetical order
@@ -518,7 +506,7 @@ extension ApiModel {
         case .wanValidationFailed:  if property.value.bValue { reason = "Wan validation failed" }
         }
       }
-      log("ObjectModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
+      log("ApiModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
       
       //      apiModel.disconnect(reason)
       

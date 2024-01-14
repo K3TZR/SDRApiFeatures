@@ -331,7 +331,7 @@ final public class Packet: Identifiable, Equatable, Hashable {
       let ips       = guiClientIps.components(separatedBy: ",")
       
       if programs.count == handles.count && stations.count == handles.count && ips.count == handles.count {
-        
+                
         for i in 0..<handles.count {
           // add/update if valid fields
           if let handle = handles[i].handle, stations[i] != "", programs[i] != "" , ips[i] != "" {
@@ -340,6 +340,9 @@ final public class Packet: Identifiable, Equatable, Hashable {
                                                       station: stations[i],
                                                       program: programs[i],
                                                       ip: ips[i])
+            
+//            print("----->>>>>", "station, program in packet = \(stations[i]), \(programs[i])")
+
           }
         }
       }

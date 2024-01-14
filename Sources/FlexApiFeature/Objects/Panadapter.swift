@@ -222,7 +222,7 @@ public final class Panadapter: Identifiable, Equatable {
       log("Panadapter \(id.hex): ADDED, center = \(center.hzToMhz), bandwidth = \(bandwidth.hzToMhz)", .debug, #function, #file, #line)
       
       // FIXME: ????
-      _apiModel.activePanadapter = self
+//      _apiModel.activePanadapter = self
     }
   }
   

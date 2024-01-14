@@ -43,12 +43,12 @@ extension ApiModel {
             if isForThisClient(properties) {
               // YES
               guard properties.count > 1 else {
-                log("ObjectModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+                log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
                 return
               }
               guard let token = Property(rawValue: properties[1].value) else {
                 // log it and ignore the Key
-                log("ObjectModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
+                log("ApiModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
                 return
               }
               switch token {
@@ -65,7 +65,7 @@ extension ApiModel {
         }
       }
     } else {
-      log("ObjectModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+      log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
     }
   }
 
@@ -98,7 +98,7 @@ extension ApiModel {
   func subscribeToStreams()  {
     _streamSubscription = Task(priority: .high) {
       
-      log("Api: UDP stream subscription STARTED", .debug, #function, #file, #line)
+      log("ApiModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
       for await vita in Udp.shared.inboundStreams {
         Task {
           await MainActor.run { self.streamStatus[id: vita.classCode]?.packets += 1 }
@@ -131,16 +131,16 @@ extension ApiModel {
           
         default:
           // log the error
-          log("Api: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
+          log("ApiModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
         }
       }
-      log("Api: UDP stream  subscription STOPPED", .debug, #function, #file, #line)
+      log("ApiModel: UDP stream  subscription STOPPED", .debug, #function, #file, #line)
     }
   }
   
   /// Unsubscribe from UDP streams
   private func unSubscribeToStreams() {
-    log("Api: stream subscription CANCELLED", .debug, #function, #file, #line)
+    log("ApiModel: stream subscription CANCELLED", .debug, #function, #file, #line)
     _streamSubscription?.cancel()
   }
 
@@ -309,27 +309,27 @@ extension ApiModel {
   private func removeStream(having id: UInt32) {
     if daxIqStreams[id: id] != nil {
       daxIqStreams.remove(id: id)
-      log("DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if daxMicAudioStreams[id: id] != nil {
       daxMicAudioStreams.remove(id: id)
-      log("DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if daxRxAudioStreams[id: id] != nil {
       daxRxAudioStreams.remove(id: id)
-      log("DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
 
     } else if daxTxAudioStreams[id: id] != nil {
       daxTxAudioStreams.remove(id: id)
-      log("DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if remoteRxAudioStreams[id: id] != nil {
       remoteRxAudioStreams.remove(id: id)
-      log("RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if remoteTxAudioStreams[id: id] != nil {
       remoteTxAudioStreams.remove(id: id)
-      log("RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("ApiModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
   }
 
