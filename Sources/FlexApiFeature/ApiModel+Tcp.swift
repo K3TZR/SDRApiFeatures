@@ -146,7 +146,7 @@ extension ApiModel {
       // process replies to the internal "sendCommands"?
       switch command {
 
-      case "client gui":    parseGuiReply(suffix)
+//      case "client gui":    parseGuiReply(suffix)     // pointless since I always send a clientId
       case "slice list":    parseSliceListReply(suffix)
       case "ant list":      parseAntListReply(suffix)
       case "info":          parseInfoReply(suffix)
@@ -223,17 +223,9 @@ extension ApiModel {
   /// Parse the Reply to a Client Gui command
   /// - Parameters:
   ///   - suffix:          a reply string
-  @MainActor private func parseGuiReply(_ suffix: String) {
-    for property in suffix.keyValuesArray() {
-      // save the returned ID
-      
-//      @Bindable var bindableSettings = settingsModel
-//      $bindableSettings.guiClientId = UUID(uuidString: property.key)
-
-//      settingsModel.setGuiClientId(property.key)
-      break
-    }
-  }
+//  @MainActor private func parseGuiReply(_ suffix: String) {
+//    log("ApiModel: client gui response = \(suffix)", .debug, #function, #file, #line)
+//  }
 
   /// Parse the Reply to a Slice LIst command
   /// - Parameters:
