@@ -27,8 +27,9 @@ public struct MessagesFeature {
     public var clearOnStop: Bool
 
     var gotoTop: Bool
+    var messagesModel = MessagesModel.shared
     
-    public init(filterText: String, filter: MessageFilter, fontSize: Int, showTimes: Bool, showPings: Bool, clearOnStart: Bool, clearOnStop: Bool) {
+    public init(filterText: String = "", filter: MessageFilter = .all, fontSize: Int = 12, showTimes: Bool = true, showPings: Bool = false, clearOnStart: Bool = true, clearOnStop: Bool = false) {
       self.filterText = filterText
       self.filter = filter
       self.fontSize = fontSize
@@ -58,12 +59,14 @@ public struct MessagesFeature {
     
     Reduce { state, action in
       switch action {
+      
       case .clearButtonTapped:
-        MessagesModel.shared.clearAll()
+        state.messagesModel.clearAll()
         return .none
         
       case .clearFilterTextTapped:
-        MessagesModel.shared.reFilter(filterText: state.filterText)
+        state.filterText = ""
+        state.messagesModel.reFilter(filterText: state.filterText)
         return .none
 
       case let .clearOnStartChanged(newValue):
@@ -76,12 +79,12 @@ public struct MessagesFeature {
 
       case let .filterChanged(newValue):
         state.filter = newValue
-        MessagesModel.shared.reFilter(filter: state.filter)
+        state.messagesModel.reFilter(filter: state.filter)
         return .none
 
       case let .filterTextChanged(newValue):
         state.filterText = newValue
-        MessagesModel.shared.reFilter(filterText: state.filterText)
+        state.messagesModel.reFilter(filterText: state.filterText)
         return .none
 
       case let .gotoTopChanged(newValue):
@@ -93,7 +96,7 @@ public struct MessagesFeature {
         
       case let .showPingsChanged(newValue):
         state.showPings = newValue
-        MessagesModel.shared.showPings = newValue
+        state.messagesModel.showPings = newValue
         return .none
 
       case let .showTimesChanged(newValue):

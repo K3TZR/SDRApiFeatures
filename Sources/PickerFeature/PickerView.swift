@@ -20,9 +20,9 @@ public struct PickerView: View {
   public init(store: StoreOf<PickerFeature>) {
     self.store = store
   }
+  
   @State var selection: String?
   
-//  @Environment(ApiModel.self) var apiModel
   @Environment(Listener.self) var listener
 
   @MainActor private var isSmartlink: Bool {

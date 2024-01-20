@@ -36,15 +36,17 @@ public final class MessagesModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func start(_ filter: MessageFilter, _ filterText: String, _ showPings: Bool) {
+  public func start(_ filter: MessageFilter, _ filterText: String, _ showPings: Bool, _ clear: Bool) {
     _filter = filter
     _filterText = filterText
+    if clear { clearAll() }
     self.showPings = showPings
     subscribeToTcpMessages()
   }
 
-  public func stop() {
+  public func stop(_ clear: Bool) {
     _task = nil
+    if clear { clearAll() }
   }
 
   /// Clear all messages

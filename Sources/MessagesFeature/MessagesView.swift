@@ -19,8 +19,6 @@ public struct MessagesView: View {
   public init(store: StoreOf<MessagesFeature>) {
     self.store = store
   }
-
-  @Environment(MessagesModel.self) var messagesModel
   
   @Namespace var topID
   @Namespace var bottomID
@@ -55,7 +53,7 @@ public struct MessagesView: View {
     VStack(alignment: .leading) {
       FilterMessagesView(store: store)
       
-      if messagesModel.filteredMessages.count == 0 {
+      if store.messagesModel.filteredMessages.count == 0 {
         VStack(alignment: .leading) {
           Spacer()
           HStack {
@@ -72,7 +70,7 @@ public struct MessagesView: View {
             Text("Top").hidden()
               .id(topID)
             Grid (alignment: .leading) {
-              ForEach(messagesModel.filteredMessages.reversed(), id: \.id) { message in
+              ForEach(store.messagesModel.filteredMessages.reversed(), id: \.id) { message in
                 GridRow(alignment: .top) {
                   if store.showTimes { Text(intervalFormat(message.interval) ) }
                   Text(attributedText(message.text))
@@ -129,14 +127,12 @@ private struct BottomButtonsView: View {
       Toggle(isOn: $store.gotoTop.sending(\.gotoTopChanged)) {
         Image(systemName: store.gotoTop ? "arrow.up.square" : "arrow.down.square").font(.title)
       }
-//      .toggleStyle(.button)
 
       Spacer()
       HStack {
         Toggle("Show Times", isOn: $store.showTimes.sending(\.showTimesChanged))
         Toggle("Show Pings", isOn: $store.showPings.sending(\.showPingsChanged))
       }
-//      .toggleStyle(.button)
 
       Spacer()
       Button("Save") { store.send(.saveButtonTapped) }
@@ -146,7 +142,6 @@ private struct BottomButtonsView: View {
         Toggle("Clear on Start", isOn: $store.clearOnStart.sending(\.clearOnStartChanged))
         Toggle("Clear on Stop", isOn: $store.clearOnStop.sending(\.clearOnStopChanged))
       }
-//      .toggleStyle(.button)
       
       Button("Clear") { store.send(.clearButtonTapped) }
     }
