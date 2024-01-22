@@ -1,6 +1,6 @@
 //
 //  Slice.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 7/11/22.
 //

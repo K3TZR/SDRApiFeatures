@@ -76,6 +76,7 @@ let package = Package(
     // MessagesFeature
     .target(name: "MessagesFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+      "SettingsFeature",
       "SharedFeature",
       "TcpFeature",
     ]),

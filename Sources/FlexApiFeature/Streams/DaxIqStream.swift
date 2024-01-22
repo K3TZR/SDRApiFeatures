@@ -1,6 +1,6 @@
 //
 //  DaxIqStream.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 3/9/17.
 //  Copyright © 2017 Douglas Adams & Mario Illgen. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  DaxMicAudioStream.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Mario Illgen on 27.03.17.
 //  Copyright © 2017 Douglas Adams & Mario Illgen. All rights reserved.

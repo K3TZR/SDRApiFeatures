@@ -1,6 +1,6 @@
 //
 //  Wan.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 8/17/17.
 //  Copyright © 2017 Douglas Adams. All rights reserved.

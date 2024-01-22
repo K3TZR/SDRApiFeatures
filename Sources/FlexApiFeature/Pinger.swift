@@ -1,6 +1,6 @@
 //
 //  Pinger.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 12/14/16.
 //  Copyright © 2018 Douglas Adams & Mario Illgen. All rights reserved.

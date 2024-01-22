@@ -1,6 +1,6 @@
 //
 //  Gps.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 8/15/17.
 //  Copyright © 2017 Douglas Adams. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  BandSetting.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 4/6/19.
 //  Copyright © 2019 Douglas Adams. All rights reserved.

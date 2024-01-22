@@ -1,6 +1,6 @@
 //
 //  FlexErrors.swift
-//  ApiFeatures/FlexErrors
+//  FlexApiFeature/FlexErrors
 //
 //  Created by Douglas Adams on 12/23/16.
 //  Copyright © 2016 Douglas Adams. All rights reserved.

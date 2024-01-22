@@ -1,6 +1,6 @@
 //
 //  Memory.swift
-//  ApiFeatures/Objects
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 8/20/15.
 //  Copyright © 2015 Douglas Adams. All rights reserved.
