@@ -8,6 +8,7 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
+import SettingsFeature
 import SharedFeature
 import TcpFeature
 
@@ -23,7 +24,7 @@ public final class MessagesModel {
   // MARK: - Public properties
   
   public var filteredMessages = IdentifiedArrayOf<TcpMessage>()
-  public var showPings = false
+//  public var showPings = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -36,17 +37,21 @@ public final class MessagesModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func start(_ filter: MessageFilter, _ filterText: String, _ showPings: Bool, _ clear: Bool) {
-    _filter = filter
-    _filterText = filterText
-    if clear { clearAll() }
-    self.showPings = showPings
+//  public func start(_ filter: MessageFilter, _ filterText: String, _ showPings: Bool, _ clear: Bool) {
+//    _filter = filter
+//    _filterText = filterText
+//    if clear { clearAll() }
+//    self.showPings = showPings
+//    subscribeToTcpMessages()
+//  }
+  public func start() {
+    if SettingsModel.shared.clearOnStart { clearAll() }
     subscribeToTcpMessages()
   }
 
-  public func stop(_ clear: Bool) {
+  public func stop() {
     _task = nil
-    if clear { clearAll() }
+    if SettingsModel.shared.clearOnStop { clearAll() }
   }
 
   /// Clear all messages
@@ -58,8 +63,7 @@ public final class MessagesModel {
   }
 
   /// Set the messages filter parameters and re-filter
-  public func reFilter(filter: MessageFilter) {
-    _filter = filter
+  public func reFilter() {
     Task { await MainActor.run { reFilterMessages() }}
   }
 
@@ -76,18 +80,29 @@ public final class MessagesModel {
   /// Rebuild the entire filteredMessages array
   @MainActor private func reFilterMessages() {
     // re-filter the entire messages array
-    switch (_filter, _filterText) {
+//    switch (_filter, _filterText) {
+//
+//    case (MessageFilter.all, _):        filteredMessages = _messages
+//    case (MessageFilter.prefix, ""):    filteredMessages = _messages
+//    case (MessageFilter.prefix, _):     filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains("|" + _filterText) }
+//    case (MessageFilter.includes, _):   filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains(_filterText) }
+//    case (MessageFilter.excludes, ""):  filteredMessages = _messages
+//    case (MessageFilter.excludes, _):   filteredMessages = _messages.filter { !$0.text.localizedCaseInsensitiveContains(_filterText) }
+//    case (MessageFilter.command, _):    filteredMessages = _messages.filter { $0.text.prefix(1) == "C" }
+//    case (MessageFilter.S0, _):         filteredMessages = _messages.filter { $0.text.prefix(3) == "S0|" }
+//    case (MessageFilter.status, _):     filteredMessages = _messages.filter { $0.text.prefix(1) == "S" && $0.text.prefix(3) != "S0|"}
+//    case (MessageFilter.reply, _):      filteredMessages = _messages.filter { $0.text.prefix(1) == "R" }
+//    }
+    switch SettingsModel.shared.messageFilter {
 
-    case (MessageFilter.all, _):        filteredMessages = _messages
-    case (MessageFilter.prefix, ""):    filteredMessages = _messages
-    case (MessageFilter.prefix, _):     filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains("|" + _filterText) }
-    case (MessageFilter.includes, _):   filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains(_filterText) }
-    case (MessageFilter.excludes, ""):  filteredMessages = _messages
-    case (MessageFilter.excludes, _):   filteredMessages = _messages.filter { !$0.text.localizedCaseInsensitiveContains(_filterText) }
-    case (MessageFilter.command, _):    filteredMessages = _messages.filter { $0.text.prefix(1) == "C" }
-    case (MessageFilter.S0, _):         filteredMessages = _messages.filter { $0.text.prefix(3) == "S0|" }
-    case (MessageFilter.status, _):     filteredMessages = _messages.filter { $0.text.prefix(1) == "S" && $0.text.prefix(3) != "S0|"}
-    case (MessageFilter.reply, _):      filteredMessages = _messages.filter { $0.text.prefix(1) == "R" }
+    case MessageFilter.all:        filteredMessages = _messages
+    case MessageFilter.prefix:     filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains("|" + SettingsModel.shared.messageFilterText) }
+    case MessageFilter.includes:   filteredMessages = _messages.filter { $0.text.localizedCaseInsensitiveContains(SettingsModel.shared.messageFilterText) }
+    case MessageFilter.excludes:   filteredMessages = _messages.filter { !$0.text.localizedCaseInsensitiveContains(SettingsModel.shared.messageFilterText) }
+    case MessageFilter.command:    filteredMessages = _messages.filter { $0.text.prefix(1) == "C" }
+    case MessageFilter.S0:         filteredMessages = _messages.filter { $0.text.prefix(3) == "S0|" }
+    case MessageFilter.status:     filteredMessages = _messages.filter { $0.text.prefix(1) == "S" && $0.text.prefix(3) != "S0|"}
+    case MessageFilter.reply:      filteredMessages = _messages.filter { $0.text.prefix(1) == "R" }
     }
   }
   
@@ -122,25 +137,36 @@ public final class MessagesModel {
     // ignore received replies unless they are non-zero or contain additional data
     if msg.direction == .received && ignoreReply(msg.text) { return }
     // ignore sent "ping" messages unless showPings is true
-    if msg.text.contains("ping") && showPings == false { return }
+    if msg.text.contains("ping") && SettingsModel.shared.showPings == false { return }
     // add it to the backing collection
     _messages.append(msg)
     
     Task {
       await MainActor.run {
         // add it to the published collection (if appropriate)
-        switch (_filter, _filterText) {
+//        switch (_filter, _filterText) {
+//
+//        case (MessageFilter.all, _):        filteredMessages.append(msg)
+//        case (MessageFilter.prefix, ""):    filteredMessages.append(msg)
+//        case (MessageFilter.prefix, _):     if msg.text.localizedCaseInsensitiveContains("|" + _filterText) { filteredMessages.append(msg) }
+//        case (MessageFilter.includes, _):   if msg.text.localizedCaseInsensitiveContains(_filterText) { filteredMessages.append(msg) }
+//        case (MessageFilter.excludes, ""):  filteredMessages.append(msg)
+//        case (MessageFilter.excludes, _):   if !msg.text.localizedCaseInsensitiveContains(_filterText) { filteredMessages.append(msg) }
+//        case (MessageFilter.command, _):    if msg.text.prefix(1) == "C" { filteredMessages.append(msg) }
+//        case (MessageFilter.S0, _):         if msg.text.prefix(3) == "S0|" { filteredMessages.append(msg) }
+//        case (MessageFilter.status, _):     if msg.text.prefix(1) == "S" && msg.text.prefix(3) != "S0|" { filteredMessages.append(msg) }
+//        case (MessageFilter.reply, _):      if msg.text.prefix(1) == "R" { filteredMessages.append(msg) }
+//        }
+        switch SettingsModel.shared.messageFilter {
 
-        case (MessageFilter.all, _):        filteredMessages.append(msg)
-        case (MessageFilter.prefix, ""):    filteredMessages.append(msg)
-        case (MessageFilter.prefix, _):     if msg.text.localizedCaseInsensitiveContains("|" + _filterText) { filteredMessages.append(msg) }
-        case (MessageFilter.includes, _):   if msg.text.localizedCaseInsensitiveContains(_filterText) { filteredMessages.append(msg) }
-        case (MessageFilter.excludes, ""):  filteredMessages.append(msg)
-        case (MessageFilter.excludes, _):   if !msg.text.localizedCaseInsensitiveContains(_filterText) { filteredMessages.append(msg) }
-        case (MessageFilter.command, _):    if msg.text.prefix(1) == "C" { filteredMessages.append(msg) }
-        case (MessageFilter.S0, _):         if msg.text.prefix(3) == "S0|" { filteredMessages.append(msg) }
-        case (MessageFilter.status, _):     if msg.text.prefix(1) == "S" && msg.text.prefix(3) != "S0|" { filteredMessages.append(msg) }
-        case (MessageFilter.reply, _):      if msg.text.prefix(1) == "R" { filteredMessages.append(msg) }
+        case MessageFilter.all:        filteredMessages.append(msg)
+        case MessageFilter.prefix:     if msg.text.localizedCaseInsensitiveContains("|" + SettingsModel.shared.messageFilterText) { filteredMessages.append(msg) }
+        case MessageFilter.includes:   if msg.text.localizedCaseInsensitiveContains(SettingsModel.shared.messageFilterText) { filteredMessages.append(msg) }
+        case MessageFilter.excludes:   if !msg.text.localizedCaseInsensitiveContains(SettingsModel.shared.messageFilterText) { filteredMessages.append(msg) }
+        case MessageFilter.command:    if msg.text.prefix(1) == "C" { filteredMessages.append(msg) }
+        case MessageFilter.S0:         if msg.text.prefix(3) == "S0|" { filteredMessages.append(msg) }
+        case MessageFilter.status:     if msg.text.prefix(1) == "S" && msg.text.prefix(3) != "S0|" { filteredMessages.append(msg) }
+        case MessageFilter.reply:      if msg.text.prefix(1) == "R" { filteredMessages.append(msg) }
         }
       }
     }

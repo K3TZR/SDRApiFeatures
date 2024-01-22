@@ -207,8 +207,6 @@ extension SmartlinkListener {
     // several radios are possible, separate list into its components
     let radioMessages = msg.components(separatedBy: "|")
     
-    log("Smartlink Listener: RadioList RECEIVED, \(msg)", .debug, #function, #file, #line)
-
     for message in radioMessages where message != "" {
       packet = Packet.populate( message.keyValuesArray() )
       // now continue to fill the radio parameters
@@ -240,6 +238,8 @@ extension SmartlinkListener {
       // add packet to Packets
       let newPacket = packet
       _listener.processPacket(newPacket)
+
+      log("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)", .debug, #function, #file, #line)
     }
   }
   

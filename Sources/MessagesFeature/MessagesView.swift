@@ -7,6 +7,7 @@
 import ComposableArchitecture
 import SwiftUI
 
+import SettingsFeature
 import SharedFeature
 import TcpFeature
 
@@ -14,11 +15,14 @@ import TcpFeature
 // MARK: - View
 
 public struct MessagesView: View {
-  let store: StoreOf<MessagesFeature>
+  var store: StoreOf<MessagesFeature>
   
   public init(store: StoreOf<MessagesFeature>) {
     self.store = store
   }
+  
+  @Environment(MessagesModel.self) var messagesModel
+  @Environment(SettingsModel.self) var settingsModel
   
   @Namespace var topID
   @Namespace var bottomID
@@ -32,8 +36,8 @@ public struct MessagesView: View {
     if text.prefix(2) == "S0" { attString.foregroundColor = .systemOrange }                       // S0
 
     // highlight any filterText value
-    if !store.filterText.isEmpty {
-      if let range = attString.range(of: store.filterText) {
+    if !settingsModel.messageFilterText.isEmpty {
+      if let range = attString.range(of: settingsModel.messageFilterText) {
         attString[range].underlineStyle = .single
         attString[range].font = .boldSystemFont(ofSize: 18)
       }
@@ -53,7 +57,7 @@ public struct MessagesView: View {
     VStack(alignment: .leading) {
       FilterMessagesView(store: store)
       
-      if store.messagesModel.filteredMessages.count == 0 {
+      if messagesModel.filteredMessages.count == 0 {
         VStack(alignment: .leading) {
           Spacer()
           HStack {
@@ -70,19 +74,19 @@ public struct MessagesView: View {
             Text("Top").hidden()
               .id(topID)
             Grid (alignment: .leading) {
-              ForEach(store.messagesModel.filteredMessages.reversed(), id: \.id) { message in
+              ForEach(messagesModel.filteredMessages.reversed(), id: \.id) { message in
                 GridRow(alignment: .top) {
-                  if store.showTimes { Text(intervalFormat(message.interval) ) }
+                  if settingsModel.showTimes { Text(intervalFormat(message.interval) ) }
                   Text(attributedText(message.text))
                 }
               }
               .textSelection(.enabled)
-              .font(.system(size: CGFloat(store.fontSize), weight: .regular, design: .monospaced))
+              .font(.system(size: CGFloat(settingsModel.fontSize), weight: .regular, design: .monospaced))
             }
             Text("Bottom").hidden()
               .id(bottomID)
           }
-          .onChange(of: store.gotoTop) {
+          .onChange(of: settingsModel.gotoTop) {
             let id = $1 ? bottomID : topID
             proxy.scrollTo(id, anchor: $1 ? .bottomLeading : .topLeading)
           }
@@ -97,10 +101,14 @@ public struct MessagesView: View {
 
 private struct FilterMessagesView: View {
   @Bindable var store: StoreOf<MessagesFeature>
+
+  @Environment(SettingsModel.self) var settingsModel
+  
   var body: some View {
-    
+    @Bindable var settings = settingsModel
+
     HStack {
-      Picker("Show Tcp Messages of type", selection: $store.filter.sending(\.filterChanged)) {
+      Picker("Show Tcp Messages of type", selection: $settings.messageFilter) {
         ForEach(MessageFilter.allCases, id: \.self) {
           Text($0.rawValue).tag($0.rawValue)
         }
@@ -113,7 +121,7 @@ private struct FilterMessagesView: View {
           store.send(.clearFilterTextTapped)
         }
       
-      TextField("filter text", text: $store.filterText.sending(\.filterTextChanged))
+      TextField("filter text", text: $settings.messageFilterText)
     }
   }
 }
@@ -121,17 +129,20 @@ private struct FilterMessagesView: View {
 private struct BottomButtonsView: View {
   @Bindable var store: StoreOf<MessagesFeature>
   
+  @Environment(SettingsModel.self) var settingsModel
+  
   var body: some View {
+    @Bindable var settings = settingsModel
     
     HStack {
-      Toggle(isOn: $store.gotoTop.sending(\.gotoTopChanged)) {
-        Image(systemName: store.gotoTop ? "arrow.up.square" : "arrow.down.square").font(.title)
+      Toggle(isOn: $settings.gotoTop) {
+        Image(systemName: settingsModel.gotoTop ? "arrow.up.square" : "arrow.down.square").font(.title)
       }
 
       Spacer()
       HStack {
-        Toggle("Show Times", isOn: $store.showTimes.sending(\.showTimesChanged))
-        Toggle("Show Pings", isOn: $store.showPings.sending(\.showPingsChanged))
+        Toggle("Show Times", isOn: $settings.showTimes)
+        Toggle("Show Pings", isOn: $settings.showPings)
       }
 
       Spacer()
@@ -139,8 +150,8 @@ private struct BottomButtonsView: View {
       
       Spacer()
       HStack {
-        Toggle("Clear on Start", isOn: $store.clearOnStart.sending(\.clearOnStartChanged))
-        Toggle("Clear on Stop", isOn: $store.clearOnStop.sending(\.clearOnStopChanged))
+        Toggle("Clear on Start", isOn: $settings.clearOnStart)
+        Toggle("Clear on Stop", isOn: $settings.clearOnStop)
       }
       
       Button("Clear") { store.send(.clearButtonTapped) }
@@ -153,13 +164,7 @@ private struct BottomButtonsView: View {
 // MARK: - Preview
 
 #Preview {
-  MessagesView(store: Store(initialState: MessagesFeature.State(filterText: "",
-                                                                filter: .all,
-                                                                fontSize: 12,
-                                                                showTimes: true,
-                                                                showPings: false,
-                                                                clearOnStart: true,
-                                                                clearOnStop: false)) {
+  MessagesView(store: Store(initialState: MessagesFeature.State()) {
     MessagesFeature()
   })
   .frame(minWidth: 1250, maxWidth: .infinity)

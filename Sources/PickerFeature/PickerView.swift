@@ -10,6 +10,7 @@ import SwiftUI
 
 import FlexApiFeature
 import ListenerFeature
+import SettingsFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View(s)
@@ -24,10 +25,11 @@ public struct PickerView: View {
   @State var selection: String?
   
   @Environment(Listener.self) var listener
+  @Environment(SettingsModel.self) var settingsModel
 
   @MainActor private var isSmartlink: Bool {
     if let selection {
-      if store.isGui {
+      if settingsModel.isGui {
         return listener.packets[id: selection]?.source == .smartlink
       } else {
         return listener.stations[id: selection]?.packet.source == .smartlink
@@ -41,11 +43,11 @@ public struct PickerView: View {
       HeaderView(store: store)
       
       Divider()
-      if store.isGui && listener.packets.count == 0 || !store.isGui && listener.stations.count == 0{
+      if settingsModel.isGui && listener.packets.count == 0 || !settingsModel.isGui && listener.stations.count == 0{
         VStack {
           HStack {
             Spacer()
-            Text("----------  NO \(store.isGui ? "RADIOS" : "STATIONS") FOUND  ----------")
+            Text("----------  NO \(settingsModel.isGui ? "RADIOS" : "STATIONS") FOUND  ----------")
             Spacer()
           }
         }
@@ -55,7 +57,7 @@ public struct PickerView: View {
         
       } 
       else {
-        if store.isGui {
+        if settingsModel.isGui {
           // ----- List of Radios -----
           List(listener.packets, id: \.id, selection: $selection) { packet in
             //            VStack (alignment: .leading) {
@@ -67,7 +69,7 @@ public struct PickerView: View {
                 Text(packet.guiClientStations)
               }
               .font(.title3)
-              .foregroundColor(store.guiDefault == packet.serial + packet.publicIp ? .red : nil)
+              .foregroundColor(settingsModel.guiDefault == packet.serial + packet.publicIp ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
@@ -87,7 +89,7 @@ public struct PickerView: View {
                 Text(station.station)
               }
               .font(.title3)
-              .foregroundColor(store.nonGuiDefault == station.packet.serial + station.packet.publicIp + station.station ? .red : nil)
+              .foregroundColor(settingsModel.nonGuiDefault == station.packet.serial + station.packet.publicIp + station.station ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
@@ -105,9 +107,11 @@ public struct PickerView: View {
 private struct HeaderView: View {
   let store: StoreOf<PickerFeature>
 
+  @Environment(SettingsModel.self) var settingsModel
+
   var body: some View {
     VStack {
-      Text("Select a \(store.isGui ? "RADIO" : "STATION")")
+      Text("Select a \(settingsModel.isGui ? "RADIO" : "STATION")")
         .font(.title)
         .padding(.bottom, 10)
       
@@ -116,7 +120,7 @@ private struct HeaderView: View {
           Text("Name")
           Text("Type")
           Text("Status")
-          Text("Station\(store.isGui ? "s" : "")")
+          Text("Station\(settingsModel.isGui ? "s" : "")")
         }
         .frame(width: 140, alignment: .leading)
       }
@@ -175,14 +179,14 @@ private struct FooterView: View {
 // MARK: - Preview
 
 #Preview("Picker Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: true, guiDefault: nil, nonGuiDefault: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State()) {
     PickerFeature()
   })
 //  .environment(ApiModel.shared)
 }
 
 #Preview("Picker NON-Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: false, guiDefault: nil, nonGuiDefault: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State()) {
     PickerFeature()
   })
 //  .environment(ApiModel.shared)

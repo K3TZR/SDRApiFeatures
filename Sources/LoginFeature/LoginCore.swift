@@ -22,7 +22,6 @@ public struct LoginFeature {
     var labelWidth: CGFloat
     var overallWidth: CGFloat
 
-
     public init(heading: String = "Please Login", message: String? = nil, userLabel: String = "User", pwdLabel: String = "Password", labelWidth: CGFloat = 100, overallWidth: CGFloat = 350 ) {
       self.heading = heading
       self.message = message

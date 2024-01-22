@@ -9,6 +9,7 @@ import Cocoa
 import ComposableArchitecture
 import Foundation
 
+import SettingsFeature
 import SharedFeature
 
 @Reducer
@@ -18,41 +19,16 @@ public struct MessagesFeature {
   
   @ObservableState
   public struct State {
-    public var filterText: String
-    public var filter: MessageFilter
-    var fontSize: Int
-    public var showTimes: Bool
-    public var showPings: Bool
-    public var clearOnStart: Bool
-    public var clearOnStop: Bool
-
-    var gotoTop: Bool
-    var messagesModel = MessagesModel.shared
     
-    public init(filterText: String = "", filter: MessageFilter = .all, fontSize: Int = 12, showTimes: Bool = true, showPings: Bool = false, clearOnStart: Bool = true, clearOnStop: Bool = false) {
-      self.filterText = filterText
-      self.filter = filter
-      self.fontSize = fontSize
-      self.showTimes = showTimes
-      self.showPings = showPings
-      self.clearOnStart = clearOnStart
-      self.clearOnStop = clearOnStop
-      
-      self.gotoTop = false
-    }
+    public init() {}
   }
   
-  public enum Action {
+  public enum Action: BindableAction {
+    case binding(BindingAction<State>)
+
     case saveButtonTapped
     case clearFilterTextTapped
     case clearButtonTapped
-    case clearOnStartChanged(Bool)
-    case clearOnStopChanged(Bool)
-    case filterChanged(MessageFilter)
-    case filterTextChanged(String)
-    case gotoTopChanged(Bool)
-    case showPingsChanged(Bool)
-    case showTimesChanged(Bool)
   }
   
   public var body: some ReducerOf<Self> {
@@ -61,46 +37,18 @@ public struct MessagesFeature {
       switch action {
       
       case .clearButtonTapped:
-        state.messagesModel.clearAll()
+        MessagesModel.shared.clearAll()
         return .none
         
       case .clearFilterTextTapped:
-        state.filterText = ""
-        state.messagesModel.reFilter(filterText: state.filterText)
-        return .none
-
-      case let .clearOnStartChanged(newValue):
-        state.clearOnStart = newValue
-        return .none
-
-      case let .clearOnStopChanged(newValue):
-        state.clearOnStop = newValue
-        return .none
-
-      case let .filterChanged(newValue):
-        state.filter = newValue
-        state.messagesModel.reFilter(filter: state.filter)
-        return .none
-
-      case let .filterTextChanged(newValue):
-        state.filterText = newValue
-        state.messagesModel.reFilter(filterText: state.filterText)
-        return .none
-
-      case let .gotoTopChanged(newValue):
-        state.gotoTop = newValue
+        SettingsModel.shared.messageFilterText = ""
+        MessagesModel.shared.reFilter()
         return .none
 
       case .saveButtonTapped:
         return saveMessages(MessagesModel.shared)
         
-      case let .showPingsChanged(newValue):
-        state.showPings = newValue
-        state.messagesModel.showPings = newValue
-        return .none
-
-      case let .showTimesChanged(newValue):
-        state.showTimes = newValue
+      case .binding(_):
         return .none
       }
     }

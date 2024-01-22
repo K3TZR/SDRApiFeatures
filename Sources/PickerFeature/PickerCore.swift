@@ -9,6 +9,7 @@ import ComposableArchitecture
 import Foundation
 
 import ListenerFeature
+import SettingsFeature
 
 @Reducer
 public struct PickerFeature {
@@ -17,15 +18,8 @@ public struct PickerFeature {
 
   @ObservableState
   public struct State {
-    var isGui: Bool
-    var guiDefault: String?
-    var nonGuiDefault: String?
 
-    public init(isGui: Bool, guiDefault: String?, nonGuiDefault: String?) {
-      self.isGui = isGui
-      self.guiDefault = guiDefault
-      self.nonGuiDefault = nonGuiDefault
-    }
+    public init() {}
   }
   
   public enum Action {
@@ -36,21 +30,37 @@ public struct PickerFeature {
   
   public var body: some ReducerOf<Self> {
     Reduce { state, action in
-      return .none
-//      switch action {
-//        
-//      case let .connectButtonTapped(stringValue):
-//        print("PICKER: connectButtonTapped, value = \(stringValue ?? "nil")")
-//        return .none
-//
-//      case .defaultButtonTapped(_):
-//        print("PICKER: defaultButtonTapped")
-//        return .none
-//
-//      case let .testButtonTapped(stringValue):
-//        print("PICKER: testButtonTapped, value = \(stringValue ?? "nil")")
-//        return .none
-//      }
+      
+      switch action {
+
+      case .connectButtonTapped(_):
+        return .none
+      
+      case let .defaultButtonTapped(selection):
+        return defaultButton(selection)
+
+      case let .testButtonTapped(selection):
+        return .run { _ in Listener.shared.smartlinkTest(selection) }
+      }
     }
+  }
+
+  // set/reset default values
+  private func defaultButton(_ selection: String?) -> Effect<PickerFeature.Action> {
+    if SettingsModel.shared.isGui {
+      if SettingsModel.shared.guiDefault == selection {
+        SettingsModel.shared.guiDefault = nil
+      } else {
+        SettingsModel.shared.guiDefault = selection
+      }
+      
+    } else {
+      if SettingsModel.shared.nonGuiDefault == selection {
+        SettingsModel.shared.nonGuiDefault = nil
+      } else {
+        SettingsModel.shared.nonGuiDefault = selection
+      }
+    }
+    return .none
   }
 }
