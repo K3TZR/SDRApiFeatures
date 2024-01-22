@@ -462,3 +462,12 @@ public enum MeterUnits : String {
   case volts
   case watts
 }
+
+public enum ConnectionState: String {
+  case connected
+  case connecting
+  case disconnected
+  case disconnecting
+  case errorOnConnect
+  case errorOnDisconnect
+}
