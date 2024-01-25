@@ -14,7 +14,8 @@ public struct LoginFeature {
   public init() {}
 
   @ObservableState
-  public struct State {
+  public struct State {    
+    var user: String
     var heading: String
     var message: String?
     var userLabel: String
@@ -22,7 +23,8 @@ public struct LoginFeature {
     var labelWidth: CGFloat
     var overallWidth: CGFloat
 
-    public init(heading: String = "Please Login", message: String? = nil, userLabel: String = "User", pwdLabel: String = "Password", labelWidth: CGFloat = 100, overallWidth: CGFloat = 350 ) {
+    public init(user: String, heading: String = "Please Login", message: String? = nil, userLabel: String = "User", pwdLabel: String = "Password", labelWidth: CGFloat = 100, overallWidth: CGFloat = 350 ) {
+      self.user = user
       self.heading = heading
       self.message = message
       self.userLabel = userLabel
@@ -32,12 +34,17 @@ public struct LoginFeature {
     }
   }
   
-  public enum Action {
+  public enum Action: BindableAction {
+    case binding(BindingAction<State>)
+
     case cancelButtonTapped
     case loginButtonTapped(String, String)
   }
   
   public var body: some ReducerOf<Self> {
+
+    BindingReducer()
+    
     Reduce { state, action in
       return .none
 //      switch action {

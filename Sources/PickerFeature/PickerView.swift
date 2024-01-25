@@ -24,15 +24,15 @@ public struct PickerView: View {
   
   @State var selection: String?
   
-  @Environment(Listener.self) var listener
+  @Environment(ListenerModel.self) var listenerModel
   @Environment(SettingsModel.self) var settingsModel
 
   @MainActor private var isSmartlink: Bool {
     if let selection {
       if settingsModel.isGui {
-        return listener.packets[id: selection]?.source == .smartlink
+        return listenerModel.packets[id: selection]?.source == .smartlink
       } else {
-        return listener.stations[id: selection]?.packet.source == .smartlink
+        return listenerModel.stations[id: selection]?.packet.source == .smartlink
       }
     }
     return false
@@ -43,7 +43,7 @@ public struct PickerView: View {
       HeaderView(store: store)
       
       Divider()
-      if settingsModel.isGui && listener.packets.count == 0 || !settingsModel.isGui && listener.stations.count == 0{
+      if settingsModel.isGui && listenerModel.packets.count == 0 || !settingsModel.isGui && listenerModel.stations.count == 0{
         VStack {
           HStack {
             Spacer()
@@ -59,7 +59,7 @@ public struct PickerView: View {
       else {
         if settingsModel.isGui {
           // ----- List of Radios -----
-          List(listener.packets, id: \.id, selection: $selection) { packet in
+          List(listenerModel.packets, id: \.id, selection: $selection) { packet in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {
@@ -79,7 +79,7 @@ public struct PickerView: View {
           
         } else {
           // ----- List of Stations -----
-          List(listener.stations, id: \.id, selection: $selection) { station in
+          List(listenerModel.stations, id: \.id, selection: $selection) { station in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {
@@ -137,7 +137,7 @@ private struct FooterView: View {
   let selectionIsSmartlink: Bool
 
   @Environment(ApiModel.self) var apiModel
-  @Environment(Listener.self) var listener
+  @Environment(ListenerModel.self) var listenerModel
 
   @Environment(\.dismiss) var dismiss
 
@@ -147,7 +147,7 @@ private struct FooterView: View {
       Button("Test") { store.send(.testButtonTapped(selection!)) }
         .disabled(!selectionIsSmartlink)
       Circle()
-        .fill(listener.smartlinkTestResult.success ? Color.green : Color.red)
+        .fill(listenerModel.smartlinkTestResult.success ? Color.green : Color.red)
         .frame(width: 20, height: 20)
       
       Spacer()

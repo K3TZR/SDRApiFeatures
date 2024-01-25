@@ -425,7 +425,7 @@ extension ApiModel {
       }
     }
     
-    if let packet = Listener.shared.activePacket {
+    if let packet = ListenerModel.shared.activePacket {
       // is this GuiClient already in GuiClients?
       if let guiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
@@ -443,7 +443,7 @@ extension ApiModel {
           // log the addition
           log("ApiModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
 
-          if !_isGui && station == Listener.shared.activeStation {
+          if !_isGui && station == ListenerModel.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }
@@ -466,7 +466,7 @@ extension ApiModel {
 
           packet.guiClients[id: handle] = guiClient
 
-          if !_isGui && station == Listener.shared.activeStation {
+          if !_isGui && station == ListenerModel.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
           }

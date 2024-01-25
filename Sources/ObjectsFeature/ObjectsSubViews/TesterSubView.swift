@@ -17,7 +17,7 @@ import FlexApiFeature
 struct TesterSubView: View {
   
   @Environment(ApiModel.self) private var apiModel
-  @Environment(Listener.self) private var listener
+  @Environment(ListenerModel.self) private var listenerModel
 
   var body: some View {
     if apiModel.radio != nil {
@@ -30,7 +30,7 @@ struct TesterSubView: View {
           
           HStack(spacing: 5) {
             Text("Bound to Station")
-            Text("\(listener.activeStation ?? "none")").foregroundColor(.secondary)
+            Text("\(listenerModel.activeStation ?? "none")").foregroundColor(.secondary)
           }
           TesterRadioView()
         }
@@ -62,5 +62,5 @@ struct TesterRadioView: View {
 #Preview {
   TesterSubView()
     .environment(ApiModel.shared)
-    .environment(Listener.shared)
+    .environment(ListenerModel.shared)
 }

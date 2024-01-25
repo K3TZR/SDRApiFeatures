@@ -17,10 +17,10 @@ public final class Authentication {
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
 
-  var _previousIdToken: IdToken?
-  var _smartlinkEmail: String?
+//  var _previousIdToken: IdToken?
+//  var _smartlinkEmail: String?
   var _smartlinkImage: Image?
-  var _refreshToken: String?
+//  var _refreshToken: String?
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -60,61 +60,47 @@ public final class Authentication {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  init() {
-//    let appName = (Bundle.main.infoDictionary!["CFBundleName"] as! String)
-//    _secureStore = SecureStore(service: appName + kServiceName)
-    
-//    _previousIdToken = nil
-//    refreshToken = nil
-  }
+  init() {}
   
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
   
-  func deleteTokens() {
-    _previousIdToken = nil
-    // delete the saved refresh token from the Keychain
-    _refreshToken = nil
-  }
-    
-  func authenticate(_ smartlinkEmail: String) async -> IdToken? {
-    _smartlinkEmail = smartlinkEmail
-    // is there a previous idToken which has not expired?
-    if _previousIdToken != nil, isValid(_previousIdToken) {
-
-      log("---->>>> Unexpired previous token", .debug, #function, #file, #line)
-      // YES, use the previous idToken
-      updateClaims(from: _previousIdToken)
-      return _previousIdToken
-    }
-    
-    // is there an email and a refresh token in the Keychain?
-//    if _smartlinkEmail != nil, let refreshToken = _secureStore.get(account: _smartlinkEmail) {
-    if _smartlinkEmail != nil, let refreshToken = _refreshToken {
-
-      log("---->>>> Refresh token", .debug, #function, #file, #line)
-
-      // YES, can we get an Id Token from the Refresh Token?
-      if let idToken = await requestIdToken(from: _refreshToken!, smartlinkEmail: _smartlinkEmail!), isValid(idToken) {
-
-        log("---->>>> Id Token obtained from Refresh token", .debug, #function, #file, #line)
-
-
-        // YES, update the claims and use the Id Token
-        updateClaims(from: idToken)
-        _previousIdToken = idToken
-        return idToken
-
+  func authenticate(_ currentTokens: Tokens) async -> Tokens {
+    // is there a previous idToken
+    if currentTokens.idToken != nil {
+      // has it expired?
+      if isValid(currentTokens.idToken!) {
+        // NO, use it
+        log("Authentication: Unexpired previous token", .debug, #function, #file, #line)
+        updateClaims(from: currentTokens.idToken!)
+        return currentTokens
+        
       } else {
-        // NO, delete the saved refresh token from the Keychain
-//        _ = _secureStore.delete(account: _smartlinkEmail)
-        _refreshToken = nil
-        _previousIdToken = nil
+        // YES, try to use the refreshToken
+        log("Authentication: Expired previous token", .debug, #function, #file, #line)
       }
     }
     
+    // is there a refresh token?
+    if currentTokens.refreshToken != nil {
+      // YES, can we get an Id Token from the Refresh Token?
+      log("Authentication: Refresh token found", .debug, #function, #file, #line)
+      if let idToken = await requestIdToken(from: currentTokens.refreshToken!) {
+        // YES, is it valid?
+        if isValid(idToken) {
+          // YES, update the claims and use the Id Token
+          log("Authentication: Valid Id Token obtained from Refresh token", .debug, #function, #file, #line)
+                    updateClaims(from: idToken)
+          return Tokens(idToken, currentTokens.refreshToken)
+          
+        } else {
+          // NO
+          log("Authentication: Invalid Id Token obtained from Refresh token", .debug, #function, #file, #line)
+        }
+      }
+    }
     // No token available, requires a login
-    return nil
+    return Tokens(nil, nil)
   }
 
   /// Given a UserId / Password, request an ID Token & Refresh Token
@@ -122,7 +108,7 @@ public final class Authentication {
   ///   - user:       User name
   ///   - pwd:        User password
   /// - Returns:      an Id Token (if any)
-  func requestTokens(user: String, pwd: String) async -> IdToken? {
+  func requestTokens(user: String, pwd: String) async -> Tokens {
     // build the request
     var request = URLRequest(url: URL(string: kAuth0Authenticate)!)
     request.httpMethod = kHttpPost
@@ -134,29 +120,16 @@ public final class Authentication {
       
       let result = try! await performRequest(request, for: [kKeyIdToken, kKeyRefreshToken])
       
-      print("Count = \(result.count)")
-      print("IsValid = \(isValid(result[0]))")
-      print("refreshToken = \(result[1] ?? "nil")")
-      
       // validate the Id Token
-      if result.count == 2 && isValid(result[0]), let refreshToken = result[1] {
+      if result.count == 2 && isValid(result[0]) {
         // save the email & picture
         updateClaims(from: result[0])
-        // save the Refresh Token
-        _refreshToken = refreshToken
-        //          _ = _secureStore.set(account: user, data: refreshToken)
-        // save Id Token
-        _previousIdToken = result[0]
-        
-        print("self.refreshToken = \(_refreshToken ?? "nil")")
-        print("_previousIdToken = \(_previousIdToken ?? "nil")")
-        
-        return result[0]
+        return Tokens(result[0], result[1])
       }
-      return nil
+      return Tokens(nil, nil)
     }
     // invalid Id Token or request failure
-    return nil
+    return Tokens(nil, nil)
   }
   
   // ----------------------------------------------------------------------------
@@ -165,7 +138,7 @@ public final class Authentication {
   /// Given a Refresh Token, request an ID Token
   /// - Parameter refreshToken:     a Refresh Token
   /// - Returns:                    an Id Token (if any)
-  private func requestIdToken(from refreshToken: String, smartlinkEmail: String) async -> IdToken? {
+  private func requestIdToken(from refreshToken: String) async -> IdToken? {
     // build the request
     var request = URLRequest(url: URL(string: kAuth0Delegation)!)
     request.httpMethod = kHttpPost
@@ -180,11 +153,9 @@ public final class Authentication {
       if result.count > 0, isValid(result[0]) {
         // save the email & picture
         updateClaims(from: result[0])
-        // save the Refresh Token
-        _refreshToken = refreshToken
-        //          _ = _secureStore.set(account: smartlinkEmail, data: refreshToken)
-        // save Id Token
-        _previousIdToken = result[0]
+        // save the Tokens
+//        SettingsModel.shared.refreshToken = refreshToken
+//        SettingsModel.shared.previousIdToken = result[0]
         return result[0]
       }
       // invalid response
@@ -280,7 +251,7 @@ public final class Authentication {
   private func updateClaims(from idToken: IdToken?) {
     if let idToken = idToken, let jwt = try? decode(jwt: idToken) {
       _smartlinkImage = getImage(jwt.claim(name: kClaimPicture).string)
-      _smartlinkEmail = jwt.claim(name: kClaimEmail).string ?? ""
+//      SettingsModel.shared.smartlinkUser = jwt.claim(name: kClaimEmail).string ?? ""
     }
   }
   

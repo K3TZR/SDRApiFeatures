@@ -232,7 +232,7 @@ public final class ApiModel {
   public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false) async throws {
     nthPingReceived = false
     
-    if let packet = Listener.shared.activePacket, let station = Listener.shared.activeStation {
+    if let packet = ListenerModel.shared.activePacket, let station = ListenerModel.shared.activeStation {
       // Instantiate a Radio
       radio = Radio(packet, self)
       // connect to it
@@ -257,7 +257,7 @@ public final class ApiModel {
       if packet.source == .smartlink {
         // YES, send Wan Connect message & wait for the reply
         _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
-          try await Listener.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
+          try await ListenerModel.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
         }
         
         log("ApiModel: wanHandle received", .debug, #function, #file, #line)
@@ -330,8 +330,8 @@ public final class ApiModel {
     
     Tcp.shared.disconnect()
     
-    Listener.shared.activePacket = nil
-    Listener.shared.activeStation = nil
+    ListenerModel.shared.activePacket = nil
+    ListenerModel.shared.activeStation = nil
     
     // remove all of radio's objects
     removeAllObjects()

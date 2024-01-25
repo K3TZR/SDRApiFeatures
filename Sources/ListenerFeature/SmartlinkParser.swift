@@ -117,7 +117,7 @@ extension SmartlinkListener {
       if _publicIp != nil {
         // stream it
 //        Task {
-          _listener.statusUpdate(WanStatus(.publicIp, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
+        _listenerModel.statusUpdate(WanStatus(.publicIp, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //        }
       }
     }
@@ -159,7 +159,7 @@ extension SmartlinkListener {
     
     if _firstName != nil && _lastName != nil && _callsign != nil {
 //      Task {
-        _listener.statusUpdate(WanStatus(.settings, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
+      _listenerModel.statusUpdate(WanStatus(.settings, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //      }
     }
   }
@@ -237,7 +237,7 @@ extension SmartlinkListener {
       packet.source = .smartlink
       // add packet to Packets
       let newPacket = packet
-      _listener.processPacket(newPacket)
+      _listenerModel.processPacket(newPacket)
 
       log("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)", .debug, #function, #file, #line)
     }
@@ -267,15 +267,15 @@ extension SmartlinkListener {
       // Known tokens, in alphabetical order
       switch token {
         
-      case .forwardTcpPortWorking:      _listener.smartlinkTestResult.forwardTcpPortWorking = property.value.tValue
-      case .forwardUdpPortWorking:      _listener.smartlinkTestResult.forwardUdpPortWorking = property.value.tValue
-      case .natSupportsHolePunch:       _listener.smartlinkTestResult.natSupportsHolePunch = property.value.tValue
-      case .radioSerial:                _listener.smartlinkTestResult.radioSerial = property.value
-      case .upnpTcpPortWorking:         _listener.smartlinkTestResult.upnpTcpPortWorking = property.value.tValue
-      case .upnpUdpPortWorking:         _listener.smartlinkTestResult.upnpUdpPortWorking = property.value.tValue
+      case .forwardTcpPortWorking:      _listenerModel.smartlinkTestResult.forwardTcpPortWorking = property.value.tValue
+      case .forwardUdpPortWorking:      _listenerModel.smartlinkTestResult.forwardUdpPortWorking = property.value.tValue
+      case .natSupportsHolePunch:       _listenerModel.smartlinkTestResult.natSupportsHolePunch = property.value.tValue
+      case .radioSerial:                _listenerModel.smartlinkTestResult.radioSerial = property.value
+      case .upnpTcpPortWorking:         _listenerModel.smartlinkTestResult.upnpTcpPortWorking = property.value.tValue
+      case .upnpUdpPortWorking:         _listenerModel.smartlinkTestResult.upnpUdpPortWorking = property.value.tValue
       }
     }
     // log the result
-    log("Smartlink Listener: Test result received, \(_listener.smartlinkTestResult.success ? "SUCCESS" : "FAILURE")", _listener.smartlinkTestResult.success ? .debug : .warning, #function, #file, #line)
+    log("Smartlink Listener: Test result received, \(_listenerModel.smartlinkTestResult.success ? "SUCCESS" : "FAILURE")", _listenerModel.smartlinkTestResult.success ? .debug : .warning, #function, #file, #line)
   }
 }

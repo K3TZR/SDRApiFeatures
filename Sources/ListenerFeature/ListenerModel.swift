@@ -12,6 +12,7 @@ import SharedFeature
 import XCGLogFeature
 
 public typealias IdToken = String
+public typealias RefreshToken = String
 
 //extension Listener: DependencyKey {
 //  public static let liveValue = Listener(previousIdToken: nil)
@@ -24,8 +25,8 @@ public typealias IdToken = String
 //}
 
 @Observable
-final public class Listener: Equatable {
-  public static func == (lhs: Listener, rhs: Listener) -> Bool {
+final public class ListenerModel: Equatable {
+  public static func == (lhs: ListenerModel, rhs: ListenerModel) -> Bool {
     lhs === rhs
   }
   
@@ -38,23 +39,14 @@ final public class Listener: Equatable {
   public var activeStation: String?
 
   public var smartlinkTestResult = SmartlinkTestResult()
-  public var previousIdToken: String?
 
   public var clientStream: AsyncStream<ClientEvent> {
     AsyncStream { continuation in _clientStream = { clientEvent in continuation.yield(clientEvent) }
       continuation.onTermination = { @Sendable _ in } }}
   
-  //  public var packetStream: AsyncStream<PacketEvent> {
-  //    AsyncStream { continuation in _packetStream = { packetEvent in continuation.yield(packetEvent) }
-  //      continuation.onTermination = { @Sendable _ in } }}
-  
   public var statusStream: AsyncStream<WanStatus> {
     AsyncStream { continuation in _statusStream = { status in continuation.yield(status) }
       continuation.onTermination = { @Sendable _ in } }}
-  
-//  public var testStream: AsyncStream<SmartlinkTestResult> {
-//    AsyncStream { continuation in _testStream = { testResult in continuation.yield(testResult) }
-//      continuation.onTermination = { @Sendable _ in } }}
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -63,12 +55,9 @@ final public class Listener: Equatable {
   private var _smartlinkListener: SmartlinkListener?
   
   private var _clientStream: (ClientEvent) -> Void = { _ in }
-  //  private var _packetStream: (PacketEvent) -> Void = { _ in }
   var _statusStream: (WanStatus) -> Void = { _ in }
-//  var _testStream: (SmartlinkTestResult) -> Void = { _ in }
   
   private let _formatter = DateFormatter()
-//  private let _settingsModel = SettingsModel.shared
   
   private enum UpdateStatus {
     case newPacket
@@ -79,7 +68,7 @@ final public class Listener: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
-  public static var shared = Listener()
+  public static var shared = ListenerModel()
   private init() {}
   
   // ----------------------------------------------------------------------------
@@ -107,36 +96,32 @@ final public class Listener: Equatable {
     }
   }
   
-  
-  public func smartlinkMode(_ enable: Bool, _ smartlinkUser: String = "", _ requireSmartlinkLogin: Bool = false) async -> Bool {
+  public func smartlinkMode(_ user: String = "", _ loginRequired: Bool = false, _ previousIdToken: String?, _ refreshToken: String?) async -> Tokens {
     _smartlinkListener?.stop()
     _smartlinkListener = nil
     
-    if enable {
-      _smartlinkListener = SmartlinkListener(self)
-      if await _smartlinkListener!.start(smartlinkUser, requireSmartlinkLogin) == false {
-        _smartlinkListener = nil
-        return false
-      }
+    _smartlinkListener = SmartlinkListener(self)
+    let tokens = await _smartlinkListener!.start(Tokens(previousIdToken, refreshToken))
+    if tokens.idToken != nil {
       log("Smartlink Listener: STARTED", .debug, #function, #file, #line)
-
+      return tokens
     } else {
-      removePackets(condition: {$0.source == .smartlink})
-      log("Smartlink Listener: STOPPED", .debug, #function, #file, #line)
+      _smartlinkListener = nil
+      return Tokens(nil, nil)
     }
-    return true
   }
   
-  public func startSmartlink(_ user: String, _ pwd: String) async -> Bool {
+  public func smartlinkStart(_ user: String, _ pwd: String) async -> Tokens {
     _smartlinkListener = SmartlinkListener(self)
-    let status = await _smartlinkListener!.start(user: user, pwd: pwd)
-    if status {
+    let tokens = await _smartlinkListener!.start(user: user, pwd: pwd)
+    if tokens.idToken != nil {
       log("Smartlink Listener: Login SUCCESS", .debug, #function, #file, #line)
+      return tokens
     } else {
       log("Smartlink Listener: Login FAILURE", .debug, #function, #file, #line)
       _smartlinkListener = nil
+      return Tokens(nil, nil)
     }
-    return status
   }
   
   /// Send a Test message
@@ -287,7 +272,7 @@ final public class Listener: Equatable {
   
   /// Remove one or more packets meeting the condition
   /// - Parameter condition: a closure defining the condition
-  func removePackets(condition: @escaping (Packet) -> Bool) {
+  public func removePackets(condition: @escaping (Packet) -> Bool) {
     _formatter.timeStyle = .long
     _formatter.dateStyle = .none
     for packet in packets where condition(packet) {

@@ -40,7 +40,7 @@ public struct PickerFeature {
         return defaultButton(selection)
 
       case let .testButtonTapped(selection):
-        return .run { _ in Listener.shared.smartlinkTest(selection) }
+        return .run { _ in ListenerModel.shared.smartlinkTest(selection) }
       }
     }
   }

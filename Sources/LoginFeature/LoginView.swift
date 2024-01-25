@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - View(s)
 
 public struct LoginView: View {
-  var store: StoreOf<LoginFeature>
+  @Bindable var store: StoreOf<LoginFeature>
   
   public init(store: StoreOf<LoginFeature>) {
     self.store = store
@@ -20,7 +20,6 @@ public struct LoginView: View {
 
   @Environment(\.dismiss) var dismiss
   
-  @State var user = ""
   @State var password = ""
 
   public var body: some View {
@@ -30,7 +29,7 @@ public struct LoginView: View {
       Divider()
       HStack {
         Text( store.userLabel ).frame( width: store.labelWidth, alignment: .leading)
-        TextField( "", text: $user)
+        TextField( "", text: $store.user)
       }
       HStack {
         Text( store.pwdLabel ).frame( width: store.labelWidth, alignment: .leading)
@@ -45,10 +44,10 @@ public struct LoginView: View {
           .keyboardShortcut( .cancelAction )
         
         Button( "Log in" ) { 
-          store.send(.loginButtonTapped(user, password))
+          store.send(.loginButtonTapped(store.user, password))
           dismiss() }
           .keyboardShortcut( .defaultAction )
-          .disabled( user.isEmpty || password.isEmpty )
+          .disabled( store.user.isEmpty || password.isEmpty )
       }
     }
     .frame( minWidth: store.overallWidth )
@@ -60,7 +59,7 @@ public struct LoginView: View {
 // MARK: - Preview(s)
 
 #Preview {
-  LoginView(store: Store(initialState: LoginFeature.State()) {
+  LoginView(store: Store(initialState: LoginFeature.State(user: "Some User")) {
     LoginFeature()
   })
 }

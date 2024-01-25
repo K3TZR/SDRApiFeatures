@@ -19,12 +19,12 @@ import SharedFeature
 struct GuiClientSubView: View {
   let store: StoreOf<ObjectsFeature>
     
-  @Environment(Listener.self) private var listener
+  @Environment(ListenerModel.self) private var listenerModel
 
   var body: some View {
     VStack(alignment: .leading) {
-      if listener.activePacket != nil {
-        ForEach(listener.activePacket!.guiClients, id: \.id) { guiClient in
+      if listenerModel.activePacket != nil {
+        ForEach(listenerModel.activePacket!.guiClients, id: \.id) { guiClient in
           DetailView(guiClient: guiClient)
         }
       } else {
@@ -120,5 +120,5 @@ struct GuiClientDetailView: View {
   GuiClientSubView(store: Store(initialState: ObjectsFeature.State(connectionState: .disconnected)) {
     ObjectsFeature()
   })
-  .environment(Listener.shared)
+  .environment(ListenerModel.shared)
 }

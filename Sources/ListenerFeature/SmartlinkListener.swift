@@ -17,6 +17,16 @@ public enum ListenerError: String, Error {
   case wanValidation = "WanValidation Failed"
 }
 
+public struct Tokens {
+  public var idToken: String?
+  public var refreshToken: String?
+  
+  public init(_ idToken: String?, _ refreshToken: String?) {
+    self.idToken = idToken
+    self.refreshToken = refreshToken
+  }
+}
+
 ///  WanListener Class implementation
 ///      connect to the Smartlink server which announces the presence
 ///      of Smartlink-accessible Radio(s), publishes changes
@@ -45,6 +55,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   private var _appName: String?
   private var _authentication = Authentication()
   private var _cancellables = Set<AnyCancellable>()
+  private var _currentTokens = Tokens(nil, nil)
   private var _domain: String?
   private let _pingQ = DispatchQueue(label: "WanListener.pingQ")
   private var _platform: String?
@@ -59,7 +70,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   private let kPlatform = "macOS"
   
   
-  let _listener: Listener!
+  let _listenerModel: ListenerModel!
   
   
   var awaitWanHandle: CheckedContinuation<String, Error>?
@@ -67,8 +78,8 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  init(_ listener: Listener, timeout: Double = kTimeout) {
-    _listener = listener
+  init(_ listenerModel: ListenerModel, timeout: Double = kTimeout) {
+    _listenerModel = listenerModel
 
     super.init()
 
@@ -84,51 +95,42 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   // ------------------------------------------------------------------------------
   // MARK: - Internal methods
     
-//  func forceLogin() {
-//    _authentication.forceLogin()
-//  }
-  
-  func start(_ user: String, _ requireLogin: Bool = false) async -> Bool {
-    if requireLogin || user.isEmpty {
-      _authentication.deleteTokens()
-      return false
-    }
-    if _listener.previousIdToken != nil {
-      log("---->>>> Previous idToken found", .debug, #function, #file, #line)
-      return start(using: _listener.previousIdToken!)
-      
-    } else if let idToken = await _authentication.authenticate(user) {
-      log("---->>>> idToken found using authenticate", .debug, #function, #file, #line)
-      return start(using: idToken)
+  func start(_ currentTokens: Tokens) async -> Tokens {
+//    if let previousIdToken {
+//      log("Smartlink Listener: Previous idToken found", .debug, #function, #file, #line)
+//      return start(using: previousIdToken)
+//      
+//    } else 
+    let validatedTokens = await _authentication.authenticate(currentTokens)
+    if validatedTokens.idToken != nil {
+      log("Smartlink Listener: idToken found using authenticate", .debug, #function, #file, #line)
+      return connect(using: validatedTokens)
       
     } else {
-      log("---->>>> idToken NOT found", .debug, #function, #file, #line)
+      log("Smartlink Listener: idToken NOT found", .debug, #function, #file, #line)
     }
-    return false
+    return Tokens(nil, nil)
   }
   
   /// Start listening given a User / Pwd
   /// - Parameters:
   ///   - user:           user value
   ///   - pwd:            user password
-  func start(user: String, pwd: String) async -> Bool {
-    let idToken = await _authentication.requestTokens(user: user, pwd: pwd)
-    
-    print("Start: idToken = \(idToken ?? "nil")")
-    
-    if idToken != nil {
-      _previousIdToken = idToken
-      log("Wan Listener: IdToken obtained from login credentials", .debug, #function, #file, #line)
-      if start(using: idToken!) { return true }
+  func start(user: String, pwd: String) async -> Tokens {
+    let tokens = await _authentication.requestTokens(user: user, pwd: pwd)
+    if tokens.idToken != nil {
+      //      _previousIdToken = idToken
+      log("Smartlink Listener: IdToken obtained from login credentials", .debug, #function, #file, #line)
+      return connect(using: tokens)
     }
-    return false
+    return Tokens(nil, nil)
   }
   
   /// stop the listener
   func stop() {
     _cancellables.removeAll()
     _tcpSocket.disconnect()
-    log("Wan Listener: STOPPED", .info, #function, #file, #line)
+    log("Smartlink Listener: STOPPED", .info, #function, #file, #line)
   }
   /// Send a command to the server using TLS
   /// - Parameter cmd:                command text
@@ -144,14 +146,28 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   /// Start listening given an IdToken
   /// - Parameters:
   ///   - idToken:           a valid IdToken
-  private func start(using idToken: IdToken) -> Bool {
-    _listener.previousIdToken = idToken
+//  private func start(using idToken: IdToken) -> String? {
+//    SettingsModel.shared.previousIdToken = idToken
+    // use the ID Token to connect to the Smartlink service
+//    do {
+//      try connect(using: idToken)
+//      return idToken
+//    } catch {
+//      log("Smartlink Listener: TCP Socket connection FAILED", .debug, #function, #file, #line)
+//      return nil
+//    }
+//  }
+  private func connect(using tokens: Tokens) -> Tokens {
+    _currentTokens = tokens
     // use the ID Token to connect to the Smartlink service
     do {
-      try connect(using: idToken)
-      return true
+      try _tcpSocket.connect(toHost: kSmartlinkHost, onPort: kSmartlinkPort, withTimeout: _timeout)
+      log("Smartlink Listener: TCP Socket connection initiated", .debug, #function, #file, #line)
+      return tokens
+
     } catch {
-      return false
+      log("Smartlink Listener: TCP Socket connection FAILED", .debug, #function, #file, #line)
+      return Tokens(nil, nil)
     }
   }
 
@@ -159,18 +175,17 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   /// - Parameters:
   ///   - idToken:        an ID Token
   ///   - timeout:        timeout (seconds)
-  private func connect(using idToken: IdToken) throws {
-    _listener.previousIdToken = idToken    // used later by socketDidSecure
-    
-    // try to connect
-    do {
-      try _tcpSocket.connect(toHost: kSmartlinkHost, onPort: kSmartlinkPort, withTimeout: _timeout)
-      log("Wan Listener: TCP Socket connection initiated", .debug, #function, #file, #line)
-      
-    } catch _ {
-      throw WanListenerError.kFailedToConnect
-    }
-  }
+//  private func connect(using idToken: IdToken) throws {
+//    _currentIdToken = idToken
+//    // try to connect
+//    do {
+//      try _tcpSocket.connect(toHost: kSmartlinkHost, onPort: kSmartlinkPort, withTimeout: _timeout)
+//      log("Smartlink Listener: TCP Socket connection initiated", .debug, #function, #file, #line)
+//      
+//    } catch _ {
+//      throw WanListenerError.kFailedToConnect
+//    }
+//  }
   
   /// Ping the SmartLink server
   private func startPinging() {
@@ -182,7 +197,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
         self.sendTlsCommand("ping from client", timeout: -1)
       }
       .store(in: &_cancellables)
-    log("Wan Listener: STARTED pinging \(_host ?? "????")", .debug, #function, #file, #line)
+    log("Smartlink Listener: STARTED pinging \(_host ?? "????")", .debug, #function, #file, #line)
   }
 }
 
@@ -203,29 +218,29 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
                      didConnectToHost host: String,
                      port: UInt16) {
     _host = host
-    log("Wan Listener: TCP Socket didConnectToHost, \(host):\(port)", .debug, #function, #file, #line)
+    log("Smartlink Listener: TCP Socket didConnectToHost, \(host):\(port)", .debug, #function, #file, #line)
     
     // initiate a secure (TLS) connection to the Smartlink server
     var tlsSettings = [String : NSObject]()
     tlsSettings[kCFStreamSSLPeerName as String] = kSmartlinkHost as NSObject
     _tcpSocket.startTLS(tlsSettings)
     
-    log("Wan Listener: TLS Socket connection initiated", .debug, #function, #file, #line)
+    log("Smartlink Listener: TLS Socket connection initiated", .debug, #function, #file, #line)
   }
   
   public func socketDidSecure(_ sock: GCDAsyncSocket) {
-    log("Wan Listener: TLS socketDidSecure", .debug, #function, #file, #line)
+    log("Smartlink Listener: TLS socketDidSecure", .debug, #function, #file, #line)
     
     // start pinging SmartLink server
     startPinging()
     
     // register the Application / token pair with the SmartLink server
-    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_listener.previousIdToken!)", timeout: _timeout, tag: 0)
-    log("Wan Listener: Application registered, name=\(_appName!) platform=\(kPlatform)", .debug, #function, #file, #line)
+    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken!)", timeout: _timeout, tag: 0)
+    log("Smartlink Listener: Application registered, name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken!)", .debug, #function, #file, #line)
 
     // start reading
     _tcpSocket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)
-    log("Wan Listener: STARTED", .info, #function, #file, #line)
+    log("Smartlink Listener: STARTED", .info, #function, #file, #line)
   }
   
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
@@ -241,7 +256,7 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
   public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
     // Disconnected from the Smartlink server
     let error = (err == nil ? "" : " with error: " + err!.localizedDescription)
-    log("Wan Listener: TCP socketDidDisconnect \(error)",
+    log("Smartlink Listener: TCP socketDidDisconnect \(error)",
          err == nil ? .debug : .warning, #function, #file, #line)
     if err != nil { stop() }
   }

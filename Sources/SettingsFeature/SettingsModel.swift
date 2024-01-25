@@ -34,7 +34,6 @@ public class SettingsModel {
   public var directGuiIp: String
   public var directNonGuiIp: String
   public var localEnabled: Bool
-  public var loginRequired: Bool
   public var lowBandwidthDax: Bool
   public var messageFilter: MessageFilter
   public var messageFilterText: String
@@ -48,10 +47,14 @@ public class SettingsModel {
   public var showPings: Bool
   public var showTimes: Bool
   public var smartlinkEnabled: Bool
-  public var smartlinkIdToken: String?
+//  public var smartlinkIdToken: String?
+  public var smartlinkLoginRequired: Bool
   public var smartlinkUser: String
   public var station = "SDRApi"
   public var useDefault: Bool
+  
+  public var refreshToken: String?
+  public var previousIdToken: String?
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -81,7 +84,6 @@ public class SettingsModel {
       directGuiIp = ""
       directNonGuiIp = ""
       localEnabled = true
-      loginRequired = false
       lowBandwidthDax = false
       messageFilter = .all
       messageFilterText = ""
@@ -95,10 +97,14 @@ public class SettingsModel {
       showPings = false
       showTimes = true
       smartlinkEnabled = false
-      smartlinkIdToken = nil
+//      smartlinkIdToken = nil
+      smartlinkLoginRequired = false
       smartlinkUser = ""
       station = "SDRApi"
       useDefault = false
+      
+      refreshToken = nil
+      previousIdToken = nil
       
       save()
       
@@ -120,7 +126,6 @@ public class SettingsModel {
       directGuiIp = AppDefaults.string(forKey: "directGuiIp") ?? ""
       directNonGuiIp = AppDefaults.string(forKey: "directNonGuiIp") ?? ""
       localEnabled = AppDefaults.bool(forKey: "localEnabled")
-      loginRequired = AppDefaults.bool(forKey: "loginRequired")
       lowBandwidthDax = AppDefaults.bool(forKey: "lowBandwidthDax")
       messageFilter = MessageFilter(rawValue: AppDefaults.string(forKey: "messageFilter") ?? "all") ?? .all
       messageFilterText = AppDefaults.string(forKey: "messageFilterText") ?? ""
@@ -134,10 +139,14 @@ public class SettingsModel {
       showPings = AppDefaults.bool(forKey: "showPings")
       showTimes = AppDefaults.bool(forKey: "showTimes")
       smartlinkEnabled = AppDefaults.bool(forKey: "smartlinkEnabled")
-      smartlinkIdToken = AppDefaults.string(forKey: "smartlinkIdToken") ?? nil
+//      smartlinkIdToken = AppDefaults.string(forKey: "smartlinkIdToken") ?? nil
+      smartlinkLoginRequired = AppDefaults.bool(forKey: "smartlinkLoginRequired")
       smartlinkUser = AppDefaults.string(forKey: "smartlinkUser") ?? ""
 //      station = "SDRApi"
       useDefault = AppDefaults.bool(forKey: "useDefault")
+      
+      refreshToken = AppDefaults.string(forKey: "refreshToken")
+      previousIdToken = AppDefaults.string(forKey: "previousIdToken")
     }
   }
   
@@ -161,7 +170,6 @@ public class SettingsModel {
     AppDefaults.set(directGuiIp, forKey: "directGuiIp")
     AppDefaults.set(directNonGuiIp, forKey: "directNonGuiIp")
     AppDefaults.set(localEnabled, forKey: "localEnabled")
-    AppDefaults.set(loginRequired, forKey: "loginRequired")
     AppDefaults.set(lowBandwidthDax, forKey: "lowBandwidthDax")
     AppDefaults.set(messageFilter.rawValue, forKey: "messageFilter")
     AppDefaults.set(messageFilterText, forKey: "messageFilterText")
@@ -175,9 +183,13 @@ public class SettingsModel {
     AppDefaults.set(showPings, forKey: "showPings")
     AppDefaults.set(showTimes, forKey: "showTimes")
     AppDefaults.set(smartlinkEnabled, forKey: "smartlinkEnabled")
-    AppDefaults.set(smartlinkIdToken, forKey: "smartlinkIdToken")
+//    AppDefaults.set(smartlinkIdToken, forKey: "smartlinkIdToken")
+    AppDefaults.set(smartlinkLoginRequired, forKey: "smartlinkLoginRequired")
     AppDefaults.set(smartlinkUser, forKey: "smartlinkUser")
 //    station = "SDRApi"
     AppDefaults.set(useDefault, forKey: "useDefault")
+    
+    AppDefaults.set(refreshToken, forKey: "refreshToken")
+    AppDefaults.set(previousIdToken, forKey: "previousIdToken")
   }
 }

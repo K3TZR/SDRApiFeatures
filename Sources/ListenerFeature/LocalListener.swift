@@ -32,7 +32,7 @@ public final class LocalListener: NSObject, ObservableObject {
   private var _cancellables = Set<AnyCancellable>()
   private let _formatter = DateFormatter()
   private var _ignoreTimeStamps = false
-  private let _listener: Listener!
+  private let _listenerModel: ListenerModel!
   private var _logBroadcasts = false
   private let _udpQ = DispatchQueue(label: "LanListener" + ".udpQ")
   private var _udpSocket: GCDAsyncUdpSocket!
@@ -51,8 +51,8 @@ public final class LocalListener: NSObject, ObservableObject {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  init(_ listener: Listener, port: UInt16 = 4992, logBroadcasts: Bool = false, ignoreTimeStamps: Bool = false) {
-    _listener = listener
+  init(_ listenerModel: ListenerModel, port: UInt16 = 4992, logBroadcasts: Bool = false, ignoreTimeStamps: Bool = false) {
+    _listenerModel = listenerModel
     _logBroadcasts = logBroadcasts
     _ignoreTimeStamps = ignoreTimeStamps
     super.init()
@@ -82,7 +82,7 @@ public final class LocalListener: NSObject, ObservableObject {
       .sink { now in
         Task {
           await MainActor.run {
-            self._listener.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
+            self._listenerModel.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
           }
         }
       }
@@ -142,7 +142,7 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
     // YES, process it
     Task {
       await MainActor.run {
-        _listener.processPacket(packet)
+        _listenerModel.processPacket(packet)
       }
     }
   }
