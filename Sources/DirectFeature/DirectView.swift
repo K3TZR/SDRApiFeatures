@@ -22,6 +22,7 @@ public struct DirectView: View {
   @Environment(\.dismiss) var dismiss
   
   public var body: some View {
+    
     VStack(spacing: 10) {
       Text( store.heading ).font( .title2 )
       if store.message != nil { Text(store.message!).font(.subheadline) }
@@ -55,7 +56,7 @@ public struct DirectView: View {
 // MARK: - Preview(s)
 
 #Preview {
-  DirectView(store: Store(initialState: DirectFeature.State(ip: "1.2.3.4")) {
+  DirectView(store: Store(initialState: DirectFeature.State(ip: "192.168.1.200")) {
     DirectFeature()
   })
 }

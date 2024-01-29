@@ -10,13 +10,12 @@ import SwiftUI
 
 import FlexApiFeature
 import ListenerFeature
-import SettingsFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View(s)
 
 public struct PickerView: View {
-  let store: StoreOf<PickerFeature>
+  var store: StoreOf<PickerFeature>
   
   public init(store: StoreOf<PickerFeature>) {
     self.store = store
@@ -25,11 +24,10 @@ public struct PickerView: View {
   @State var selection: String?
   
   @Environment(ListenerModel.self) var listenerModel
-  @Environment(SettingsModel.self) var settingsModel
 
   @MainActor private var isSmartlink: Bool {
     if let selection {
-      if settingsModel.isGui {
+      if store.isGui {
         return listenerModel.packets[id: selection]?.source == .smartlink
       } else {
         return listenerModel.stations[id: selection]?.packet.source == .smartlink
@@ -40,14 +38,14 @@ public struct PickerView: View {
 
   public var body: some View {
     VStack(alignment: .leading) {
-      HeaderView(store: store)
+      HeaderView(isGui: store.isGui)
       
       Divider()
-      if settingsModel.isGui && listenerModel.packets.count == 0 || !settingsModel.isGui && listenerModel.stations.count == 0{
+      if store.isGui && listenerModel.packets.count == 0 || !store.isGui && listenerModel.stations.count == 0{
         VStack {
           HStack {
             Spacer()
-            Text("----------  NO \(settingsModel.isGui ? "RADIOS" : "STATIONS") FOUND  ----------")
+            Text("----------  NO \(store.isGui ? "RADIOS" : "STATIONS") FOUND  ----------")
             Spacer()
           }
         }
@@ -57,7 +55,7 @@ public struct PickerView: View {
         
       } 
       else {
-        if settingsModel.isGui {
+        if store.isGui {
           // ----- List of Radios -----
           List(listenerModel.packets, id: \.id, selection: $selection) { packet in
             //            VStack (alignment: .leading) {
@@ -69,7 +67,7 @@ public struct PickerView: View {
                 Text(packet.guiClientStations)
               }
               .font(.title3)
-              .foregroundColor(settingsModel.guiDefault == packet.serial + packet.publicIp ? .red : nil)
+              .foregroundColor(store.defaultValue == packet.serial + packet.publicIp ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
@@ -89,7 +87,7 @@ public struct PickerView: View {
                 Text(station.station)
               }
               .font(.title3)
-              .foregroundColor(settingsModel.nonGuiDefault == station.packet.serial + station.packet.publicIp + station.station ? .red : nil)
+              .foregroundColor(store.defaultValue == station.packet.serial + station.packet.publicIp + station.station ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
@@ -105,13 +103,11 @@ public struct PickerView: View {
 }
 
 private struct HeaderView: View {
-  let store: StoreOf<PickerFeature>
-
-  @Environment(SettingsModel.self) var settingsModel
+  let isGui: Bool
 
   var body: some View {
     VStack {
-      Text("Select a \(settingsModel.isGui ? "RADIO" : "STATION")")
+      Text("Select a \(isGui ? "RADIO" : "STATION")")
         .font(.title)
         .padding(.bottom, 10)
       
@@ -120,7 +116,7 @@ private struct HeaderView: View {
           Text("Name")
           Text("Type")
           Text("Status")
-          Text("Station\(settingsModel.isGui ? "s" : "")")
+          Text("Station\(isGui ? "s" : "")")
         }
         .frame(width: 140, alignment: .leading)
       }
@@ -136,7 +132,7 @@ private struct FooterView: View {
   let selection: String?
   let selectionIsSmartlink: Bool
 
-  @Environment(ApiModel.self) var apiModel
+//  @Environment(ApiModel.self) var apiModel
   @Environment(ListenerModel.self) var listenerModel
 
   @Environment(\.dismiss) var dismiss
@@ -179,14 +175,14 @@ private struct FooterView: View {
 // MARK: - Preview
 
 #Preview("Picker Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State()) {
+  PickerView(store: Store(initialState: PickerFeature.State(isGui: true, defaultValue: nil)) {
     PickerFeature()
   })
 //  .environment(ApiModel.shared)
 }
 
 #Preview("Picker NON-Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State()) {
+  PickerView(store: Store(initialState: PickerFeature.State(isGui: false, defaultValue: nil)) {
     PickerFeature()
   })
 //  .environment(ApiModel.shared)

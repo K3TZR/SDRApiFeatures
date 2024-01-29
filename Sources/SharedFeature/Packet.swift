@@ -148,6 +148,7 @@ final public class Packet: Identifiable, Equatable, Hashable {
               nickname: String = "",
               serial: String = "",
               publicIp: String = "",
+              port: Int = 0,
               status: String = ""
   ) {
     lastSeen = Date() // now
@@ -155,6 +156,7 @@ final public class Packet: Identifiable, Equatable, Hashable {
     self.nickname = nickname
     self.serial = serial
     self.publicIp = publicIp
+    self.port = port
     self.status = status
   }
  

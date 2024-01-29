@@ -13,8 +13,6 @@ let package = Package(
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
-    .library(name: "MessagesFeature", targets: ["MessagesFeature"]),
-    .library(name: "ObjectsFeature", targets: ["ObjectsFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
     .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
@@ -71,22 +69,6 @@ let package = Package(
     // LoginFeature
     .target(name: "LoginFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-    ]),
-
-    // MessagesFeature
-    .target(name: "MessagesFeature", dependencies: [
-      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      "SettingsFeature",
-      "SharedFeature",
-      "TcpFeature",
-    ]),
-
-    // ObjectsFeature
-    .target(name: "ObjectsFeature", dependencies: [
-      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      "FlexApiFeature",
-      "SettingsFeature",
-      "SharedFeature",
     ]),
 
     // PickerFeature

@@ -74,13 +74,27 @@ final public class ListenerModel: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func setActive(_ isGui: Bool, _ selection: String) {
-    if isGui {
-      activePacket = packets[id: selection]!
-      activeStation = "SDRApi"
+  public func setActive(_ isGui: Bool, _ selection: String, _ directMode: Bool = false) {
+    if directMode {
+      
+      let serial = String(selection.prefix(19))
+      let publicIp = String(selection.suffix(from: selection.index(selection.startIndex, offsetBy: 19)))
+      
+      if isGui {
+        activePacket = Packet(nickname: "DIRECT", serial: serial, publicIp: publicIp, port: 4_992)
+        activeStation = "SDRApi"
+      } else {
+        fatalError()
+      }
+      
     } else {
-      activePacket  = stations[id: selection]!.packet
-      activeStation = stations[id: selection]!.station
+      if isGui {
+        activePacket = packets[id: selection]!
+        activeStation = "SDRApi"
+      } else {
+        activePacket  = stations[id: selection]!.packet
+        activeStation = stations[id: selection]!.station
+      }
     }
   }
   

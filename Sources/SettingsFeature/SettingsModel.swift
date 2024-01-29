@@ -15,7 +15,7 @@ public class SettingsModel {
   // MARK: - Singleton
 
   public static var shared = SettingsModel()
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
@@ -51,7 +51,7 @@ public class SettingsModel {
   public var smartlinkLoginRequired: Bool
   public var smartlinkUser: String
   public var station = "SDRApi"
-  public var useDefault: Bool
+  public var useDefaultEnabled: Bool
   
   public var refreshToken: String?
   public var previousIdToken: String?
@@ -62,7 +62,7 @@ public class SettingsModel {
   private let AppDefaults = UserDefaults.standard
   
   // ----------------------------------------------------------------------------
-  // MARK: - Public methods
+  // MARK: - Private methods
 
   private init() {
         
@@ -72,7 +72,7 @@ public class SettingsModel {
       alertOnError = true
       clearOnSend = true
       clearOnStart = true
-      clearOnStop = false
+      clearOnStop = true
       commandToSend = ""
       commandsArray = [String]()
       commandsIndex = 0
@@ -101,10 +101,12 @@ public class SettingsModel {
       smartlinkLoginRequired = false
       smartlinkUser = ""
       station = "SDRApi"
-      useDefault = false
+      useDefaultEnabled = false
       
       refreshToken = nil
       previousIdToken = nil
+      
+      print("----->>>>> SettingsModel, POPULATE on first usage")
       
       save()
       
@@ -143,13 +145,18 @@ public class SettingsModel {
       smartlinkLoginRequired = AppDefaults.bool(forKey: "smartlinkLoginRequired")
       smartlinkUser = AppDefaults.string(forKey: "smartlinkUser") ?? ""
 //      station = "SDRApi"
-      useDefault = AppDefaults.bool(forKey: "useDefault")
+      useDefaultEnabled = AppDefaults.bool(forKey: "useDefaultEnabled")
       
       refreshToken = AppDefaults.string(forKey: "refreshToken")
       previousIdToken = AppDefaults.string(forKey: "previousIdToken")
+      
+      print("----->>>>> SettingsModel, READ from UserDefaults")
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public methods
+
   // save to UserDefaults
   public func save() {
     // mark it as initialized
@@ -187,9 +194,12 @@ public class SettingsModel {
     AppDefaults.set(smartlinkLoginRequired, forKey: "smartlinkLoginRequired")
     AppDefaults.set(smartlinkUser, forKey: "smartlinkUser")
 //    station = "SDRApi"
-    AppDefaults.set(useDefault, forKey: "useDefault")
+    AppDefaults.set(useDefaultEnabled, forKey: "useDefaultEnabled")
     
     AppDefaults.set(refreshToken, forKey: "refreshToken")
     AppDefaults.set(previousIdToken, forKey: "previousIdToken")
+
+    print("----->>>>> SettingsModel, SAVE")
+    
   }
 }

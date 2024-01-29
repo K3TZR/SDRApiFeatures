@@ -9,7 +9,6 @@ import ComposableArchitecture
 import Foundation
 
 import ListenerFeature
-import SettingsFeature
 
 @Reducer
 public struct PickerFeature {
@@ -18,8 +17,13 @@ public struct PickerFeature {
 
   @ObservableState
   public struct State {
-
-    public init() {}
+    var isGui: Bool
+    var defaultValue: String?
+    
+    public init(isGui: Bool, defaultValue: String?) {
+      self.isGui = isGui
+      self.defaultValue = defaultValue
+    }
   }
   
   public enum Action {
@@ -37,7 +41,7 @@ public struct PickerFeature {
         return .none
       
       case let .defaultButtonTapped(selection):
-        return defaultButton(selection)
+        return defaultButton(&state, selection)
 
       case let .testButtonTapped(selection):
         return .run { _ in ListenerModel.shared.smartlinkTest(selection) }
@@ -46,20 +50,11 @@ public struct PickerFeature {
   }
 
   // set/reset default values
-  private func defaultButton(_ selection: String?) -> Effect<PickerFeature.Action> {
-    if SettingsModel.shared.isGui {
-      if SettingsModel.shared.guiDefault == selection {
-        SettingsModel.shared.guiDefault = nil
-      } else {
-        SettingsModel.shared.guiDefault = selection
-      }
-      
+  private func defaultButton(_ state: inout State, _ selection: String?) -> Effect<PickerFeature.Action> {
+    if state.defaultValue == selection {
+      state.defaultValue = nil
     } else {
-      if SettingsModel.shared.nonGuiDefault == selection {
-        SettingsModel.shared.nonGuiDefault = nil
-      } else {
-        SettingsModel.shared.nonGuiDefault = selection
-      }
+      state.defaultValue = selection
     }
     return .none
   }

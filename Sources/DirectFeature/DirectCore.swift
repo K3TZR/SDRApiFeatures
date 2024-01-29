@@ -32,12 +32,12 @@ public struct DirectFeature {
   
   public enum Action: BindableAction {
     case binding(BindingAction<State>)
+
     case cancelButtonTapped
     case saveButtonTapped(String)
   }
   
   public var body: some ReducerOf<Self> {
-    BindingReducer()
     Reduce { state, action in
       return .none
     }
