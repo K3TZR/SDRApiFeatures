@@ -446,6 +446,7 @@ extension ApiModel {
           if !_isGui && station == ListenerModel.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
+            log("ApiModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
 //        }
       } else {
@@ -469,6 +470,7 @@ extension ApiModel {
           if !_isGui && station == ListenerModel.shared.activeStation {
              boundClientId = clientId
             sendCommand("client bind client_id=\(boundClientId!)")
+            log("ApiModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
         }
       }

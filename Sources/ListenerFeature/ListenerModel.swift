@@ -247,7 +247,7 @@ final public class ListenerModel: Equatable {
 //        guiClients[id: guiClient.handle] = guiClient
         
         _clientStream( ClientEvent(.added, client: guiClient))
-        log("Listener: guiClient ADDED, \(guiClient.station)", .info, #function, #file, #line)
+        log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
       }
       
     } else {
@@ -261,7 +261,7 @@ final public class ListenerModel: Equatable {
 //            guiClients[id: guiClient.handle] = guiClient
 
             _clientStream( ClientEvent(.added, client: guiClient))
-            log("Listener: guiClient ADDED, \(guiClient.station)", .info, #function, #file, #line)
+            log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
           }
         }
         for guiClient in oldPacket!.guiClients {
@@ -276,7 +276,7 @@ final public class ListenerModel: Equatable {
 //            }
 
             _clientStream( ClientEvent(.removed, client: guiClient))
-            log("Listener: guiClient REMOVED, \(guiClient.station)", .info, #function, #file, #line)
+            log("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
           }
         }
       }

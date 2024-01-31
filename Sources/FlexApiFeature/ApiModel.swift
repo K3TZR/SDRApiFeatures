@@ -19,17 +19,6 @@ public typealias MHz = Double
 
 public typealias ReplyHandler = (_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) -> Void
 public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String, continuation: CheckedContinuation<String,Error>?)
-//public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
-
-//extension ApiModel: DependencyKey {
-//  public static let liveValue = ApiModel.shared
-//}
-//
-//extension DependencyValues {
-//  public var apiModel: ApiModel {
-//    get { self[ApiModel.self] }
-//  }
-//}
 
 @MainActor
 @Observable
@@ -69,7 +58,6 @@ public final class ApiModel {
     wan = Wan(self)
     waveform = Waveform(self)
   }
-  
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -230,6 +218,8 @@ public final class ApiModel {
   ///   - mtuValue: max transort unit
   @MainActor
   public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false) async throws {
+    _isGui = isGui
+    
     nthPingReceived = false
     
     if let packet = ListenerModel.shared.activePacket, let station = ListenerModel.shared.activeStation {
@@ -293,7 +283,7 @@ public final class ApiModel {
       }
       
       // send the initial commands
-      sendInitialCommands(programName, station, mtuValue, lowBandwidthDax)
+      sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax)
       log("ApiModel: initial commands sent", .info, #function, #file, #line)
       
       startPinging()
@@ -370,17 +360,17 @@ public final class ApiModel {
     _pinger = Pinger(self)
   }
 
-  private func sendInitialCommands(_ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool) {
+  private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool) {
     let guiClientId = UserDefaults.standard.string(forKey: "guiClientId")
     
-    if _isGui && guiClientId == nil {
+    if isGui && guiClientId == nil {
       sendCommand("client gui")
     }
-    if _isGui && guiClientId != nil {
+    if isGui && guiClientId != nil {
       sendCommand("client gui \(guiClientId!)")
     }
     sendCommand("client program " + programName)
-    if _isGui { sendCommand("client station " + stationName) }
+    if isGui { sendCommand("client station " + stationName) }
     if lowBandwidthConnect { requestLowBandwidthConnect() }
     requestInfo()
     requestVersion()
