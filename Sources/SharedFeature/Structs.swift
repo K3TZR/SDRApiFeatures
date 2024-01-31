@@ -304,7 +304,7 @@ public enum AudioCompression: String {
 }
 
 // struct for use in Dax settings
-public struct DaxSetting: Codable {
+public struct DaxSetting: Equatable, Codable {
   public init(enabled: Bool = false, channel: Int, deviceID: UInt32? = nil, gain: Double = 0.5, status: String = "Off") {
     self.enabled = enabled
     self.channel = channel
@@ -470,4 +470,19 @@ public enum ConnectionState: String {
   case disconnecting
   case errorOnConnect
   case errorOnDisconnect
+}
+
+public struct DaxPanelOptions: OptionSet {        // FIXME: move to Shared
+  public init(rawValue: UInt8) {
+    self.rawValue = rawValue
+  }
+  
+  public let rawValue: UInt8
+  
+  public static let tx  = DaxPanelOptions(rawValue: 1 << 0)
+  public static let mic = DaxPanelOptions(rawValue: 1 << 1)
+  public static let rx = DaxPanelOptions(rawValue: 1 << 2)
+  public static let iq = DaxPanelOptions(rawValue: 1 << 3)
+  
+  public static let all: DaxPanelOptions = [.tx, .mic, .rx, iq]
 }

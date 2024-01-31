@@ -9,6 +9,7 @@ let package = Package(
   
   products: [
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
+    .library(name: "DaxRxAudioFeature", targets: ["DaxRxAudioFeature"]),
     .library(name: "DirectFeature", targets: ["DirectFeature"]),
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
@@ -39,6 +40,13 @@ let package = Package(
     .target(name: "ClientFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       "SharedFeature"
+    ]),
+    
+    // DaxRxAudioFeature
+    .target( name: "DaxRxAudioFeature", dependencies: [
+      "RingBufferFeature",
+      "XCGLogFeature",
+      "SharedFeature",
     ]),
     
     // DirectFeature
