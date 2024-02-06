@@ -304,20 +304,25 @@ public enum AudioCompression: String {
 }
 
 // struct for use in Dax settings
-public struct DaxSetting: Equatable, Codable {
-  public init(enabled: Bool = false, channel: Int, deviceID: UInt32? = nil, gain: Double = 0.5, status: String = "Off") {
+//public struct DaxDevice: Identifiable, Equatable {
+public struct DaxDevice: Equatable {
+  public init(enabled: Bool = false, channel: Int, deviceID: UInt32? = nil, gain: Double = 0.5, status: String = "Off", sampleRate: Int = 24_000) {
+//  public init(id: Int, enabled: Bool = false, channel: Int, deviceID: UInt32? = nil, gain: Double = 0.5, status: String = "Off", sampleRate: Int = 0) {
+//    self.id = id
     self.enabled = enabled
     self.channel = channel
     self.deviceID = deviceID
     self.gain = gain
     self.status = status
+    self.sampleRate = sampleRate
   }
-  
+//  public let id: Int
   public var enabled: Bool
   public var channel: Int
   public var deviceID: UInt32?
   public var gain: Double
   public var status: String
+  public var sampleRate: Int
 }
 
 // Helper struct used by Audio routines
