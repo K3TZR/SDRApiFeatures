@@ -9,7 +9,7 @@ let package = Package(
   
   products: [
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
-    .library(name: "DaxRxAudioFeature", targets: ["DaxRxAudioFeature"]),
+    .library(name: "DaxAudioFeature", targets: ["DaxAudioFeature"]),
     .library(name: "DirectFeature", targets: ["DirectFeature"]),
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
@@ -42,8 +42,9 @@ let package = Package(
       "SharedFeature"
     ]),
     
-    // DaxRxAudioFeature
-    .target( name: "DaxRxAudioFeature", dependencies: [
+    // DaxAudioFeature
+    .target( name: "DaxAudioFeature", dependencies: [
+      "FlexApiFeature",
       "RingBufferFeature",
       "XCGLogFeature",
       "SharedFeature",
@@ -115,8 +116,6 @@ let package = Package(
 
     // VitaFeature
     .target(name: "VitaFeature", dependencies: [
-//      .product(name: "XCGLogger", package: "XCGLogger"),
-//      .product(name: "ObjcExceptionBridging", package: "XCGLogger"),
       "SharedFeature",
     ]),
 

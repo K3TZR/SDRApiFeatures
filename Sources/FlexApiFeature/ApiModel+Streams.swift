@@ -71,9 +71,10 @@ extension ApiModel {
 
   /// Send a Remove Stream command to the radio
   /// - Parameter having: a StreamId
-  @MainActor public func sendRemoveStream(_ id: UInt32?) {
-    guard id != nil else { return }
-    sendCommand("stream remove \(id!.hex)")
+  @MainActor public func sendRemoveStreams(_ ids: [UInt32?]) {
+    for id in ids where id != nil {
+      sendCommand("stream remove \(id!.hex)")
+    }
   }
   
   public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {

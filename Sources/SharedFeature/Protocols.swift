@@ -36,14 +36,13 @@ public protocol RxAudioHandler: AnyObject {
 }
 
 /// UDP Stream handler protocol
-public protocol DaxRxAudioHandler: AnyObject {
+public protocol DaxAudioHandler: AnyObject {
   /// Process Stream data
   /// - Parameters:
   ///   - payload: array of bytes
   ///   - reducedBW: Float32(false) vs Int16(true) element size
   ///   - channelNumber: dax channel number
-  func daxRxAudioHandler(payload: [UInt8],
-                         reducedBW: Bool,
-                         channelNumber: Int?)
-  
+  func daxAudioHandler(payload: [UInt8],
+                       reducedBW: Bool,
+                       channelNumber: Int?)
 }

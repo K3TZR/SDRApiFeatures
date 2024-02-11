@@ -132,6 +132,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
     _tcpSocket.disconnect()
     log("Smartlink Listener: STOPPED", .info, #function, #file, #line)
   }
+  
   /// Send a command to the server using TLS
   /// - Parameter cmd:                command text
   func sendTlsCommand(_ cmd: String, timeout: TimeInterval = kTimeout, tag: Int = 1) {
@@ -236,7 +237,7 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
     
     // register the Application / token pair with the SmartLink server
     sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken!)", timeout: _timeout, tag: 0)
-    log("Smartlink Listener: Application registered, name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken!)", .debug, #function, #file, #line)
+    log("Smartlink Listener: Application registered, name=\(_appName!) platform=\(kPlatform)", .debug, #function, #file, #line)
 
     // start reading
     _tcpSocket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

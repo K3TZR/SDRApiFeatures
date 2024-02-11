@@ -138,6 +138,11 @@ final public class ListenerModel: Equatable {
     }
   }
   
+  public func smartlinkStop() {
+    _smartlinkListener?.stop()
+    _smartlinkListener = nil
+  }
+  
   /// Send a Test message
   /// - Parameter serial:     radio serial number
   /// - Returns:              success / failure
@@ -292,6 +297,12 @@ final public class ListenerModel: Equatable {
     for packet in packets where condition(packet) {
       packets.remove(packet)
       log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+      
+      // update Stations as well
+      for station in stations where station.packet == packet {
+        stations.remove(station)
+        log("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+      }
     }
   }
   

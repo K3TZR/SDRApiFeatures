@@ -41,7 +41,7 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
   public var daxChannel = 0
   public var rxGain = 0
   
-  public var delegate: DaxRxAudioHandler?
+  public var delegate: DaxAudioHandler?
   //  public var delegate: StreamHandler?
   //  public private(set) var rxLostPacketCount = 0
   
@@ -117,7 +117,7 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
       // log the start of the stream
       log("DaxRxAudioStream \(id.hex) STARTED:", .info, #function, #file, #line)
     }
-    delegate?.daxRxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: daxChannel)
+    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: daxChannel)
   }
   
   /// Set a property
