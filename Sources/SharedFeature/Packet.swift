@@ -105,7 +105,7 @@ final public class Station: Identifiable, Equatable, Hashable {
     self.station = station
   }
   
-  public var id: String { packet.serial + packet.publicIp + station }
+  public var id: String { packet.serial + "|" + packet.publicIp + "|" + station + "|" + packet.nickname + "|" + packet.source.rawValue}
   public var packet: Packet
   public var station: String
 }
@@ -167,7 +167,7 @@ final public class Packet: Identifiable, Equatable, Hashable {
   //  @Published public var guiClients = IdentifiedArrayOf<GuiClient>()
   public var guiClients = IdentifiedArrayOf<GuiClient>()
   
-  public var id: String { serial + publicIp }
+  public var id: String { serial + "|" + publicIp }
   public var isPortForwardOn = false
   public var lastSeen: Date
   public var localInterfaceIP = ""

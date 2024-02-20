@@ -145,6 +145,20 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Slice methods
   
+  /// Find a Slice by DAX Channel
+  ///
+  /// - Parameter channel:    Dax channel number
+  /// - Returns:              a Slice (if any)
+  ///
+  public func findSlice(using channel: Int) -> Slice? {
+      // find the Slices with the specified Channel (if any)
+      let filteredSlices = slices.filter { $0.daxChannel == channel }
+      guard filteredSlices.count >= 1 else { return nil }
+      
+      // return the first one
+      return filteredSlices[0]
+  }
+
   public func removeSlice(_ id: UInt32, callback: ReplyHandler? = nil) {
     sendCommand("slice remove \(id)", replyTo: callback)
   }

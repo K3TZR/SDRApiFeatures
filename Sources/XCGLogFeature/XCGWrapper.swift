@@ -119,7 +119,7 @@ final public class XCGWrapper {
       log.dateFormatter = dateFormatter
       
       // subscribe to Log requests
-      Task {
+      Task(priority: .userInitiated) {
         for await entry in logEntries {
           // Log Handler to support XCGLogger
           switch entry.level {

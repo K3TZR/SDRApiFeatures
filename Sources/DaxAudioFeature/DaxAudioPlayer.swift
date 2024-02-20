@@ -22,12 +22,13 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
+  public var active = false
   public var streamId: UInt32?
-  public var device: AudioDeviceID?                 { didSet {setDevice(device)}}
-  public var gain: Double = 0.5                     { didSet {setGain(gain)}}
+  public var deviceId: AudioDeviceID?               { didSet {setDevice(deviceId)}}
+  public var gain: Double = 50                      { didSet {setGain(gain)}}
   public var sampleRate: Double = 24_000            { didSet {setSampleRate(sampleRate)}}
 
-  public var levels = SignalLevel(rms: 0,peak: 0)
+  @MainActor public var levels = SignalLevel(rms: -50,peak: -50)
   public var status = "Off"
   
   // ----------------------------------------------------------------------------
@@ -81,6 +82,8 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
+//  public init(deviceId: UInt32 = 0, sampleRate: Double = 24_000) {
+//    self.deviceId = deviceId
   public init(sampleRate: Double = 24_000) {
     self.sampleRate = sampleRate
     let elementSize = MemoryLayout<Float>.size
@@ -126,6 +129,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   
   public func start(_ streamId: UInt32) {
     self.streamId = streamId
+    active = true
     
     _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_interleavedBigEndianASBD)!, frameCapacity: UInt32(_frameCount))!
     _interleavedBuffer.frameLength = _interleavedBuffer.frameCapacity
@@ -144,7 +148,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
       // retrieve the requested number of frames
       var lengthInFrames = frameCount
       TPCircularBufferDequeueBufferListFrames(&_ringBuffer, &lengthInFrames, audioBufferList, nil, &_nonInterleavedASBD)
-      
       return noErr
     }
 
@@ -163,37 +166,51 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         guard let channelData = buffer.floatChannelData?[0] else {return}
         let frames = buffer.frameLength
         
-        self.levels = DaxAudioPlayer.rms(data: channelData, frameLength: UInt(frames))
+        Task {
+          await MainActor.run {
+            self.levels = DaxAudioPlayer.rms(data: channelData, frameLength: UInt(frames))
+          }
+        }
       }
-
+      
     } catch {
       fatalError("DaxAudioPlayer: Failed to start, error = \(error)")
     }
+    
+    setDevice(deviceId)
   }
   
   public func stop() {
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
-
-//    let availableFrames = TPCircularBufferGetAvailableSpace(&_ringBuffer, &_nonInterleavedASBD)
-//    log("DaxAudioPlayer: STOPPED, frames = \(availableFrames) ", .debug, #function, #file, #line)
+    active = false
+    Task {
+      await MainActor.run {
+        levels = SignalLevel(rms: -50,peak: -50)
+      }
+    }
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private methods
   
-  private func setDevice(_ device: AudioDeviceID?) {
-    if let device {
+  private func setDevice(_ deviceId: AudioDeviceID?) {
+    if let deviceId {
+
+      print("DeviceId = \(deviceId)")
+      
       // get the audio unit from the output node
       let outputUnit = _engine.outputNode.audioUnit!
       // use core audio to set the output device:
-      var outputDevice: AudioDeviceID = device
+      var outputDevice: AudioDeviceID = deviceId
       AudioUnitSetProperty(outputUnit,
                            kAudioOutputUnitProperty_CurrentDevice,
                            kAudioUnitScope_Global,
                            0,
                            &outputDevice,
                            UInt32(MemoryLayout<AudioDeviceID>.size))
+    } else {
+      stop()
     }
   }
   
@@ -205,7 +222,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
           for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
             if await ApiModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
-              await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain) * 100)")
+              await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
             }
           }
         }

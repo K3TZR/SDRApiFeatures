@@ -75,10 +75,12 @@ final public class ListenerModel: Equatable {
   // MARK: - Public methods
   
   public func setActive(_ isGui: Bool, _ selection: String, _ directMode: Bool = false) {
+    
     if directMode {
       
-      let serial = String(selection.prefix(19))
-      let publicIp = String(selection.suffix(from: selection.index(selection.startIndex, offsetBy: 19)))
+      let components = selection.components(separatedBy: "|")
+      let serial = components[0]
+      let publicIp = components[1]
       
       if isGui {
         activePacket = Packet(nickname: "DIRECT", serial: serial, publicIp: publicIp, port: 4_992)
@@ -139,6 +141,8 @@ final public class ListenerModel: Equatable {
   }
   
   public func smartlinkStop() {
+    ListenerModel.shared.removePackets(condition: {$0.source == .smartlink})
+
     _smartlinkListener?.stop()
     _smartlinkListener = nil
   }
@@ -218,7 +222,7 @@ final public class ListenerModel: Equatable {
   func processPacket(_ newPacket: Packet) {
     
     // is it a Packet that has been seen previously?
-    if let oldPacket = packets[id: newPacket.serial + newPacket.publicIp] {
+    if let oldPacket = packets[id: newPacket.serial + "|" + newPacket.publicIp] {
       // KNOWN PACKET
       updatePacketData(oldPacket, newPacket)
 
@@ -241,7 +245,7 @@ final public class ListenerModel: Equatable {
   
   private func updatePacketData(_ oldPacket: Packet?, _ newPacket: Packet ) {
     // update Packets collection
-    packets[id: newPacket.serial + newPacket.publicIp] = newPacket
+    packets[id: newPacket.serial + "|" + newPacket.publicIp] = newPacket
     
     // identify GuiClient changes
     if oldPacket == nil {
@@ -272,7 +276,7 @@ final public class ListenerModel: Equatable {
         for guiClient in oldPacket!.guiClients {
           if !newPacket.guiClients.contains(guiClient){
             
-            stations.remove(id: oldPacket!.serial + oldPacket!.publicIp + guiClient.station)
+            stations.remove(id: oldPacket!.serial + "|" + oldPacket!.publicIp + "|" + guiClient.station + "|" + oldPacket!.nickname + "|" + oldPacket!.source.rawValue)
             
 //            guiClients.remove(id: guiClient.handle)
             
@@ -295,14 +299,15 @@ final public class ListenerModel: Equatable {
     _formatter.timeStyle = .long
     _formatter.dateStyle = .none
     for packet in packets where condition(packet) {
-      packets.remove(packet)
-      log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
       
-      // update Stations as well
-      for station in stations where station.packet == packet {
+      // update Stations
+      for station in stations where condition(station.packet) {
         stations.remove(station)
         log("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
       }
+      // update Packets
+      packets.remove(packet)
+      log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
     }
   }
   

@@ -333,14 +333,14 @@ public final class ApiModel {
     fpgaMbVersion = ""
     
     // clear Published lists
-    Task {
-      await MainActor.run {
+//    Task {
+//      await MainActor.run {
         antList.removeAll()
         micList.removeAll()
-        //    rfGainList.removeAll()
-        //    sliceList.removeAll()
-      }
-    }
+//        //    rfGainList.removeAll()
+//        //    sliceList.removeAll()
+//      }
+//    }
   }
 
   // ----------------------------------------------------------------------------

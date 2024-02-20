@@ -67,7 +67,7 @@ public struct PickerView: View {
                 Text(packet.guiClientStations)
               }
               .font(.title3)
-              .foregroundColor(store.defaultValue == packet.serial + packet.publicIp ? .red : nil)
+              .foregroundColor(store.defaultValue == packet.serial + "|" + packet.publicIp ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
@@ -87,7 +87,7 @@ public struct PickerView: View {
                 Text(station.station)
               }
               .font(.title3)
-              .foregroundColor(store.defaultValue == station.packet.serial + station.packet.publicIp + station.station ? .red : nil)
+              .foregroundColor(store.defaultValue == station.packet.serial + "|" + station.packet.publicIp + "|" + station.station + station.packet.source.rawValue ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
             //            }
