@@ -197,7 +197,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   private func setDevice(_ deviceId: AudioDeviceID?) {
     if let deviceId {
 
-      print("DeviceId = \(deviceId)")
+      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
       
       // get the audio unit from the output node
       let outputUnit = _engine.outputNode.audioUnit!
@@ -216,7 +216,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   
   private func setGain(_ gain: Double) {
     // TODO
-    print("--->>> Device gain = \(gain)")
+    print("--->>> DaxAudioPlayer: Device gain = \(gain)")
     if let streamId = streamId {
       Task {
         if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
