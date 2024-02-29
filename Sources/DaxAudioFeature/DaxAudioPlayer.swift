@@ -27,6 +27,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   public var deviceId: AudioDeviceID?               { didSet {setDevice(deviceId)}}
   public var gain: Double = 50                      { didSet {setGain(gain)}}
   public var sampleRate: Double = 24_000            { didSet {setSampleRate(sampleRate)}}
+  public var sliceLetter: String?
 
   @MainActor public var levels = SignalLevel(rms: -50,peak: -50)
   public var status = "Off"
@@ -127,7 +128,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func start(_ streamId: UInt32) {
+  public func start(_ streamId: UInt32, deviceId: AudioDeviceID?, gain: Double, sampleRate: Double = 24_000) {
     self.streamId = streamId
     active = true
     
@@ -154,7 +155,10 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     _engine.attach(_srcNode)
     _engine.connect(_srcNode, to: _engine.mainMixerNode, format: AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: _sampleRate, channels: AVAudioChannelCount(_channelCount), interleaved: false)!)
 
-    
+//    setDevice(deviceId)
+    setGain(gain)
+//    setSampleRate(sampleRate)
+//
 //    TPCircularBufferClear(&_ringBuffer)
     
 //    let availableFrames = TPCircularBufferGetAvailableSpace(&_ringBuffer, &_nonInterleavedASBD)
@@ -177,7 +181,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
       fatalError("DaxAudioPlayer: Failed to start, error = \(error)")
     }
     
-    setDevice(deviceId)
   }
   
   public func stop() {
@@ -197,7 +200,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   private func setDevice(_ deviceId: AudioDeviceID?) {
     if let deviceId {
 
-      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
+//      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
       
       // get the audio unit from the output node
       let outputUnit = _engine.outputNode.audioUnit!
@@ -216,10 +219,11 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   
   private func setGain(_ gain: Double) {
     // TODO
-    print("--->>> DaxAudioPlayer: Device gain = \(gain)")
+//    print("--->>> DaxAudioPlayer: Device gain = \(gain)")
     if let streamId = streamId {
       Task {
         if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
+          self.sliceLetter = sliceLetter
           for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
             if await ApiModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
