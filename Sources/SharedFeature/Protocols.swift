@@ -23,16 +23,13 @@ public protocol AudioStreamHandler: AnyObject {
   func sendAudio(buffer: [UInt8], samples: Int)
 }
 
-
-
 /// UDP Stream handler protocol
 public protocol RxAudioHandler: AnyObject {
   /// Process Stream data
   /// - Parameters:
   ///   - payload: array of bytes
   ///   - compressed: is compressed
-  func rxAudioHandler(payload: [UInt8],
-                      compressed: Bool)
+  func rxAudioHandler(payload: [UInt8], compressed: Bool)
 }
 
 /// UDP Stream handler protocol
@@ -42,7 +39,5 @@ public protocol DaxAudioHandler: AnyObject {
   ///   - payload: array of bytes
   ///   - reducedBW: Float32(false) vs Int16(true) element size
   ///   - channelNumber: dax channel number
-  func daxAudioHandler(payload: [UInt8],
-                       reducedBW: Bool,
-                       channelNumber: Int?)
+  func daxAudioHandler(payload: [UInt8], reducedBW: Bool, channelNumber: Int?)
 }

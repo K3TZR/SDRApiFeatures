@@ -279,7 +279,7 @@ extension ApiModel {
   }
   
   // DaxRxAudioStream
-  public func requestDaxAudioStream(daxChannel: Int, callback: ReplyHandler? = nil)  {
+  public func requestDaxRxAudioStream(daxChannel: Int, callback: ReplyHandler? = nil)  {
     sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
   }
   public func requestDaxRxAudioStream(daxChannel: Int, callback: ReplyHandler? = nil) async throws -> String {
