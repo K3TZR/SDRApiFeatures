@@ -29,33 +29,8 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   public var sampleRate: Double = 24_000            { didSet {setSampleRate(sampleRate)}}
   public var sliceLetter: String?
 
-  @MainActor public var levels = SignalLevel(rms: -50,peak: -50)
+  public var levels = SignalLevel(rms: -50,peak: -50)
   public var status = "Off"
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Static properties
-  
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Static methods
-  
-  static func rms(data: UnsafeMutablePointer<Float>, frameLength: UInt) -> SignalLevel {
-    // calc the average
-    var rms: Float = 0
-    vDSP_measqv(data, 1, &rms, frameLength)
-    var rmsDb = 10*log10f(rms)
-    if rmsDb < -45 {
-      rmsDb = -45
-    }
-    // calc the peak
-    var max: Float = 0
-    vDSP_maxv(data, 1, &max, frameLength)
-    var maxDb = 10*log10f(max)
-    if maxDb < -45 {
-      maxDb = -45
-    }
-    return SignalLevel(rms: rmsDb, peak: maxDb)
-  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -155,14 +130,9 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     _engine.attach(_srcNode)
     _engine.connect(_srcNode, to: _engine.mainMixerNode, format: AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: _sampleRate, channels: AVAudioChannelCount(_channelCount), interleaved: false)!)
 
-//    setDevice(deviceId)
+    setDevice(deviceId)
     setGain(gain)
-//    setSampleRate(sampleRate)
-//
-//    TPCircularBufferClear(&_ringBuffer)
-    
-//    let availableFrames = TPCircularBufferGetAvailableSpace(&_ringBuffer, &_nonInterleavedASBD)
-//    log("DaxAudioPlayer: STARTED, frames = \(availableFrames)", .debug, #function, #file, #line)
+    setSampleRate(sampleRate)
     
     do {
       try _engine.start()
@@ -170,9 +140,25 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         guard let channelData = buffer.floatChannelData?[0] else {return}
         let frames = buffer.frameLength
         
+        // calc the average
+        var rms: Float = 0
+        vDSP_measqv(channelData, 1, &rms, UInt(frames))
+        var rmsDb = 10*log10f(rms)
+        if rmsDb < -45 {
+          rmsDb = -45
+        }
+        // calc the peak
+        var max: Float = 0
+        vDSP_maxv(channelData, 1, &max, UInt(frames))
+        var maxDb = 10*log10f(max)
+        if maxDb < -45 {
+          maxDb = -45
+        }
+        let levels = SignalLevel(rms: rmsDb, peak: maxDb)
+        
         Task {
           await MainActor.run {
-            self.levels = DaxAudioPlayer.rms(data: channelData, frameLength: UInt(frames))
+            self.levels = levels
           }
         }
       }
