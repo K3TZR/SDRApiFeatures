@@ -34,17 +34,18 @@ extension ApiModel {
     let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
     
     // register to be notified when reply received
-    addReplyHandler(sequenceNumber, (replyTo: callback, command: command, continuation: nil))
+//    addReplyHandler(sequenceNumber, (replyTo: callback, command: command, continuation: nil))
+    addReplyHandler(sequenceNumber, (replyTo: callback, command: command))
   }
 
-  public func sendCommandAwaitReply(_ command: String) async throws -> String {
-    return try await withCheckedThrowingContinuation{ continuation in
-      let sequenceNumber = Tcp.shared.send(command)
-      // register to be resumed when reply received
-      addReplyHandler(sequenceNumber, (replyTo: nil, command: command, continuation: continuation))
-      return
-    }
-  }
+//  public func sendCommandAwaitReply(_ command: String) async throws -> String {
+//    return try await withCheckedThrowingContinuation{ continuation in
+//      let sequenceNumber = Tcp.shared.send(command)
+//      // register to be resumed when reply received
+//      addReplyHandler(sequenceNumber, (replyTo: nil, command: command, continuation: continuation))
+//      return
+//    }
+//  }
   
   /// Send data to the Radio (hardware) via UDP
   /// - Parameters:
@@ -238,52 +239,69 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK:
   
-  public func requestUptime(callback: ReplyHandler? = nil) {
+  public func requestUptime(replyTo callback: ReplyHandler? = nil) {
     sendCommand("radio uptime", replyTo: callback)
   }
   
-  public func requestVersion(callback: ReplyHandler? = nil) {
+  public func requestVersion(replyTo callback: ReplyHandler? = nil) {
     sendCommand("version", replyTo: callback )
   }
   
-  public func staticNetParamsReset(callback: ReplyHandler? = nil) {
+  public func staticNetParamsReset(replyTo callback: ReplyHandler? = nil) {
     sendCommand("radio static_net_params" + " reset", replyTo: callback)
   }
   
-  public func staticNetParamsSet(callback: ReplyHandler? = nil) {
+  public func staticNetParamsSet(replyTo callback: ReplyHandler? = nil) {
     //    sendTcp("radio static_net_params" + " ip=\(staticIp) gateway=\(staticGateway) netmask=\(staticMask)")
   }
   
   // RemoteRxAudioStream
-  public func requestRemoteRxAudioStream(isCompressed: Bool = true, callback: ReplyHandler? = nil)  {
+  public func requestRemoteRxAudioStream(isCompressed: Bool = true, replyTo callback: ReplyHandler? = nil)  {
     sendCommand("stream create type=\(ObjectType.remoteRxAudioStream.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
-  }
-  public func requestRemoteRxAudioStream(isCompressed: Bool = true, callback: ReplyHandler? = nil) async throws -> String {
-    try await sendCommandAwaitReply("stream create type=\(ObjectType.remoteRxAudioStream.rawValue) compression=\(isCompressed ? "opus" : "none")")
   }
   
   // RemoteTxAudioStream
-  public func requestRemoteTxAudioStream(callback: ReplyHandler? = nil) {
+  public func requestRemoteTxAudioStream(replyTo callback: ReplyHandler? = nil) {
     sendCommand("stream create type=\(ObjectType.remoteTxAudioStream.rawValue)", replyTo: callback)
-  }
-  public func requestRemoteTxAudioStream(callback: ReplyHandler? = nil) async throws -> String {
-    try await sendCommandAwaitReply("stream create type=\(ObjectType.remoteTxAudioStream.rawValue)")
   }
   
   // DaxMicAudioStream
-  public func requestDaxMicAudioStream(callback: ReplyHandler? = nil)  {
+  public func requestDaxMicAudioStream(replyTo callback: ReplyHandler? = nil)  {
     sendCommand("stream create type=\(ObjectType.daxMicAudioStream.rawValue)", replyTo: callback)
-  }
-  public func requestDaxMicAudioStream(callback: ReplyHandler? = nil) async throws -> String {
-    try await sendCommandAwaitReply("stream create type=\(ObjectType.daxMicAudioStream.rawValue)")
   }
   
   // DaxRxAudioStream
-  public func requestDaxRxAudioStream(daxChannel: Int, callback: ReplyHandler? = nil)  {
+  public func requestDaxRxAudioStream(daxChannel: Int, replyTo callback: ReplyHandler? = nil)  {
     sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
   }
-  public func requestDaxRxAudioStream(daxChannel: Int, callback: ReplyHandler? = nil) async throws -> String {
-    try await sendCommandAwaitReply("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)")
+  
+  public func requestDaxRxAudioStream(daxChannel: Int) async throws -> String? {
+    sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: streamCreationReply)
+    let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
+      await rxAudioStream()
+    }
+    return reply
+  }
+
+  @MainActor func streamCreationReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    if command.contains(ObjectType.daxRxAudioStream.rawValue) { _awaitRxAudioStream?.resume(returning: (reply)) }
+//    _awaitRxAudioStream?.resume(returning: (reply))
+  }
+
+  
+  public func requestDaxStream(_ streamType: ObjectType, daxChannel: Int = 0) async throws -> String? {
+    
+    switch streamType {
+    case .daxMicAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: streamCreationReply)
+    case .daxRxAudioStream:    sendCommand("stream create type=\(streamType.rawValue), dax_channel=\(daxChannel)", replyTo: streamCreationReply)
+    case .daxTxAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: streamCreationReply)
+    default: return nil
+    }
+    
+    let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
+      await rxAudioStream()
+    }
+    return reply
   }
 
 }

@@ -24,9 +24,9 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   
   public var active = false
   public var streamId: UInt32?
-  public var deviceId: AudioDeviceID?               { didSet {setDevice(deviceId)}}
-  public var gain: Double = 50                      { didSet {setGain(gain)}}
-  public var sampleRate: Double = 24_000            { didSet {setSampleRate(sampleRate)}}
+  public var deviceId: AudioDeviceID
+  public var gain: Double
+  public var sampleRate: Double
   public var sliceLetter: String?
 
   public var levels = SignalLevel(rms: -50,peak: -50)
@@ -60,7 +60,9 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   
 //  public init(deviceId: UInt32 = 0, sampleRate: Double = 24_000) {
 //    self.deviceId = deviceId
-  public init(sampleRate: Double = 24_000) {
+  public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Double = 24_000) {
+    self.deviceId = deviceId
+    self.gain = gain
     self.sampleRate = sampleRate
     let elementSize = MemoryLayout<Float>.size
     let channelCount = 2
@@ -103,8 +105,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func start(_ streamId: UInt32, deviceId: AudioDeviceID?, gain: Double, sampleRate: Double = 24_000) {
-    self.streamId = streamId
+  public func start() {
     active = true
     
     _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_interleavedBigEndianASBD)!, frameCapacity: UInt32(_frameCount))!
@@ -272,4 +273,19 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
       }
     }
   }
+  
+  public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    if reply != kNoError {
+      if let streamId = reply.streamId {
+        self.streamId = streamId
+        
+        start()
+        Task {
+          await MainActor.run { ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self }
+        }
+        log("DaxRxCore: audioOutput STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+      }
+    }
+  }
+
 }

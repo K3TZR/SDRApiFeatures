@@ -18,7 +18,8 @@ public typealias Hz = Int
 public typealias MHz = Double
 
 public typealias ReplyHandler = (_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) -> Void
-public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String, continuation: CheckedContinuation<String,Error>?)
+//public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String, continuation: CheckedContinuation<String,Error>?)
+public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
 
 @MainActor
 @Observable
@@ -161,12 +162,18 @@ public final class ApiModel {
   // MARK: - Internal properties
   
   var _awaitFirstStatusMessage: CheckedContinuation<(), Never>?
+  var _awaitWanValidation: CheckedContinuation<String, Never>?
+  var _awaitClientIpValidation: CheckedContinuation<String, Never>?
+  
+  
+  var _awaitRxAudioStream: CheckedContinuation<String?, Never>?
+
   var _isGui = true
 
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
   
-  enum ObjectType: String {
+  public enum ObjectType: String {
     case amplifier
     case atu
     case bandSetting = "band"
@@ -238,7 +245,7 @@ public final class ApiModel {
       }
       
       // wait for the first Status message with my handle
-      try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
+      try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
         await awaitFirstStatusMessage()
       }
       log("ApiModel: First status message received", .debug, #function, #file, #line)
@@ -246,7 +253,7 @@ public final class ApiModel {
       // is this a Wan connection?
       if packet.source == .smartlink {
         // YES, send Wan Connect message & wait for the reply
-        _wanHandle = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
+        _wanHandle = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [serial = packet.serial, negotiatedHolePunchPort = packet.negotiatedHolePunchPort] in
           try await ListenerModel.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
         }
         
@@ -254,10 +261,14 @@ public final class ApiModel {
         
         // send Wan Validate & wait for the reply
         log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
-        try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self, _wanHandle] in
-          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
+        sendCommand("wan validate handle=\(_wanHandle)", replyTo: wanValidationReply)
+        let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
+          //          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
+          //          await sendCommand("wan validate handle=\(_wanHandle), callback: awaitWanValidation")
+          
+          await wanValidation()
         }
-        log("ApiModel: Wan validation received", .debug, #function, #file, #line)
+        log("ApiModel: Wan validation = \(reply)", .debug, #function, #file, #line)
       }
       // bind UDP
       let ports = Udp.shared.bind(packet.source == .smartlink,
@@ -276,8 +287,9 @@ public final class ApiModel {
         log("ApiModel: UDP registration sent", .debug, #function, #file, #line)
         
         // send Client Ip & wait for the reply
-        let reply = try await withTimeout(seconds: 2.0, errorToThrow: ApiError.statusTimeout) { [self] in
-          try await sendCommandAwaitReply("client ip")
+        sendCommand("client ip", replyTo: clientIpReply)
+        let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
+          await clientIpValidation()
         }
         log("ApiModel: Client ip = \(reply)", .debug, #function, #file, #line)
       }
@@ -296,6 +308,37 @@ public final class ApiModel {
       }
     }
   }
+  
+  
+  
+  @MainActor func wanValidationReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    // YES, resume it
+    _awaitWanValidation?.resume(returning: reply)
+//    if reply == kNoError {
+//      _awaitWanValidation?.resume()
+//    } else {
+//      _awaitWanValidation?.resume(throwing: ApiError.replyError)
+//    }
+  }
+  
+  @MainActor func clientIpReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    // YES, resume it
+    _awaitClientIpValidation?.resume(returning: reply)
+//    if reply == kNoError {
+//      _awaitClientIpValidation?.resume()
+//    } else {
+//      _awaitClientIpValidation?.resume(throwing: ApiError.replyError)
+//    }
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
 
   /// Disconnect the current Radio and remove all its objects / references
   /// - Parameter reason: an optional reason
@@ -346,10 +389,31 @@ public final class ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Internal / Private Helper methods
   
+  func clientIpValidation() async -> (String) {
+    return await withCheckedContinuation{ continuation in
+      _awaitClientIpValidation = continuation
+      log("Api: Client ip request sent", .debug, #function, #file, #line)
+    }
+  }
+  
+  func wanValidation() async -> (String) {
+    return await withCheckedContinuation{ continuation in
+      _awaitWanValidation = continuation
+      log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
+    }
+  }
+
   func awaitFirstStatusMessage() async {
     return await withCheckedContinuation{ continuation in
       _awaitFirstStatusMessage = continuation
       log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
+    }
+  }
+  
+  func rxAudioStream() async -> (String?) {
+    return await withCheckedContinuation{ continuation in
+      _awaitRxAudioStream = continuation
+      log("ApiModel: RxAudioStream request sent", .debug, #function, #file, #line)
     }
   }
   

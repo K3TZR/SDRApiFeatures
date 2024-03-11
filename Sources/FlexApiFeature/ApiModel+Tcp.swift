@@ -158,14 +158,14 @@ extension ApiModel {
       }
       
       // did the replyTuple include a continuation?
-      if let continuation = replyTuple.continuation {
-        // YES, resume it
-        if reply == kNoError {
-          continuation.resume(returning: suffix)
-        } else {
-          continuation.resume(throwing: ApiError.replyError)
-        }
-      }
+//      if let continuation = replyTuple.continuation {
+//        // YES, resume it
+//        if reply == kNoError {
+//          continuation.resume(returning: suffix)
+//        } else {
+//          continuation.resume(throwing: ApiError.replyError)
+//        }
+//      }
       
       // did the replyTuple include a callback?
       if let handler = replyTuple.replyTo {
