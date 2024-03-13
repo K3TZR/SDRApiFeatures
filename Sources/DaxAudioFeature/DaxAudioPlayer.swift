@@ -58,8 +58,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-//  public init(deviceId: UInt32 = 0, sampleRate: Double = 24_000) {
-//    self.deviceId = deviceId
   public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Double = 24_000) {
     self.deviceId = deviceId
     self.gain = gain
@@ -133,7 +131,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
 
     setDevice(deviceId)
     setGain(gain)
-    setSampleRate(sampleRate)
     
     do {
       try _engine.start()
@@ -184,29 +181,24 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Private methods
   
-  private func setDevice(_ deviceId: AudioDeviceID?) {
-    if let deviceId {
-
-//      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
-      
-      // get the audio unit from the output node
-      let outputUnit = _engine.outputNode.audioUnit!
-      // use core audio to set the output device:
-      var outputDevice: AudioDeviceID = deviceId
-      AudioUnitSetProperty(outputUnit,
-                           kAudioOutputUnitProperty_CurrentDevice,
-                           kAudioUnitScope_Global,
-                           0,
-                           &outputDevice,
-                           UInt32(MemoryLayout<AudioDeviceID>.size))
-    } else {
-      stop()
-    }
+  public func setDevice(_ deviceId: AudioDeviceID) {
+    self.deviceId = deviceId
+    //      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
+    
+    // get the audio unit from the output node
+    let outputUnit = _engine.outputNode.audioUnit!
+    // use core audio to set the output device:
+    var outputDevice: AudioDeviceID = deviceId
+    AudioUnitSetProperty(outputUnit,
+                         kAudioOutputUnitProperty_CurrentDevice,
+                         kAudioUnitScope_Global,
+                         0,
+                         &outputDevice,
+                         UInt32(MemoryLayout<AudioDeviceID>.size))
   }
   
-  private func setGain(_ gain: Double) {
-    // TODO
-//    print("--->>> DaxAudioPlayer: Device gain = \(gain)")
+  public func setGain(_ gain: Double) {
+    self.gain = gain
     if let streamId = streamId {
       Task {
         if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
@@ -219,10 +211,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         }
       }
     }
-  }
-  
-  private func setSampleRate(_ sampleRate: Double) {
-    // TODO
   }
   
   // ----------------------------------------------------------------------------
@@ -274,6 +262,9 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Stream reply handler
+  
   public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
     if reply != kNoError {
       if let streamId = reply.streamId {
@@ -283,9 +274,8 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         Task {
           await MainActor.run { ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self }
         }
-        log("DaxRxCore: audioOutput STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+        log("DaxAudioPlayer: audioOutput STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }
     }
   }
-
 }

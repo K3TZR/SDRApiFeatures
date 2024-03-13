@@ -304,7 +304,7 @@ public enum AudioCompression: String {
 }
 
 // Helper struct used by Audio routines
-public struct AudioDevice {
+public struct AudioDevice : Identifiable, Equatable {
   public var id: AudioDeviceID
   
   public init(_ id: AudioDeviceID) {
