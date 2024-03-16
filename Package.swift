@@ -91,6 +91,7 @@ let package = Package(
     
     // RxAudioFeature
     .target( name: "RxAudioFeature", dependencies: [
+      "FlexApiFeature",
       "RingBufferFeature",
       "XCGLogFeature",
     ]),

@@ -27,7 +27,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   public var deviceId: AudioDeviceID
   public var gain: Double
   public var sampleRate: Double
-  public var sliceLetter: String?
+//  public var sliceLetter: String?
 
   public var levels = SignalLevel(rms: -50,peak: -50)
   public var status = "Off"
@@ -43,7 +43,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   private var _converter = AVAudioConverter()
   
   private var _ringBuffer = TPCircularBuffer()
-  private var _ringBufferSize: Int = 0
 
   private let _channelCount = 2
   private let _elementSize = MemoryLayout<Float>.size   // Bytes
@@ -62,40 +61,38 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     self.deviceId = deviceId
     self.gain = gain
     self.sampleRate = sampleRate
-    let elementSize = MemoryLayout<Float>.size
-    let channelCount = 2
     
     // PCM, Float32, Host, 2 channel, non-interleaved
     _nonInterleavedASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
                                                       mFormatID: kAudioFormatLinearPCM,
                                                       mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
-                                                      mBytesPerPacket: UInt32(elementSize),
+                                                      mBytesPerPacket: UInt32(_elementSize),
                                                       mFramesPerPacket: 1,
-                                                      mBytesPerFrame: UInt32(elementSize),
+                                                      mBytesPerFrame: UInt32(_elementSize),
                                                       mChannelsPerFrame: UInt32(2),
-                                                      mBitsPerChannel: UInt32(elementSize * 8) ,
+                                                      mBitsPerChannel: UInt32(_elementSize * 8) ,
                                                       mReserved: 0)
     
     // PCM, Float32, BigEndian, 2 channel, interleaved
     _interleavedBigEndianASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
                                                             mFormatID: kAudioFormatLinearPCM,
                                                             mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsBigEndian,
-                                                            mBytesPerPacket: UInt32(elementSize * channelCount),
+                                                            mBytesPerPacket: UInt32(_elementSize * _channelCount),
                                                             mFramesPerPacket: 1,
-                                                            mBytesPerFrame: UInt32(elementSize * channelCount),
+                                                            mBytesPerFrame: UInt32(_elementSize * _channelCount),
                                                             mChannelsPerFrame: UInt32(2),
-                                                            mBitsPerChannel: UInt32(elementSize * 8) ,
+                                                            mBitsPerChannel: UInt32(_elementSize * 8) ,
                                                             mReserved: 0)
     
     // PCM, Float32, BigEndian, 2 channel, interleaved
     _interleavedHostASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
                                                        mFormatID: kAudioFormatLinearPCM,
                                                        mFormatFlags: kAudioFormatFlagIsFloat,
-                                                       mBytesPerPacket: UInt32(elementSize * channelCount),
+                                                       mBytesPerPacket: UInt32(_elementSize * _channelCount),
                                                        mFramesPerPacket: 1,
-                                                       mBytesPerFrame: UInt32(elementSize * channelCount),
+                                                       mBytesPerFrame: UInt32(_elementSize * _channelCount),
                                                        mChannelsPerFrame: UInt32(2),
-                                                       mBitsPerChannel: UInt32(elementSize * 8) ,
+                                                       mBitsPerChannel: UInt32(_elementSize * 8) ,
                                                        mReserved: 0)
     
   }
@@ -109,7 +106,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_interleavedBigEndianASBD)!, frameCapacity: UInt32(_frameCount))!
     _interleavedBuffer.frameLength = _interleavedBuffer.frameCapacity
     
-    _nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_nonInterleavedASBD)!, frameCapacity: UInt32(_frameCount * 2))!
+    _nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_nonInterleavedASBD)!, frameCapacity: UInt32(_frameCount * _channelCount))!
     _nonInterleavedBuffer.frameLength = _nonInterleavedBuffer.frameCapacity
     
     // convert from PCM Float32, BigEndian, 2 channel, interleaved -> PCM Float32, Host, 2 channel, non-interleaved
@@ -202,7 +199,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
     if let streamId = streamId {
       Task {
         if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
-          self.sliceLetter = sliceLetter
           for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
             if await ApiModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
