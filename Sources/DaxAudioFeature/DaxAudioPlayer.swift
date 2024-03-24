@@ -57,13 +57,13 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Double = 24_000) {
+  public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Int = 24_000) {
     self.deviceId = deviceId
     self.gain = gain
-    self.sampleRate = sampleRate
+    self.sampleRate = Double(sampleRate)
     
     // PCM, Float32, Host, 2 channel, non-interleaved
-    _nonInterleavedASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
+    _nonInterleavedASBD = AudioStreamBasicDescription(mSampleRate: Double(sampleRate),
                                                       mFormatID: kAudioFormatLinearPCM,
                                                       mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
                                                       mBytesPerPacket: UInt32(_elementSize),
@@ -74,7 +74,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
                                                       mReserved: 0)
     
     // PCM, Float32, BigEndian, 2 channel, interleaved
-    _interleavedBigEndianASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
+    _interleavedBigEndianASBD = AudioStreamBasicDescription(mSampleRate: Double(sampleRate),
                                                             mFormatID: kAudioFormatLinearPCM,
                                                             mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsBigEndian,
                                                             mBytesPerPacket: UInt32(_elementSize * _channelCount),
@@ -85,7 +85,7 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
                                                             mReserved: 0)
     
     // PCM, Float32, BigEndian, 2 channel, interleaved
-    _interleavedHostASBD = AudioStreamBasicDescription(mSampleRate: sampleRate,
+    _interleavedHostASBD = AudioStreamBasicDescription(mSampleRate: Double(sampleRate),
                                                        mFormatID: kAudioFormatLinearPCM,
                                                        mFormatFlags: kAudioFormatFlagIsFloat,
                                                        mBytesPerPacket: UInt32(_elementSize * _channelCount),
@@ -207,6 +207,12 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
         }
       }
     }
+  }
+  
+  public func setSampleRate(_ sampleRate: Int) {
+    self.sampleRate = Double(sampleRate)
+    
+    // FIXME: how to update sample rate ???
   }
   
   // ----------------------------------------------------------------------------
