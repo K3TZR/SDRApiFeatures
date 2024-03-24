@@ -115,7 +115,7 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
     if isStreaming == false {
       isStreaming = true
       // log the start of the stream
-      log("DaxRxAudioStream \(id.hex) STARTED:", .info, #function, #file, #line)
+      log("DaxRxAudioStream \(id.hex) STARTED: \(vita.classCode == .daxReducedBw ? "REDUCED BW" : "")", .info, #function, #file, #line)
     }
     delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: daxChannel)
   }
