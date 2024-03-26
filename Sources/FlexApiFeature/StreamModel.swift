@@ -26,6 +26,7 @@ public class VitaStatus: Identifiable {
   }
 }
 
+@Observable
 final public class StreamModel {
 
   // ----------------------------------------------------------------------------

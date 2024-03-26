@@ -221,9 +221,6 @@ final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
   public func daxAudioHandler(payload: [UInt8], reducedBW: Bool = false) {
     let oneOverMax: Float = 1.0 / Float(Int16.max)
     
-    print("----->>>>> reducedBW = \(reducedBW)")
-    
-    
     if reducedBW {
       // Reduced Bandwidth - Int16, BigEndian, 1 Channel
       // allocate temporary array
