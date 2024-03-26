@@ -133,14 +133,14 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
   /// Process the DaxAudioStream Vita struct
   /// - Parameters:
   ///   - vita:       a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
-    if isStreaming == false {
-      isStreaming = true
-      // log the start of the stream
-      log("DaxMicAudioStream \(id.hex) STARTED:", .info, #function, #file, #line)
-    }
-    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: nil)
-  }
+//  public func vitaProcessor(_ vita: Vita) {
+//    if isStreaming == false {
+//      isStreaming = true
+//      // log the start of the stream
+//      log("DaxMicAudioStream \(id.hex) STARTED:", .info, #function, #file, #line)
+//    }
+//    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: nil)
+//  }
 
   /// Process the Mic Audio Stream Vita struct
   /// - Parameters:

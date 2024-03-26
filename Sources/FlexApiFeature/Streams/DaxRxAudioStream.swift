@@ -111,15 +111,15 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
   /// Process the DaxAudioStream Vita struct
   /// - Parameters:
   ///   - vita:       a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
-    if isStreaming == false {
-      isStreaming = true
-      // log the start of the stream
-      log("DaxRxAudioStream \(id.hex) STARTED: \(vita.classCode == .daxReducedBw ? "REDUCED BW" : "")", .info, #function, #file, #line)
-    }
-    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: daxChannel)
-  }
-  
+//  public func vitaProcessor(_ vita: Vita) {
+//    if isStreaming == false {
+//      isStreaming = true
+//      // log the start of the stream
+//      log("DaxRxAudioStream \(id.hex) STARTED: \(vita.classCode == .daxReducedBw ? "REDUCED BW" : "")", .info, #function, #file, #line)
+//    }
+//    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: daxChannel)
+//  }
+//  
   /// Set a property
   /// - Parameters:
   ///   - radio:      the current radio

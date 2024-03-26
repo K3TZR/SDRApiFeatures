@@ -38,19 +38,20 @@ public final class ApiModel {
       UserDefaults.standard.set(UUID().uuidString, forKey: "guiClientId")
     }
     
-    streamStatus[id: Vita.PacketClassCodes.daxIq24] = VitaStatus(Vita.PacketClassCodes.daxIq24)
-    streamStatus[id: Vita.PacketClassCodes.daxIq48] = VitaStatus(Vita.PacketClassCodes.daxIq48)
-    streamStatus[id: Vita.PacketClassCodes.daxIq96] = VitaStatus(Vita.PacketClassCodes.daxIq96)
-    streamStatus[id: Vita.PacketClassCodes.daxIq192] = VitaStatus(Vita.PacketClassCodes.daxIq192)
-    streamStatus[id: Vita.PacketClassCodes.daxAudio] = VitaStatus(Vita.PacketClassCodes.daxAudio)
-    streamStatus[id: Vita.PacketClassCodes.daxReducedBw] = VitaStatus(Vita.PacketClassCodes.daxReducedBw)
-    streamStatus[id: Vita.PacketClassCodes.meter] = VitaStatus(Vita.PacketClassCodes.meter)
-    streamStatus[id: Vita.PacketClassCodes.opus] = VitaStatus(Vita.PacketClassCodes.opus)
-    streamStatus[id: Vita.PacketClassCodes.panadapter] = VitaStatus(Vita.PacketClassCodes.panadapter)
-    streamStatus[id: Vita.PacketClassCodes.waterfall] = VitaStatus(Vita.PacketClassCodes.waterfall)
+//    streamStatus[id: Vita.PacketClassCodes.daxIq24] = VitaStatus(Vita.PacketClassCodes.daxIq24)
+//    streamStatus[id: Vita.PacketClassCodes.daxIq48] = VitaStatus(Vita.PacketClassCodes.daxIq48)
+//    streamStatus[id: Vita.PacketClassCodes.daxIq96] = VitaStatus(Vita.PacketClassCodes.daxIq96)
+//    streamStatus[id: Vita.PacketClassCodes.daxIq192] = VitaStatus(Vita.PacketClassCodes.daxIq192)
+//    streamStatus[id: Vita.PacketClassCodes.daxAudio] = VitaStatus(Vita.PacketClassCodes.daxAudio)
+//    streamStatus[id: Vita.PacketClassCodes.daxAudioReducedBw] = VitaStatus(Vita.PacketClassCodes.daxAudioReducedBw)
+//    streamStatus[id: Vita.PacketClassCodes.meter] = VitaStatus(Vita.PacketClassCodes.meter)
+//    streamStatus[id: Vita.PacketClassCodes.opus] = VitaStatus(Vita.PacketClassCodes.opus)
+//    streamStatus[id: Vita.PacketClassCodes.panadapter] = VitaStatus(Vita.PacketClassCodes.panadapter)
+//    streamStatus[id: Vita.PacketClassCodes.waterfall] = VitaStatus(Vita.PacketClassCodes.waterfall)
     
-    subscribeToStreams()
-
+//    subscribeToStreams()
+    _streamModel = StreamModel()
+    
     atu = Atu(self)
     cwx = Cwx(self)
     gps = Gps(self)
@@ -134,7 +135,7 @@ public final class ApiModel {
   
   // streams
 
-  public var streamStatus = IdentifiedArrayOf<VitaStatus>()
+//  public var streamStatus = IdentifiedArrayOf<VitaStatus>()
   
   public var meterStream: MeterStream?
   
@@ -149,7 +150,7 @@ public final class ApiModel {
   var _streamSubscription: Task<(), Never>? = nil
 
   
-  
+  private var _streamModel: StreamModel!
 
   private var _replyHandlers = [UInt: ReplyTuple]()
   private var _wanHandle = ""

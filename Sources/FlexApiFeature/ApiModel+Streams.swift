@@ -96,54 +96,54 @@ extension ApiModel {
   // MARK: - Private Stream Subscription methods
 
   /// Subscribe to UDP streams
-  func subscribeToStreams()  {
-    _streamSubscription = Task(priority: .high) {
-      
-      log("ApiModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
-      for await vita in Udp.shared.inboundStreams {
-        Task {
-          await MainActor.run { self.streamStatus[id: vita.classCode]?.packets += 1 }
-        }
-        switch vita.classCode {
-        case .panadapter:
-          if let object = self.panadapters[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .waterfall:
-          if let object = self.waterfalls[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
-          if let object = self.daxIqStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .daxAudio:
-          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita)}
-          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          if let object = self.remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .daxReducedBw:
-          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .meter:
-          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-          meterStream!.vitaProcessor(vita)
-
-        case .opus:
-          if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        default:
-          // log the error
-          log("ApiModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
-        }
-      }
-      log("ApiModel: UDP stream  subscription STOPPED", .debug, #function, #file, #line)
-    }
-  }
-  
-  /// Unsubscribe from UDP streams
-  private func unSubscribeToStreams() {
-    log("ApiModel: stream subscription CANCELLED", .debug, #function, #file, #line)
-    _streamSubscription?.cancel()
-  }
+//  func subscribeToStreams()  {
+//    _streamSubscription = Task(priority: .high) {
+//      
+//      log("ApiModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
+//      for await vita in Udp.shared.inboundStreams {
+//        Task {
+//          await MainActor.run { self.streamStatus[id: vita.classCode]?.packets += 1 }
+//        }
+//        switch vita.classCode {
+//        case .panadapter:
+//          if let object = self.panadapters[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        case .waterfall:
+//          if let object = self.waterfalls[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
+//          if let object = self.daxIqStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        case .daxAudio:
+//          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita)}
+//          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          if let object = self.remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        case .daxReducedBw:
+//          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        case .meter:
+//          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+//          meterStream!.vitaProcessor(vita)
+//
+//        case .opus:
+//          if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
+//          
+//        default:
+//          // log the error
+//          log("ApiModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
+//        }
+//      }
+//      log("ApiModel: UDP stream  subscription STOPPED", .debug, #function, #file, #line)
+//    }
+//  }
+//  
+//  /// Unsubscribe from UDP streams
+//  private func unSubscribeToStreams() {
+//    log("ApiModel: stream subscription CANCELLED", .debug, #function, #file, #line)
+//    _streamSubscription?.cancel()
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods
@@ -373,16 +373,16 @@ extension ApiModel {
    */
 }
 
-@Observable
-public class VitaStatus: Identifiable {
-  public var type: Vita.PacketClassCodes
-  public var packets = 0
-  public var errors = 0
-  
-  public var id: Vita.PacketClassCodes { type }
-  
-  public init(_ type: Vita.PacketClassCodes)
-  {
-    self.type = type
-  }
-}
+//@Observable
+//public class VitaStatus: Identifiable {
+//  public var type: Vita.PacketClassCodes
+//  public var packets = 0
+//  public var errors = 0
+//  
+//  public var id: Vita.PacketClassCodes { type }
+//  
+//  public init(_ type: Vita.PacketClassCodes)
+//  {
+//    self.type = type
+//  }
+//}

@@ -38,6 +38,5 @@ public protocol DaxAudioHandler: AnyObject {
   /// - Parameters:
   ///   - payload: array of bytes
   ///   - reducedBW: Float32(false) vs Int16(true) element size
-  ///   - channelNumber: dax channel number
-  func daxAudioHandler(payload: [UInt8], reducedBW: Bool, channelNumber: Int?)
+  func daxAudioHandler(payload: [UInt8], reducedBW: Bool)
 }
