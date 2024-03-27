@@ -12,7 +12,7 @@ import SharedFeature
 import UdpFeature
 import VitaFeature
 
-public class VitaStatus: Identifiable {
+public class StreamStatus: Identifiable {
   public var type: Vita.PacketClassCodes
   public var packets = 0
   public var errors = 0
@@ -25,22 +25,23 @@ public class VitaStatus: Identifiable {
   }
 }
 
+@Observable
 final public class StreamModel {
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var streamStatus: IdentifiedArrayOf<VitaStatus> = [
-    VitaStatus(Vita.PacketClassCodes.daxAudio),
-    VitaStatus(Vita.PacketClassCodes.daxAudioReducedBw),
-    VitaStatus(Vita.PacketClassCodes.daxIq24),
-    VitaStatus(Vita.PacketClassCodes.daxIq48),
-    VitaStatus(Vita.PacketClassCodes.daxIq96),
-    VitaStatus(Vita.PacketClassCodes.daxIq192),
-    VitaStatus(Vita.PacketClassCodes.meter),
-    VitaStatus(Vita.PacketClassCodes.opus),
-    VitaStatus(Vita.PacketClassCodes.panadapter),
-    VitaStatus(Vita.PacketClassCodes.waterfall),
+  public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
+    StreamStatus(Vita.PacketClassCodes.daxAudio),
+    StreamStatus(Vita.PacketClassCodes.daxAudioReducedBw),
+    StreamStatus(Vita.PacketClassCodes.daxIq24),
+    StreamStatus(Vita.PacketClassCodes.daxIq48),
+    StreamStatus(Vita.PacketClassCodes.daxIq96),
+    StreamStatus(Vita.PacketClassCodes.daxIq192),
+    StreamStatus(Vita.PacketClassCodes.meter),
+    StreamStatus(Vita.PacketClassCodes.opus),
+    StreamStatus(Vita.PacketClassCodes.panadapter),
+    StreamStatus(Vita.PacketClassCodes.waterfall),
   ]
 
   // ----------------------------------------------------------------------------
