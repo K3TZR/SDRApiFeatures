@@ -12,7 +12,6 @@ import SharedFeature
 import UdpFeature
 import VitaFeature
 
-@Observable
 public class VitaStatus: Identifiable {
   public var type: Vita.PacketClassCodes
   public var packets = 0
@@ -26,7 +25,6 @@ public class VitaStatus: Identifiable {
   }
 }
 
-@Observable
 final public class StreamModel {
 
   // ----------------------------------------------------------------------------
@@ -53,8 +51,8 @@ final public class StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-//  public static var shared = StreamModel()
-  public init() {
+  public static var shared = StreamModel()
+  private init() {
     
     _streamSubscription = Task(priority: .high) {
       

@@ -50,7 +50,7 @@ public final class ApiModel {
 //    streamStatus[id: Vita.PacketClassCodes.waterfall] = VitaStatus(Vita.PacketClassCodes.waterfall)
     
 //    subscribeToStreams()
-    _streamModel = StreamModel()
+    _streamModel = StreamModel.shared
     
     atu = Atu(self)
     cwx = Cwx(self)
