@@ -12,10 +12,10 @@ import SharedFeature
 import UdpFeature
 import VitaFeature
 
-public class StreamStatus: Identifiable {
-  public var type: Vita.PacketClassCodes
-  public var packets = 0
-  public var errors = 0
+public class StreamStatus: ObservableObject, Identifiable {
+  @Published public var type: Vita.PacketClassCodes
+  @Published public var packets = 0
+  @Published public var errors = 0
   
   public var id: Vita.PacketClassCodes { type }
   
@@ -25,13 +25,14 @@ public class StreamStatus: Identifiable {
   }
 }
 
-@Observable
-final public class StreamModel {
+final public class StreamStatistics: ObservableObject {
+  public static var shared = StreamStatistics()
+  private init() {}
 
-  // ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
+  @Published public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
     StreamStatus(Vita.PacketClassCodes.daxAudio),
     StreamStatus(Vita.PacketClassCodes.daxAudioReducedBw),
     StreamStatus(Vita.PacketClassCodes.daxIq24),
@@ -43,11 +44,30 @@ final public class StreamModel {
     StreamStatus(Vita.PacketClassCodes.panadapter),
     StreamStatus(Vita.PacketClassCodes.waterfall),
   ]
+}
 
+final public class StreamModel {
+  // ----------------------------------------------------------------------------
+  // MARK: - Public properties
+  
+//  @Published public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
+//    StreamStatus(Vita.PacketClassCodes.daxAudio),
+//    StreamStatus(Vita.PacketClassCodes.daxAudioReducedBw),
+//    StreamStatus(Vita.PacketClassCodes.daxIq24),
+//    StreamStatus(Vita.PacketClassCodes.daxIq48),
+//    StreamStatus(Vita.PacketClassCodes.daxIq96),
+//    StreamStatus(Vita.PacketClassCodes.daxIq192),
+//    StreamStatus(Vita.PacketClassCodes.meter),
+//    StreamStatus(Vita.PacketClassCodes.opus),
+//    StreamStatus(Vita.PacketClassCodes.panadapter),
+//    StreamStatus(Vita.PacketClassCodes.waterfall),
+//  ]
+  
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
   private var _streamSubscription: Task<(), Never>? = nil
+  private var _streamStatistics = StreamStatistics.shared
 
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
@@ -59,7 +79,10 @@ final public class StreamModel {
       
       log("ApiModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
       for await vita in Udp.shared.inboundStreams {
-        self.streamStatus[id: vita.classCode]?.packets += 1 
+        // update the statistics
+        Task {
+          await MainActor.run { self._streamStatistics.streamStatus[id: vita.classCode]?.packets += 1 }
+        }
         
         switch vita.classCode {
         case .panadapter:
@@ -80,20 +103,18 @@ final public class StreamModel {
           }
           if let object = await ApiModel.shared.remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
-//        case .daxReducedBw:
-//          if let stream = await ApiModel.shared.daxRxAudioStreams[id: vita.streamId] {
-//            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-//          }
-//
-//          if let stream = await ApiModel.shared.daxMicAudioStreams[id: vita.streamId] {
-//            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-//          }
-
-        case .meter:
-          //          if await meterStream == nil { meterStream = MeterStream(vita.streamId) }
-          //          await meterStream!.vitaProcessor(vita)
-          break
+          //        case .daxReducedBw:
+          //          if let stream = await ApiModel.shared.daxRxAudioStreams[id: vita.streamId] {
+          //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
+          //          }
+          //
+          //          if let stream = await ApiModel.shared.daxMicAudioStreams[id: vita.streamId] {
+          //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
+          //          }
           
+        case .meter:
+          await Meter.vitaProcessor(vita)
+
         case .opus:
           if let object = await ApiModel.shared.remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
@@ -104,7 +125,7 @@ final public class StreamModel {
       }
     }
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
