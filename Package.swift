@@ -17,6 +17,7 @@ let package = Package(
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
     .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
+    .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
@@ -96,6 +97,12 @@ let package = Package(
       "XCGLogFeature",
     ]),
     
+    // SettingsFeature
+    .target(name: "SettingsFeature", dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+      "FlexApiFeature",
+    ]),
+
     // SharedFeature
     .target(name: "SharedFeature", dependencies: [
       .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
