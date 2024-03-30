@@ -10,6 +10,7 @@ import Foundation
 import SharedFeature
 import UdpFeature
 import VitaFeature
+import XCGLogFeature
 
 extension ApiModel {
   

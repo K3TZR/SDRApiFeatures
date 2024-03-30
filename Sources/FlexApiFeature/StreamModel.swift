@@ -11,6 +11,7 @@ import Foundation
 import SharedFeature
 import UdpFeature
 import VitaFeature
+import XCGLogFeature
 
 public class StreamStatus: ObservableObject, Identifiable {
   @Published public var type: Vita.PacketClassCodes

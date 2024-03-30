@@ -14,7 +14,7 @@ import Foundation
 import FlexApiFeature
 import RingBufferFeature
 import SharedFeature
-//import XCGLogFeature
+import XCGLogFeature
 
 //  DATA FLOW (COMPRESSED)
 //

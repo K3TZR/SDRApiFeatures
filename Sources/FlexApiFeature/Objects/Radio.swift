@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 import SharedFeature
+import XCGLogFeature
 
 @MainActor
 @Observable

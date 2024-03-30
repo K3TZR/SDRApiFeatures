@@ -9,6 +9,7 @@
 import Foundation
 
 import SharedFeature
+import XCGLogFeature
 
 /// Given an errorcode return an errorlevel
 ///      Flex 6000 error codes

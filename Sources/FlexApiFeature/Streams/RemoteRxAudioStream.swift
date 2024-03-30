@@ -9,6 +9,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
+import XCGLogFeature
 
 @Observable
 public final class RemoteRxAudioStream: Identifiable, Equatable {

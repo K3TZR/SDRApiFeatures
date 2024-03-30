@@ -9,6 +9,7 @@ import Foundation
 
 import SharedFeature
 import TcpFeature
+import XCGLogFeature
 
 extension ApiModel {
   // ----------------------------------------------------------------------------

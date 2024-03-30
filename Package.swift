@@ -22,17 +22,16 @@ let package = Package(
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
-    .library(name: "XCGLogFeature", targets: ["XCGLogFeature"]),
   ],
   
   dependencies: [
     // ----- K3TZR -----
+    .package(url: "https://github.com/K3TZR/LogFeatures.git", branch: "main"),
     // ----- OTHER -----
     .package(url: "https://github.com/robbiehanson/CocoaAsyncSocket", from: "7.6.5"),
     .package(url: "https://github.com/auth0/JWTDecode.swift", from: "2.6.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", branch: "shared-state-beta"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
-    .package(url: "https://github.com/DaveWoodCom/XCGLogger.git", from: "7.0.1"),
   ],
   
   // --------------- Modules ---------------
@@ -47,7 +46,6 @@ let package = Package(
     .target( name: "DaxAudioFeature", dependencies: [
       "FlexApiFeature",
       "RingBufferFeature",
-      "XCGLogFeature",
       "SharedFeature",
     ]),
     
@@ -58,6 +56,7 @@ let package = Package(
 
     // FlexApiFeature
     .target(name: "FlexApiFeature", dependencies: [
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "ListenerFeature",
       "TcpFeature",
       "UdpFeature",
@@ -70,8 +69,8 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       .product(name: "JWTDecode", package: "JWTDecode.swift"),
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "SharedFeature",
-      "XCGLogFeature",
       "VitaFeature",
     ]),
 
@@ -92,9 +91,9 @@ let package = Package(
     
     // RxAudioFeature
     .target( name: "RxAudioFeature", dependencies: [
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "FlexApiFeature",
       "RingBufferFeature",
-      "XCGLogFeature",
     ]),
     
     // SettingsFeature
@@ -111,26 +110,20 @@ let package = Package(
     // TcpFeature
     .target(name: "TcpFeature", dependencies: [
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "SharedFeature",
     ]),
 
     // UdpFeature
     .target(name: "UdpFeature", dependencies: [
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-      .product(name: "XCGLogger", package: "XCGLogger"),
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "SharedFeature",
       "VitaFeature",
     ]),
 
     // VitaFeature
     .target(name: "VitaFeature", dependencies: [
-      "SharedFeature",
-    ]),
-
-    // XCGLogFeature
-    .target(name: "XCGLogFeature", dependencies: [
-      .product(name: "XCGLogger", package: "XCGLogger"),
-      .product(name: "ObjcExceptionBridging", package: "XCGLogger"),
       "SharedFeature",
     ]),
   ]

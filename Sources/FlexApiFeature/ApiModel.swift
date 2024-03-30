@@ -13,6 +13,7 @@ import SharedFeature
 import TcpFeature
 import UdpFeature
 import VitaFeature
+import XCGLogFeature
 
 public typealias Hz = Int
 public typealias MHz = Double

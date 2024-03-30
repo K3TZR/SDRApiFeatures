@@ -7,7 +7,7 @@
 
 import SharedFeature
 import UdpFeature
-
+import XCGLogFeature
 
 extension ApiModel {
   private func udpStatus(_ status: UdpStatus) {

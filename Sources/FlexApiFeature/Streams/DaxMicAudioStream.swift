@@ -10,6 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
+import XCGLogFeature
 
 // DaxMicAudioStream
 //      creates a DaxMicAudioStream instance to be used by a Client to support the

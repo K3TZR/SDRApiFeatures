@@ -11,6 +11,7 @@ import Foundation
 import SharedFeature
 import UdpFeature
 import VitaFeature
+import XCGLogFeature
 
 // RemoteTxAudioStream
 //      creates a RemoteTxAudioStream instance to be used by a Client to support the
