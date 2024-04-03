@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct RadioView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
 
   @Environment(ApiModel.self) var apiModel
   
@@ -103,7 +103,7 @@ private struct RadioGridView: View {
 }
 
 private struct ButtonsGridView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
   var radio: Radio
 
   var body: some View {
@@ -160,8 +160,8 @@ private struct CalibrationGridView: View {
 }
 
 #Preview {
-  RadioView(store: Store(initialState: SettingsFeature.State() ) {
-    SettingsFeature()
+  RadioView(store: Store(initialState: SettingsCore.State() ) {
+    SettingsCore()
   })
   .environment(ApiModel.shared)
   

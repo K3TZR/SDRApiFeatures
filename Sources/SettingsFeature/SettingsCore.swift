@@ -1,6 +1,6 @@
 //
 //  SettingsCore.swift
-//  
+//
 //
 //  Created by Douglas Adams on 3/28/24.
 //
@@ -32,14 +32,16 @@ public enum ProfileSelection: String {
 }
 
 @Reducer
-public struct SettingsFeature {
-  
+public struct SettingsCore {
   public init() {}
   
   @ObservableState
   public struct State {
+    
+    public init() {}
+
     // ---------- GUI Settings ----------
-        @Shared(.appStorage("alertOnError")) var alertOnError = false
+    @Shared(.appStorage("alertOnError")) var alertOnError = false
     //    @Shared(.appStorage("altAntennaNames")) var altAntennaNames: [AntennaName]
     //    @Shared(.appStorage("cwxEnabled")) var cwxEnabled: Bool
     //    @Shared(.appStorage("daxPanelOptions")) var daxPanelOptions: DaxPanelOptions
@@ -49,7 +51,7 @@ public struct SettingsFeature {
     @Shared(.appStorage("monitorShortName")) var monitorShortName: String = Meter.ShortName.voltageAfterFuse.rawValue
     @Shared(.appStorage("openControls")) var openControls: Bool = false
     //    @Shared(.appStorage("selectedEqualizerId")) var selectedEqualizerId: String
-    //    @Shared(.appStorage("sidePanelOptions")) var sidePanelOptions: SidePanelOptions
+//    @Shared(.appStorage("controlsOptions")) var controlsOptions: OptionSet = ControlsOptions.all
     @Shared(.appStorage("singleClickTuneEnabled")) var singleClickTuneEnabled: Bool = false
     @Shared(.appStorage("sliceMinimizedEnabled")) var sliceMinimizedEnabled: Bool = false
     //    @Shared(.appStorage("spectrumFillLevel")) var spectrumFillLevel: Double
@@ -124,7 +126,7 @@ public struct SettingsFeature {
     //    @Shared(.appStorage("spectrumGradientStop3")) var spectrumGradientStop3: Double = 0.6
     
     // ---------- Settings View Settings ----------
-    @Shared(.appStorage("tabSelection")) var tabSelection: String = TabSelection.gps.rawValue
+    @Shared(.appStorage("tabSelection")) var tabSelection: String = TabSelection.colors.rawValue
     @Shared(.appStorage("profileSelection")) var profileSelection: String = ProfileSelection.mic.rawValue
   }
   
@@ -137,6 +139,8 @@ public struct SettingsFeature {
   }
   
   public var body: some ReducerOf<Self> {
+    BindingReducer()
+
     Reduce { state, action in
       switch action {
         
@@ -149,7 +153,7 @@ public struct SettingsFeature {
         print("resetAll")
         resetAll()
         return .none
-      
+        
       case .binding(_):
         return .none
       }
@@ -163,41 +167,41 @@ public struct SettingsFeature {
   private func resetAll() {
     UserDefaults.resetDefaults()
   }
-
+  
   // reset a color to it's initial value
-//  private func reset(_ color: AppColor){
-//    // ---------- Colors ----------
-//    switch color {
-//    case .background: background = .black
-//    case .dbLegend: dbLegend = .green
-//    case .dbLines: dbLines = .white.opacity(0.3)
-//    case .frequencyLegend: frequencyLegend = .green
-//    case .gridLines: gridLines = .white.opacity(0.3)
-//    case .marker: marker = .yellow
-//    case .markerEdge: markerEdge = .red.opacity(0.2)
-//    case .markerSegment: markerSegment = .white.opacity(0.2)
-//    case .sliceActive: sliceActive = .red
-//    case .sliceFilter: sliceFilter = .white.opacity(0.2)
-//    case .sliceInactive: sliceInactive = .yellow
-//    case .spectrumLine: spectrumLine = .white
-//    case .spectrumFill: spectrumFill = .white
-//    case .tnfDeep: tnfDeep = .yellow.opacity(0.2)
-//    case .tnfInactive: tnfInactive = .white.opacity(0.2)
-//    case .tnfNormal: tnfNormal = .green.opacity(0.2)
-//    case .tnfPermanent: tnfPermanent = .white
-//    case .tnfVeryDeep: tnfVeryDeep = .red.opacity(0.2)
-//    }
-//  }
-
+  //  private func reset(_ color: AppColor){
+  //    // ---------- Colors ----------
+  //    switch color {
+  //    case .background: background = .black
+  //    case .dbLegend: dbLegend = .green
+  //    case .dbLines: dbLines = .white.opacity(0.3)
+  //    case .frequencyLegend: frequencyLegend = .green
+  //    case .gridLines: gridLines = .white.opacity(0.3)
+  //    case .marker: marker = .yellow
+  //    case .markerEdge: markerEdge = .red.opacity(0.2)
+  //    case .markerSegment: markerSegment = .white.opacity(0.2)
+  //    case .sliceActive: sliceActive = .red
+  //    case .sliceFilter: sliceFilter = .white.opacity(0.2)
+  //    case .sliceInactive: sliceInactive = .yellow
+  //    case .spectrumLine: spectrumLine = .white
+  //    case .spectrumFill: spectrumFill = .white
+  //    case .tnfDeep: tnfDeep = .yellow.opacity(0.2)
+  //    case .tnfInactive: tnfInactive = .white.opacity(0.2)
+  //    case .tnfNormal: tnfNormal = .green.opacity(0.2)
+  //    case .tnfPermanent: tnfPermanent = .white
+  //    case .tnfVeryDeep: tnfVeryDeep = .red.opacity(0.2)
+  //    }
+  //  }
+  
 }
 
 // ---------- UserDefaults Extension ----------
 extension UserDefaults {
-    static func resetDefaults() {
-        if let bundleID = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: bundleID)
-        }
+  static func resetDefaults() {
+    if let bundleID = Bundle.main.bundleIdentifier {
+      UserDefaults.standard.removePersistentDomain(forName: bundleID)
     }
+  }
 }
 
 // ---------- Color Extension ----------
@@ -210,7 +214,7 @@ extension Color: RawRepresentable {
     
     do {
       let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data) ?? .systemPink
-     self = Color(color)
+      self = Color(color)
     } catch {
       self = .pink
     }

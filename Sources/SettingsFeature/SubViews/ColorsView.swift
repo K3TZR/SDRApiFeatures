@@ -9,9 +9,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct ColorsView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
-  
- var body: some View {
+  @Bindable var store: StoreOf<SettingsCore>
+    
+  var body: some View {
 
     VStack {
       Grid(alignment: .leading, horizontalSpacing: 35, verticalSpacing: 15) {
@@ -108,10 +108,11 @@ struct ColorsView: View {
 }
 
 #Preview {
-  ColorsView(store: Store(initialState: SettingsFeature.State() ) {
-    SettingsFeature()
+  ColorsView(store: Store(initialState: SettingsCore.State() ) {
+    SettingsCore()
   })
-    .frame(width: 600, height: 350)
-    .padding()
+  
+  .frame(width: 600, height: 350)
+  .padding()
 }
 

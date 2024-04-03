@@ -9,77 +9,74 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SettingsView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+import FlexApiFeature
+
+public struct SettingsView: View {
+  @Bindable var store: StoreOf<SettingsCore>
+
+  public init(store: StoreOf<SettingsCore>) {
+    self.store = store
+  }
   
   public var body: some View {
     
     TabView(selection: $store.tabSelection) {
       Group {
-        GpsView(store: store)
-          .tabItem {
-            Text(TabSelection.gps.rawValue)
-            Image(systemName: "globe")
-          }.tag(TabSelection.gps.rawValue)
-        
-        ColorsView(store: store)
-          .tabItem {
-            Text(TabSelection.colors.rawValue)
-            Image(systemName: "eyedropper")
-          }.tag(TabSelection.colors.rawValue)
-        
-        XvtrView(store: store)
-          .tabItem {
-            Text(TabSelection.xvtrs.rawValue)
-            Image(systemName: "arrow.up.arrow.down.circle")
-          }.tag(TabSelection.xvtrs.rawValue)
-        
-        MiscView(store: store)
-          .tabItem {
-            Text(TabSelection.misc.rawValue)
-            Image(systemName: "gear")
-          }.tag(TabSelection.misc.rawValue)
-
-        ConnectionView(store: store)
-          .tabItem {
-            Text(TabSelection.connection.rawValue)
-            Image(systemName: "list.bullet")
-          }.tag(TabSelection.connection.rawValue)
-      }
-      
-      Group {
-        NetworkView(store: store)
-          .tabItem {
-            Text(TabSelection.misc.rawValue)
-            Image(systemName: "wifi")
-          }.tag(TabSelection.misc.rawValue)
-
         RadioView(store: store)
           .tabItem {
-            Text(TabSelection.radio.rawValue)
-            Image(systemName: "antenna.radiowaves.left.and.right")
+            Label(TabSelection.radio.rawValue, systemImage: "antenna.radiowaves.left.and.right")
           }.tag(TabSelection.radio.rawValue)
 
+        NetworkView(store: store)
+          .tabItem {
+            Label(TabSelection.network.rawValue, systemImage: "wifi")
+          }.tag(TabSelection.network.rawValue)
+
+        GpsView(store: store)
+          .tabItem {
+            Label(TabSelection.gps.rawValue, systemImage: "globe")
+          }.tag(TabSelection.gps.rawValue)
+        
         TxView(store: store)
           .tabItem {
-            Text(TabSelection.tx.rawValue)
-            Image(systemName: "bolt.horizontal")
+            Label(TabSelection.tx.rawValue, systemImage: "bolt.horizontal")
           }.tag(TabSelection.tx.rawValue)
-        
-        ProfilesView(store: store)
-          .tabItem {
-            Text(TabSelection.profiles.rawValue)
-            Image(systemName: "brain.head.profile")
-          }.tag(TabSelection.profiles.rawValue)
         
         PhoneCwView(store: store)
           .tabItem {
-            Text(TabSelection.phoneCw.rawValue)
-            Image(systemName: "mic")
+            Label(TabSelection.phoneCw.rawValue, systemImage: "mic")
           }.tag(TabSelection.phoneCw.rawValue)
+
+      }
+      
+      Group {
+        XvtrView(store: store)
+          .tabItem {
+            Label(TabSelection.xvtrs.rawValue, systemImage: "arrow.up.arrow.down.circle")
+          }.tag(TabSelection.xvtrs.rawValue)
+        
+        ProfilesView(store: store)
+          .tabItem {
+            Label(TabSelection.profiles.rawValue, systemImage: "brain.head.profile")
+          }.tag(TabSelection.profiles.rawValue)
+        
+        ConnectionView(store: store)
+          .tabItem {
+            Label(TabSelection.connection.rawValue, systemImage: "list.bullet")
+          }.tag(TabSelection.connection.rawValue)
+
+        ColorsView(store: store)
+          .tabItem {
+            Label(TabSelection.colors.rawValue, systemImage: "eyedropper")
+          }.tag(TabSelection.colors.rawValue)
+
+        MiscView(store: store)
+          .tabItem {
+            Label(TabSelection.misc.rawValue, systemImage: "gear")
+          }.tag(TabSelection.misc.rawValue)
       }
     }
-    .frame(width: 600, height: 350)
+    .frame(width: 600, height: 390)
     .padding()
   }
 }
@@ -97,9 +94,11 @@ struct SettingsView: View {
 //    }
 
 #Preview {
-  SettingsView(store: Store(initialState: SettingsFeature.State() ) {
-    SettingsFeature()
+  SettingsView(store: Store(initialState: SettingsCore.State() ) {
+    SettingsCore()
   })
-  .frame(width: 600, height: 350)
+  .environment(ApiModel.shared)
+  
+  .frame(width: 600, height: 390)
   .padding()
 }

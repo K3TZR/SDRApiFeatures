@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct NetworkView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
   
   @Environment(ApiModel.self) var apiModel
 
@@ -114,9 +114,11 @@ private struct StaticAddressView: View {
 }
 
 #Preview {
-  NetworkView(store: Store(initialState: SettingsFeature.State()) {
-    SettingsFeature()
+  NetworkView(store: Store(initialState: SettingsCore.State()) {
+    SettingsCore()
   })
+  .environment(ApiModel.shared)
+  
   .frame(width: 600, height: 350)
   .padding()
 }

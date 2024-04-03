@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct ProfilesView: View {
-  var store: StoreOf<SettingsFeature>
+  var store: StoreOf<SettingsCore>
 
   @Environment(ApiModel.self) var apiModel
   
@@ -80,9 +80,11 @@ private struct ProfileView: View {
 // MARK: - Preview
 
 #Preview {
-  ProfilesView(store: Store(initialState: SettingsFeature.State() ) {
-    SettingsFeature()
+  ProfilesView(store: Store(initialState: SettingsCore.State() ) {
+    SettingsCore()
   })
+  .environment(ApiModel.shared)
+  
   .frame(width: 600, height: 350)
   .padding()
 }

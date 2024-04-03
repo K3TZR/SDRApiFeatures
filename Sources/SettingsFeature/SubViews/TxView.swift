@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct TxView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
   
   @Environment(ApiModel.self) var apiModel
 
@@ -174,9 +174,11 @@ private struct TxGridView: View {
 }
 
 #Preview {
-  TxView(store: Store(initialState: SettingsFeature.State()) {
-    SettingsFeature()
+  TxView(store: Store(initialState: SettingsCore.State()) {
+    SettingsCore()
   })
+  .environment(ApiModel.shared)
+  
   .frame(width: 600, height: 350)
   .padding()
 }

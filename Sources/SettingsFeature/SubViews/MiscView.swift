@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct MiscView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
   
   var body: some View {
 
@@ -50,9 +50,10 @@ struct MiscView: View {
 }
 
 #Preview {
-  MiscView(store: Store(initialState: SettingsFeature.State()) {
-    SettingsFeature()
+  MiscView(store: Store(initialState: SettingsCore.State()) {
+    SettingsCore()
   })
+  
   .frame(width: 600, height: 350)
   .padding()
 }

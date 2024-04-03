@@ -11,7 +11,7 @@ import SwiftUI
 import SharedFeature
 
 struct ConnectionView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
   
   var body: some View {
 
@@ -29,7 +29,7 @@ struct ConnectionView: View {
 }
 
 private struct HeadingView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
 
   public var body: some View {
 
@@ -40,8 +40,8 @@ private struct HeadingView: View {
         TextField("Station name", text: $store.stationName)
           .multilineTextAlignment(.trailing)
           .frame(width: 100)
+        Toggle("Smartlink Login required", isOn: $store.loginRequired)
         Toggle("Use Default radio", isOn: $store.useDefault)
-        Toggle("Login required", isOn: $store.loginRequired)
       }
       GridRow {
         Text("MTU")
@@ -75,7 +75,7 @@ private struct ListHeadingView: View {
 }
 
 private struct ListView: View {
-  @Bindable var store: StoreOf<SettingsFeature>
+  @Bindable var store: StoreOf<SettingsCore>
 
   @State var selection: UUID?
 
@@ -118,9 +118,10 @@ private struct ListView: View {
 }
 
 #Preview {
-  ConnectionView(store: Store(initialState: SettingsFeature.State()) {
-    SettingsFeature()
+  ConnectionView(store: Store(initialState: SettingsCore.State()) {
+    SettingsCore()
   })
+  
   .frame(width: 600, height: 350)
   .padding()
 }

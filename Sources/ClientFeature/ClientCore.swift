@@ -12,20 +12,19 @@ import SharedFeature
 
 @Reducer
 public struct ClientFeature {
-
   public init() {}
 
   @ObservableState
   public struct State {
-    var heading: String
-    var selection: String
-    var guiClients: IdentifiedArrayOf<GuiClient>
-
     public init(heading: String = "Choose an Action", selection: String, guiClients: IdentifiedArrayOf<GuiClient>) {
       self.heading = heading
       self.selection = selection
       self.guiClients = guiClients
     }
+
+    var heading: String
+    var selection: String
+    var guiClients: IdentifiedArrayOf<GuiClient>
   }
   
   public enum Action {

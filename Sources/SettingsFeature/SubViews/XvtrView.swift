@@ -9,7 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct XvtrView: View {
-  var store: StoreOf<SettingsFeature>
+  var store: StoreOf<SettingsCore>
   
   var body: some View {
     Text("Xvtr View not implemented").font(.title).foregroundColor(.red)
@@ -19,9 +19,10 @@ struct XvtrView: View {
 }
 
 #Preview {
-  XvtrView(store: Store(initialState: SettingsFeature.State() ) {
-    SettingsFeature()
+  XvtrView(store: Store(initialState: SettingsCore.State() ) {
+    SettingsCore()
   })
+  
   .frame(width: 600, height: 350)
   .padding()
 }

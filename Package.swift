@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -8,12 +8,20 @@ let package = Package(
   platforms: [.macOS(.v14)],
   
   products: [
+    .library(name: "ApiIntView", targets: ["ApiIntView"]),
+    .library(name: "ApiStringView", targets: ["ApiStringView"]),
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
+    .library(name: "ControlsFeature", targets: ["ControlsFeature"]),
     .library(name: "DaxAudioFeature", targets: ["DaxAudioFeature"]),
     .library(name: "DirectFeature", targets: ["DirectFeature"]),
+    .library(name: "FlagAntennaFeature", targets: ["FlagAntennaFeature"]),
+    .library(name: "FlagFeature", targets: ["FlagFeature"]),
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
-    .library(name: "LoginFeature", targets: ["LoginFeature"]),
+    .library(name: "LevelIndicatorView", targets: ["LevelIndicatorView"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
+    .library(name: "LoginFeature", targets: ["LoginFeature"]),
+    .library(name: "Panadapter", targets: ["Panadapter"]),
+    .library(name: "Panafall", targets: ["Panafall"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
     .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
@@ -22,6 +30,7 @@ let package = Package(
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
+    .library(name: "Waterfall", targets: ["Waterfall"]),
   ],
   
   dependencies: [
@@ -36,9 +45,27 @@ let package = Package(
   
   // --------------- Modules ---------------
   targets: [
+    // ApiIntView
+    .target(name: "ApiIntView", dependencies: [
+    ]),
+    
+    // ApiStringView
+    .target(name: "ApiStringView", dependencies: [
+    ]),
+    
     // ClientFeature
     .target(name: "ClientFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+      "SharedFeature"
+    ]),
+    
+    // ControlsFeature
+    .target(name: "ControlsFeature", dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+      "ApiIntView",
+      "ApiStringView",
+      "LevelIndicatorView",
+      "FlexApiFeature",
       "SharedFeature"
     ]),
     
@@ -54,6 +81,20 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
 
+    // FlagAntennaFeature
+    .target(name: "FlagAntennaFeature", dependencies: [
+      "FlexApiFeature",
+    ]),
+
+    // FlagFeature
+    .target(name: "FlagFeature", dependencies: [
+      "FlagAntennaFeature",
+      "ApiIntView",
+      "FlexApiFeature",
+      "LevelIndicatorView",
+      "SharedFeature",
+    ]),
+
     // FlexApiFeature
     .target(name: "FlexApiFeature", dependencies: [
       .product(name: "XCGLogFeature", package: "LogFeatures"),
@@ -64,6 +105,11 @@ let package = Package(
       "SharedFeature",
     ]),
     
+    // LevelIndicatorView
+    .target(name: "LevelIndicatorView", dependencies: [
+      "SharedFeature",
+    ]),
+
     // ListenerFeature
     .target(name: "ListenerFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
@@ -77,6 +123,19 @@ let package = Package(
     // LoginFeature
     .target(name: "LoginFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+
+    // Panadapter
+    .target(name: "Panadapter", dependencies: [
+      "FlagFeature",
+      "FlexApiFeature",
+    ]),
+    
+    // Panafall
+    .target(name: "Panafall", dependencies: [
+      "Panadapter",
+      "Waterfall",
+      "FlexApiFeature",
     ]),
 
     // PickerFeature
@@ -126,6 +185,23 @@ let package = Package(
     .target(name: "VitaFeature", dependencies: [
       "SharedFeature",
     ]),
+
+    // Waterfall
+    .target(
+      name: "Waterfall",
+      
+      dependencies: [
+        "FlexApiFeature",
+      ],
+      resources: [
+        .copy("Gradients/Basic.tex"),
+        .copy("Gradients/Dark.tex"),
+        .copy("Gradients/Deuteranopia.tex"),
+        .copy("Gradients/Grayscale.tex"),
+        .copy("Gradients/Purple.tex"),
+        .copy("Gradients/Tritanopia.tex"),
+      ]
+    )
   ]
   
   // --------------- Tests ---------------

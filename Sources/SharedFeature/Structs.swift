@@ -25,6 +25,24 @@ public let FlexSuite = "group.net.k3tzr.flexapps"
 // ----------------------------------------------------------------------------
 // MARK: - Structs & Enums
 
+public struct ControlsOptions: OptionSet {
+  
+  public init(rawValue: Int) {
+    self.rawValue = rawValue
+  }
+  
+  public let rawValue: Int
+  
+  public static let rx  = ControlsOptions(rawValue: 1 << 0)
+  public static let tx  = ControlsOptions(rawValue: 1 << 1)
+  public static let ph1 = ControlsOptions(rawValue: 1 << 2)
+  public static let ph2 = ControlsOptions(rawValue: 1 << 3)
+  public static let cw  = ControlsOptions(rawValue: 1 << 4)
+  public static let eq  = ControlsOptions(rawValue: 1 << 5)
+  
+  public static let all: ControlsOptions = [.rx, .tx, .ph1, ph2, .cw, .eq]
+}
+
 public enum SpectrumType: String, Equatable, CaseIterable {
   case line = "Line"
   case filled = "Filled"

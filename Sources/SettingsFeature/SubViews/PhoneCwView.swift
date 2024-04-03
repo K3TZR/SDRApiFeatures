@@ -11,7 +11,7 @@ import SwiftUI
 import FlexApiFeature
 
 struct PhoneCwView: View {
-  var store: StoreOf<SettingsFeature>
+  var store: StoreOf<SettingsCore>
   
   @Environment(ApiModel.self) var apiModel
 
@@ -175,9 +175,11 @@ private struct RttyGridView: View {
 }
 
 #Preview {
-  PhoneCwView(store: Store(initialState: SettingsFeature.State()) {
-    SettingsFeature()
+  PhoneCwView(store: Store(initialState: SettingsCore.State()) {
+    SettingsCore()
   })
+  .environment(ApiModel.shared)
+  
   .frame(width: 600, height: 350)
   .padding()
 }
