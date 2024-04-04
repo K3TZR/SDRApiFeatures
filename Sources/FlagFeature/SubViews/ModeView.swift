@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 struct ModeView: View {
   var slice: Slice

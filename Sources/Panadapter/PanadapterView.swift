@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 4/16/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -23,7 +23,8 @@ public struct PanadapterView: View {
     self.leftWidth = leftWidth
   }
   
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("background")) var background: Color = .black
+
   @Environment(ApiModel.self) private var apiModel
   
   let frequencyLegendHeight: CGFloat = 20
@@ -72,7 +73,7 @@ public struct PanadapterView: View {
             // Spectrum
             if let stream = apiModel.panadapters[id: panadapter.id] {
               SpectrumView(panadapter: stream)
-                .background(settings.background)
+                .background(background)
             }
             
             // Vertical lines
@@ -206,6 +207,6 @@ private struct RightView: View {
 // MARK: - Preview
 
 #Preview {
-  PanadapterView(panadapter: Panadapter(0x49999990), leftWidth: 0)
+  PanadapterView(panadapter: Panadapter(0x49999990, ApiModel.shared), leftWidth: 0)
   .frame(width:800, height: 600)
 }

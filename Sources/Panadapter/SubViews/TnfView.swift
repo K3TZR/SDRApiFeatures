@@ -5,20 +5,25 @@
 //  Created by Douglas Adams on 5/17/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 struct TnfView: View {
   var panadapter: Panadapter
   var tnf: Tnf
   var radio: Radio
   let size: CGSize
-  
+
+  @Shared(.appStorage("tnfDeep")) var tnfDeep: Color = .yellow.opacity(0.2)
+  @Shared(.appStorage("tnfInactive")) var tnfInactive: Color = .white.opacity(0.2)
+  @Shared(.appStorage("tnfNormal")) var tnfNormal: Color = .green.opacity(0.2)
+  @Shared(.appStorage("tnfPermanent")) var tnfPermanent: Color = .white
+  @Shared(.appStorage("tnfVeryDeep")) var tnfVeryDeep: Color = .red.opacity(0.2)
+
   @Environment(ApiModel.self) private var apiModel
-  @Environment(SettingsModel.self) private var settings
   
   static let minWidth: CGFloat = 1000
   
@@ -33,13 +38,13 @@ struct TnfView: View {
   @MainActor var depthColor: Color {
     if radio.tnfsEnabled {
       switch tnf.depth {
-      case Tnf.Depth.normal.rawValue:     settings.tnfNormal
-      case Tnf.Depth.deep.rawValue:       settings.tnfDeep
-      case Tnf.Depth.veryDeep.rawValue:   settings.tnfVeryDeep
-      default:                            settings.tnfInactive
+      case Tnf.Depth.normal.rawValue:     tnfNormal
+      case Tnf.Depth.deep.rawValue:       tnfDeep
+      case Tnf.Depth.veryDeep.rawValue:   tnfVeryDeep
+      default:                            tnfInactive
       }
     } else {
-      settings.tnfInactive
+      tnfInactive
     }
   }
   
@@ -47,7 +52,7 @@ struct TnfView: View {
     VStack(spacing: 0) {
       
       Rectangle()
-        .fill(tnf.permanent ? settings.tnfPermanent : settings.tnfDeep)
+        .fill(tnf.permanent ? tnfPermanent : tnfDeep)
         .border(cursorInTnf ? .red : depthColor)
         .frame(width: max(CGFloat(tnf.width), TnfView.minWidth) * pixelPerHz, height: 0.1 * size.height)
         .offset(x: (tnfFrequency - panadapterLowFrequency) * pixelPerHz )
@@ -115,9 +120,9 @@ struct TnfView: View {
 }
 
 #Preview {
-  TnfView(panadapter: Panadapter(0x49999999),
-          tnf: Tnf(1),
-          radio: Radio(Packet()),
+  TnfView(panadapter: Panadapter(0x49999999, ApiModel.shared),
+          tnf: Tnf(1, ApiModel.shared),
+          radio: Radio(Packet(), ApiModel.shared),
           size: CGSize(width: 800, height: 800)
   )
 }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 struct DaxView: View {
   var slice: Slice

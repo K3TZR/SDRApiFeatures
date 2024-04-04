@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 public struct DaxView: View {
   var panadapter: Panadapter
@@ -39,7 +39,7 @@ public struct DaxView: View {
 }
 
 #Preview {
-  DaxView(panadapter: Panadapter(0x49999999))
+  DaxView(panadapter: Panadapter(0x49999999, ApiModel.shared))
     .frame(width: 160)
     .padding(5)
 }

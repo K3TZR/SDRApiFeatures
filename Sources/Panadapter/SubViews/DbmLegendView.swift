@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 3/22/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -19,11 +19,12 @@ struct DbmLegendView: View {
   let size: CGSize
   let frequencyLegendHeight: CGFloat
 
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("dbLegend")) var dbLegend: Color = .green
+  @Shared(.appStorage("dbSpacing")) var dbSpacing: Int = 10
 
   @State var startDbm: CGFloat?
   
-  @MainActor var offset: CGFloat { panadapter.maxDbm.truncatingRemainder(dividingBy: CGFloat(settings.dbSpacing)) }
+  @MainActor var offset: CGFloat { panadapter.maxDbm.truncatingRemainder(dividingBy: CGFloat(dbSpacing)) }
   
   @MainActor private func pixelPerDbm(_ height: CGFloat) -> CGFloat {
     (height - frequencyLegendHeight) / (panadapter.maxDbm - panadapter.minDbm)
@@ -35,7 +36,7 @@ struct DbmLegendView: View {
     var currentDbm = panadapter.maxDbm
     repeat {
       array.append( currentDbm )
-      currentDbm -= CGFloat(settings.dbSpacing)
+      currentDbm -= CGFloat(dbSpacing)
     } while ( currentDbm >= panadapter.minDbm )
     return array
   }
@@ -45,8 +46,8 @@ struct DbmLegendView: View {
       ForEach(Array(legends.enumerated()), id: \.offset) { i, value in
         if value > panadapter.minDbm {
           Text(String(format: "%0.0f", value - offset))
-            .position(x: size.width - 20, y: (offset + CGFloat(i) * CGFloat(settings.dbSpacing)) * pixelPerDbm(size.height))
-            .foregroundColor(settings.dbLegend)
+            .position(x: size.width - 20, y: (offset + CGFloat(i) * CGFloat(dbSpacing)) * pixelPerDbm(size.height))
+            .foregroundColor(dbLegend)
         }
       }
       
@@ -72,10 +73,10 @@ struct DbmLegendView: View {
         )
     }
     .contextMenu {
-      Button("5 dbm") { settings.dbSpacing = 5 }
-      Button("10 dbm") { settings.dbSpacing = 10 }
-      Button("15 dbm") { settings.dbSpacing = 15 }
-      Button("20 dbm") { settings.dbSpacing = 20 }
+      Button("5 dbm") { dbSpacing = 5 }
+      Button("10 dbm") { dbSpacing = 10 }
+      Button("15 dbm") { dbSpacing = 15 }
+      Button("20 dbm") { dbSpacing = 20 }
     }
   }
 }
@@ -84,6 +85,6 @@ struct DbmLegendView: View {
 // MARK: - Preview
 
 #Preview {
-  DbmLegendView(panadapter: Panadapter(0x49999999), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
+  DbmLegendView(panadapter: Panadapter(0x49999999, ApiModel.shared), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
   .frame(width:900, height: 450)
 }

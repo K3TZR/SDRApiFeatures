@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-import FlexApi
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 public struct BandView: View {
   var panadapter: Panadapter
@@ -50,5 +50,5 @@ public struct BandView: View {
 }
 
 #Preview("BandView") {
-  BandView(panadapter: Panadapter("0x99999999".streamId!))
+  BandView(panadapter: Panadapter("0x99999999".streamId!, ApiModel.shared))
 }

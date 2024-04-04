@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 public struct FlagAntennaView: View {
   var slice: Slice
@@ -65,6 +65,8 @@ public struct FlagAntennaView: View {
 }
 
 #Preview {
-  FlagAntennaView(slice: Slice(1))
+  FlagAntennaView(slice: Slice(1, ApiModel.shared))
+    .environment(ApiModel.shared)
+  
     .frame(width: 200)
 }

@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 3/22/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -19,10 +19,11 @@ struct DbmLinesView: View {
   let size: CGSize
   let frequencyLegendHeight: CGFloat
   
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("dbSpacing")) var dbSpacing: Int = 10
+  @Shared(.appStorage("dbLines")) var dbLines: Color = .white.opacity(0.3)
 
   @MainActor var pixelPerDbm: CGFloat { (size.height  - frequencyLegendHeight) / (panadapter.maxDbm - panadapter.minDbm) }
-  @MainActor var yOffset: CGFloat { panadapter.maxDbm.truncatingRemainder(dividingBy: CGFloat(settings.dbSpacing)) }
+  @MainActor var yOffset: CGFloat { panadapter.maxDbm.truncatingRemainder(dividingBy: CGFloat(dbSpacing)) }
 
   var body: some View {
     Path { path in
@@ -30,10 +31,10 @@ struct DbmLinesView: View {
       repeat {
         path.move(to: CGPoint(x: 0, y: yPosition))
         path.addLine(to: CGPoint(x: size.width, y: yPosition))
-        yPosition += (pixelPerDbm * CGFloat(settings.dbSpacing))
+        yPosition += (pixelPerDbm * CGFloat(dbSpacing))
       } while yPosition < size.height - frequencyLegendHeight
     }
-    .stroke(settings.dbLines, lineWidth: 1)
+    .stroke(dbLines, lineWidth: 1)
   }
 }
 
@@ -51,6 +52,7 @@ struct DbmLinesView: View {
 //    return p
 //  }
   
-  return DbmLinesView(panadapter: Panadapter(0x49999999), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
+  return DbmLinesView(panadapter: Panadapter(0x49999999, ApiModel.shared), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
+  
     .frame(width: 900, height: 450)
 }

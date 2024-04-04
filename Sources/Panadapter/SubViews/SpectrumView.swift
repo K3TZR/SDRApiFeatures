@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 5/26/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 /*
  // ----------------------------------------------------------------------------
@@ -26,36 +26,48 @@ import SharedModel
 struct SpectrumView: View {
   var panadapter: Panadapter
     
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("spectrumGradientColor0")) var spectrumGradientColor0: Color = .white.opacity(0.4)
+  @Shared(.appStorage("spectrumGradientColor1")) var spectrumGradientColor1: Color = .green
+  @Shared(.appStorage("spectrumGradientColor2")) var spectrumGradientColor2: Color = .yellow
+  @Shared(.appStorage("spectrumGradientColor3")) var spectrumGradientColor3: Color = .red
+  @Shared(.appStorage("spectrumGradientStop0")) var spectrumGradientStop0: Double = 0.2
+  @Shared(.appStorage("spectrumGradientStop1")) var spectrumGradientStop1: Double = 0.4
+  @Shared(.appStorage("spectrumGradientStop2")) var spectrumGradientStop2: Double = 0.5
+  @Shared(.appStorage("spectrumGradientStop3")) var spectrumGradientStop3: Double = 0.6
+
+  @Shared(.appStorage("spectrumFill")) var spectrumFill: Color = .white
+  @Shared(.appStorage("spectrumFillLevel")) var spectrumFillLevel: Double = 0
+  @Shared(.appStorage("spectrumLine")) var spectrumLine: Color = .white
+  @Shared(.appStorage("spectrumType")) var spectrumType: String = SpectrumType.line.rawValue
 
   var body: some View {
     let spectrumGradient = LinearGradient(gradient: Gradient(stops: [
-      .init(color: settings.spectrumGradientColor0, location: settings.spectrumGradientStop0),
-      .init(color: settings.spectrumGradientColor1, location: settings.spectrumGradientStop1),
-      .init(color: settings.spectrumGradientColor2, location: settings.spectrumGradientStop2),
-      .init(color: settings.spectrumGradientColor3, location: settings.spectrumGradientStop3)
+      .init(color: spectrumGradientColor0, location: spectrumGradientStop0),
+      .init(color: spectrumGradientColor1, location: spectrumGradientStop1),
+      .init(color: spectrumGradientColor2, location: spectrumGradientStop2),
+      .init(color: spectrumGradientColor3, location: spectrumGradientStop3)
     ]), startPoint: .bottom, endPoint: .top)
 
     ZStack {
       if let frame = panadapter.panadapterFrame {
-        switch settings.spectrumType {
+        switch spectrumType {
         case SpectrumType.gradient.rawValue:
           SpectrumShape(frame: frame, closed: true)
-            .fill(spectrumGradient.opacity(settings.spectrumFillLevel / 100))
+            .fill(spectrumGradient.opacity(spectrumFillLevel / 100))
           SpectrumShape(frame: frame)
-            .stroke(settings.spectrumLine)
+            .stroke(spectrumLine)
 
         case SpectrumType.filled.rawValue:
           ZStack {
             SpectrumShape(frame: frame, closed: true)
-              .fill(settings.spectrumFill.opacity(settings.spectrumFillLevel / 100))
+              .fill(spectrumFill.opacity(spectrumFillLevel / 100))
             SpectrumShape(frame: frame)
-              .stroke(settings.spectrumLine)
+              .stroke(spectrumLine)
           }
 
         default:
           SpectrumShape(frame: frame)
-            .stroke(settings.spectrumLine)
+            .stroke(spectrumLine)
         }
       }
     }

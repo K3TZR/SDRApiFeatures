@@ -10,8 +10,8 @@ import Foundation
 import MetalKit
 import SwiftUI
 
-import FlexApi
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 @MainActor
 public final class WaterfallRenderer: NSObject {

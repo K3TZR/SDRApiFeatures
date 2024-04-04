@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 struct AudView: View {
   var slice: Slice

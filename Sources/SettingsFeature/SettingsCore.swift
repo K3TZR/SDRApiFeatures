@@ -203,29 +203,3 @@ extension UserDefaults {
     }
   }
 }
-
-// ---------- Color Extension ----------
-extension Color: RawRepresentable {
-  public init?(rawValue: String) {
-    guard let data = Data(base64Encoded: rawValue) else {
-      // invalid raw value
-      return nil
-    }
-    
-    do {
-      let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data) ?? .systemPink
-      self = Color(color)
-    } catch {
-      self = .pink
-    }
-  }
-  
-  public var rawValue: String {
-    do {
-      let data = try NSKeyedArchiver.archivedData(withRootObject: NSColor(self), requiringSecureCoding: false) as Data
-      return data.base64EncodedString()
-    } catch {
-      return ""
-    }
-  }
-}

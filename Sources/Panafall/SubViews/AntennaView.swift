@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 
 public struct AntennaView: View {
   var panadapter: Panadapter
@@ -49,7 +49,7 @@ public struct AntennaView: View {
 }
 
 #Preview {
-  AntennaView(panadapter: Panadapter(0x49999999))
+  AntennaView(panadapter: Panadapter(0x49999999, ApiModel.shared))
     .frame(width: 160)
     .padding(5)
 }

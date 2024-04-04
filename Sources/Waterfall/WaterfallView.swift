@@ -4,12 +4,12 @@
 //  Created by Douglas Adams on 6/30/23.
 //
 
+import ComposableArchitecture
 import MetalKit
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 public struct WaterfallView: View {
   var panadapter: Panadapter
@@ -39,6 +39,8 @@ private struct MetalView: NSViewRepresentable {
   var panadapter: Panadapter
   var waterfall: Waterfall
 
+  @Shared(.appStorage("waterfallClear")) var waterfallClear: Color = .black
+
   public typealias NSViewType = MTKView
 
   public func makeCoordinator() -> WaterfallRenderer {
@@ -59,7 +61,7 @@ private struct MetalView: NSViewRepresentable {
     mtkView.framebufferOnly = false
     mtkView.drawableSize = mtkView.frame.size
     
-    let color = NSColor(SettingsModel.shared.waterfallClear).usingColorSpace(.sRGB)!
+    let color = NSColor(waterfallClear).usingColorSpace(.sRGB)!
     mtkView.clearColor = MTLClearColorMake(Double(color.redComponent),
                                            Double(color.greenComponent),
                                            Double(color.blueComponent),
@@ -72,6 +74,8 @@ private struct MetalView: NSViewRepresentable {
 }
 
 #Preview {
-  WaterfallView(panadapter: Panadapter(0x49999990), leftWidth: 0)
+  WaterfallView(panadapter: Panadapter(0x49999990, ApiModel.shared), leftWidth: 0)
+    .environment(ApiModel.shared)
+  
     .frame(width:800, height: 600)
 }

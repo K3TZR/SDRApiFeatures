@@ -73,7 +73,7 @@ public final class ApiModel {
   public var knownRadios = IdentifiedArrayOf<KnownRadio>()
   
 //  public var activePacket: Packet?
-//  public var activeStation: String?
+  public var activeSlice: Slice?
   
   // Dynamic Models
   public var amplifiers = IdentifiedArrayOf<Amplifier>()

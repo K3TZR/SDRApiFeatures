@@ -5,13 +5,13 @@
 //  Created by Douglas Adams on 5/17/23.
 //
 
+import ComposableArchitecture
 import AppKit
 import SwiftUI
 
-import Flag
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlagFeature
+import FlexApiFeature
+import SharedFeature
 
 struct SliceView: View {
   var panadapter: Panadapter
@@ -19,7 +19,10 @@ struct SliceView: View {
   let isSliceFlag: Bool
   let width: CGFloat
     
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("sliceActive")) var sliceActive: Color = .yellow
+  @Shared(.appStorage("sliceBackground")) var sliceBackground: Color = .black
+  @Shared(.appStorage("sliceFilter")) var sliceFilter: Color = .white.opacity(0.2)
+  @Shared(.appStorage("sliceInactive")) var sliceInactive: Color = .yellow
 
   @State var startFrequency: CGFloat?
   @State var cursorInSlice = false
@@ -52,12 +55,12 @@ struct SliceView: View {
       // frequency line
       Rectangle()
         .frame(width: 2)
-        .foregroundColor(slice.active ? settings.sliceActive : settings.sliceInactive)
+        .foregroundColor(slice.active ? sliceActive : sliceInactive)
         .offset(x: (sliceFrequency - panadapterLowFrequency) * pixelPerHz)
       
       // filter outline
       Rectangle()
-        .fill(settings.sliceFilter)
+        .fill(sliceFilter)
 //        .border(cursorInSlice ? .red : sliceFilterColor)
         .frame(width: slicePixelWidth)
         .contentShape(Rectangle())
@@ -102,8 +105,8 @@ struct SliceView: View {
 }
   
 #Preview {
-  SliceView(panadapter: Panadapter(0x49999999),
-            slice: Slice(1),
+  SliceView(panadapter: Panadapter(0x49999999, ApiModel.shared),
+            slice: Slice(1, ApiModel.shared),
             isSliceFlag: true,
             width: 800)
 }

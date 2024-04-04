@@ -5,14 +5,14 @@
 //  Created by Douglas Adams on 4/3/21.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
 import ApiIntView
 import LevelIndicatorView
-import FlexApi
-import FlagAntennaPopover
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import FlagAntennaFeature
+import SharedFeature
 
 public enum FlagMode: String {
   case aud
@@ -37,8 +37,10 @@ public struct FlagView: View {
     self.smallFlag = smallFlag
   }
   
-  @Environment(SettingsModel.self) private var settings
   @Environment(ApiModel.self) private var apiModel
+  
+  @Shared(.appStorage("sliceBackground")) var sliceBackground: Color = .black
+
   
   public var body: some View {
     
@@ -50,7 +52,7 @@ public struct FlagView: View {
           Line2SmallView(slice: slice)
         }
         .frame(width: smallFlag.wrappedValue ? 150 : 275)
-        .background(settings.sliceBackground)
+        .background(sliceBackground)
 
       } else {
         VStack(spacing: 5) {
@@ -63,7 +65,7 @@ public struct FlagView: View {
           ButtonView(slice: slice)
         }
         .frame(width: smallFlag.wrappedValue ? 150 : 275)
-        .background(settings.sliceBackground)
+        .background(sliceBackground)
       }
 
     } else {
@@ -78,7 +80,7 @@ public struct FlagView: View {
           ButtonView(slice: activeSlice)
         }
         .frame(width: smallFlag.wrappedValue ? 150 : 275)
-        .background(settings.sliceBackground)
+        .background(sliceBackground)
 
       } else {
         EmptyView()
@@ -95,8 +97,10 @@ private struct Line1View: View {
   @Binding var smallFlag: Bool
   
   @Environment(ApiModel.self) private var apiModel
-  @Environment(SettingsModel.self) private var settings
-  
+
+  @Shared(.appStorage("sliceActive")) var sliceActive: Color = .yellow
+  @Shared(.appStorage("sliceInactive")) var sliceInactive: Color = .yellow
+
   func filter(_ high: Int, _ low: Int) -> String {
     var width = Float(high - low)
     if width > 999 {
@@ -141,7 +145,7 @@ private struct Line1View: View {
           .onTapGesture { slice.setProperty(.txEnabled, (!slice.txEnabled).as1or0) }
         Text(slice.sliceLetter ?? "??")
           .font(.title3)
-          .foregroundColor(slice.active ? settings.sliceActive : settings.sliceInactive)
+          .foregroundColor(slice.active ? sliceActive : sliceInactive)
           .onTapGesture { smallFlag.toggle() }
       }
     }
@@ -193,7 +197,7 @@ private struct SMeterView: View {
   var meter: Meter
   
   // calc the "S" level
-  var sUnit: String {
+  @MainActor var sUnit: String {
     switch meter.value {
     case ..<(-121):       return " S0"
     case (-121)..<(-115): return " S1"
@@ -214,7 +218,7 @@ private struct SMeterView: View {
     }
   }
   
-  var level: Float {
+  @MainActor var level: Float {
     return Float((meter.value + 127) / 6)
   }
   
@@ -261,9 +265,11 @@ private struct Line1SmallView: View {
   var slice: Slice
   @Binding var smallFlag: Bool
   
-  @Environment(SettingsModel.self) private var settings
   @Environment(ApiModel.self) private var apiModel
-  
+
+  @Shared(.appStorage("sliceActive")) var sliceActive: Color = .yellow
+  @Shared(.appStorage("sliceInactive")) var sliceInactive: Color = .yellow
+
   func filter(_ high: Int, _ low: Int) -> String {
     var width = Float(high - low)
     if width > 999 {
@@ -289,7 +295,7 @@ private struct Line1SmallView: View {
             .foregroundColor(slice.txEnabled ? .red : nil)
             .onTapGesture { slice.setProperty(.txEnabled, (!slice.txEnabled).as1or0) }
           Text("A")
-            .foregroundColor(slice.active ? settings.sliceActive : settings.sliceInactive)
+            .foregroundColor(slice.active ? sliceActive : sliceInactive)
             .onTapGesture { smallFlag.toggle() }
         }.font(.title3)
       }
@@ -322,6 +328,8 @@ private struct Line2SmallView: View {
 // MARK: - Preview(s)
 
 #Preview {
-  FlagView(slice: Slice(1), isSliceFlag: false, smallFlag: .constant(false))
+  FlagView(slice: Slice(1, ApiModel.shared), isSliceFlag: false, smallFlag: .constant(false))
+    .environment(ApiModel.shared)
+  
     .frame(width: 275)
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 import ApiIntView
-import FlexApi
+import FlexApiFeature
 
 struct XritView: View {
   var slice: Slice

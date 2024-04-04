@@ -4,10 +4,10 @@
 //
 //  Created by Douglas Adams on 5/20/23.
 //
-
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
+import FlexApiFeature
 import Panadapter
 import Waterfall
 
@@ -115,7 +115,9 @@ private struct TopButtonsView: View {
       
       Button("Disp") { displayPopover.toggle() }
         .popover(isPresented: $displayPopover, arrowEdge: .trailing) {
-          DisplayView(panadapter: panadapter)
+          DisplayView(store: Store(initialState: DisplayCore.State()) {
+            DisplayCore()
+          }, panadapter: Panadapter(0x49999990, ApiModel.shared))
         }
       Button("Dax") { daxPopover.toggle() }
         .popover(isPresented: $daxPopover, arrowEdge: .trailing) {
@@ -155,5 +157,5 @@ private struct BottomButtonsView: View {
 }
 
 #Preview {
-  PanafallView(panadapter: Panadapter(0x49999990))
+  PanafallView(panadapter: Panadapter(0x49999990, ApiModel.shared))
 }

@@ -5,25 +5,51 @@
 //  Created by Douglas Adams on 12/21/22.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
+
+@Reducer
+public struct DisplayCore {
+  public init() {}
+  
+  @ObservableState
+  public struct State {
+    public init() {}
+
+    @Shared(.appStorage("spectrumFillLevel")) var spectrumFillLevel: Double = 0
+    @Shared(.appStorage("spectrumType")) var spectrumType: String = SpectrumType.line.rawValue
+  }
+  
+  public enum Action: BindableAction {
+    case binding(BindingAction<State>)
+  }
+  
+  public var body: some ReducerOf<Self> {
+    BindingReducer()
+    
+    //    Reduce { state, action in
+    //    }
+  }
+}
 
 public struct DisplayView: View {
+  @Bindable var store: StoreOf<DisplayCore>
   var panadapter: Panadapter
   
   @Environment(ApiModel.self) private var apiModel
 
-  public init(panadapter: Panadapter) {
+  public init(store: StoreOf<DisplayCore>, panadapter: Panadapter) {
+    self.store = store
     self.panadapter = panadapter
   }
   
   public var body: some View {
       
       VStack(alignment: .leading) {
-        PanadapterSettings(panadapter: panadapter )
+        PanadapterSettings(store: store, panadapter: panadapter )
         Divider().foregroundColor(.blue)
         if panadapter.waterfallId == 0 {
           EmptyView()
@@ -37,12 +63,11 @@ public struct DisplayView: View {
 }
 
 private struct PanadapterSettings: View {
+  @Bindable var store: StoreOf<DisplayCore>
   var panadapter: Panadapter
   
-  @Environment(SettingsModel.self) private var settings
 
   var body: some View {
-    @Bindable var settingsBindable = settings
     
     VStack(alignment: .leading, spacing: 8) {
       HStack(spacing: 10) {
@@ -56,7 +81,7 @@ private struct PanadapterSettings: View {
         Slider(value: Binding(get: { Double(panadapter.fps) }, set: { panadapter.setProperty(.fps, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 10) {
-        Picker("", selection: $settingsBindable.spectrumType) {
+        Picker("", selection: $store.spectrumType) {
           ForEach(SpectrumType.allCases, id: \.self) { type in
             Text(type.rawValue).tag(type.rawValue)
           }
@@ -64,8 +89,8 @@ private struct PanadapterSettings: View {
         .labelsHidden()
         .frame(width: 90)
         
-        Text("\(Int(settings.spectrumFillLevel))").frame(width: 25, alignment: .trailing)
-        Slider(value: $settingsBindable.spectrumFillLevel, in: 0...100)
+        Text("\(Int(store.spectrumFillLevel))").frame(width: 25, alignment: .trailing)
+        Slider(value: $store.spectrumFillLevel, in: 0...100)
 //        Slider(value: viewStore.binding(get: {_ in Double(panadapter.fillLevel) }, send: { .panadapterProperty(panadapter, .fillLevel, String(Int($0))) }), in: 0...100)
       }
       HStack {
@@ -120,7 +145,10 @@ private struct WaterfallSettings: View {
 }
 
 #Preview {
-  DisplayView(panadapter: Panadapter(0x49999990))
-    .frame(width: 250)
+  DisplayView(store: Store(initialState: DisplayCore.State()) {
+    DisplayCore()
+  }, panadapter: Panadapter(0x49999990, ApiModel.shared))
+    
+  .frame(width: 250)
     .padding(5)
 }

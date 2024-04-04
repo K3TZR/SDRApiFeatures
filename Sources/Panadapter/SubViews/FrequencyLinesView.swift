@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 3/22/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -18,9 +18,10 @@ struct FrequencyLinesView: View {
   var panadapter: Panadapter
   let spacings: [(Int,Int)]
   let leftWidth: CGFloat
-  
+
+  @Shared(.appStorage("gridLines")) var gridLines: Color = .white.opacity(0.3)
+
   @Environment(ApiModel.self) private var apiModel
-  @Environment(SettingsModel.self) private var settings
 
   @State var startCenter: CGFloat?
   @State var rightMouseDownLocation: NSPoint = .zero
@@ -59,7 +60,7 @@ struct FrequencyLinesView: View {
           xPosition += pixelPerHz(g.size.width) * spacing
         } while xPosition < g.size.width
       }
-      .stroke(settings.gridLines, lineWidth: 1)
+      .stroke(gridLines, lineWidth: 1)
       .contentShape(Rectangle())
       
       .onAppear(perform: {
@@ -122,7 +123,7 @@ struct FrequencyLinesView: View {
 //    return p
 //  }
   
-  return FrequencyLinesView(panadapter: Panadapter(0x49999999),
+  return FrequencyLinesView(panadapter: Panadapter(0x49999999, ApiModel.shared),
                             spacings: [
                               (10_000_000, 1_000_000),
                               (5_000_000, 500_000),

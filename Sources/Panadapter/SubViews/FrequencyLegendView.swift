@@ -5,11 +5,11 @@
 //  Created by Douglas Adams on 3/22/23.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
-import FlexApi
-import SettingsModel
-import SharedModel
+import FlexApiFeature
+import SharedFeature
 
 struct FrequencyLegendView: View {
   var panadapter: Panadapter
@@ -17,7 +17,7 @@ struct FrequencyLegendView: View {
   let spacings: [(Int,Int)]
   let formats: [(Int,String)]
   
-  @Environment(SettingsModel.self) private var settings
+  @Shared(.appStorage("frequencyLegend")) var frequencyLegend: Color = .green
 
   @State var startBandwidth: CGFloat?
 
@@ -54,7 +54,7 @@ struct FrequencyLegendView: View {
   
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Divider().background(settings.frequencyLegend)
+      Divider().background(frequencyLegend)
       HStack(spacing: 0) {
         ForEach(legends, id:\.self) { frequencyValue in
           Text(String(format: format, frequencyValue/1_000_000)).frame(width: legendWidth)
@@ -75,11 +75,11 @@ struct FrequencyLegendView: View {
                 }
             )
             .offset(x: -legendWidth/2 )
-            .foregroundColor(settings.frequencyLegend)
+            .foregroundColor(frequencyLegend)
         }
         .offset(x: legendOffset)
       }
-      Divider().background(settings.frequencyLegend)
+      Divider().background(frequencyLegend)
     }
   }
 }
@@ -97,7 +97,7 @@ struct FrequencyLegendView: View {
 //    return p
 //  }
   
-  FrequencyLegendView( panadapter: Panadapter(0x49999999),
+  FrequencyLegendView( panadapter: Panadapter(0x49999999, ApiModel.shared),
                       size: CGSize(width: 900, height: 450),
                       spacings: [
                         (10_000_000, 1_000_000),
