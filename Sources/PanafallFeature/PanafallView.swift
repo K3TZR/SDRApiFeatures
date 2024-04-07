@@ -8,26 +8,29 @@ import ComposableArchitecture
 import SwiftUI
 
 import FlexApiFeature
-import Panadapter
-import Waterfall
+import PanadapterFeature
+import WaterfallFeature
 
 public struct PanafallView: View {
-  var panadapter: Panadapter
+  @Bindable var store: StoreOf<PanafallCore>
   
-  public init(panadapter: Panadapter) {
-    self.panadapter = panadapter
+  public init(store: StoreOf<PanafallCore>) {
+    self.store = store
+  }
+
+  @MainActor var leftSideWidth: CGFloat {
+    store.panafallLeftSideIsOpen ? 60 : 0
   }
   
-  private let leftSideWidth: CGFloat = 60
   @State var leftSideIsOpen = false
   
   public var body: some View {
     HSplitView {
-      if leftSideIsOpen {
+      if store.panafallLeftSideIsOpen {
         VStack {
-          TopButtonsView(panadapter: panadapter, leftSideIsOpen: $leftSideIsOpen)
+          TopButtonsView(store: store)
           Spacer()
-          BottomButtonsView(panadapter: panadapter)
+          BottomButtonsView(store: store)
         }
         .frame(width: leftSideWidth)
         .padding(.vertical, 10)
@@ -36,10 +39,10 @@ public struct PanafallView: View {
       ZStack(alignment: .topLeading) {
         
         VSplitView {
-          PanadapterView(panadapter: panadapter, leftWidth: leftSideIsOpen ? leftSideWidth : 0)
+          PanadapterView(panadapter: store.panadapter, leftWidth: leftSideWidth)
             .frame(minWidth: 500, maxWidth: .infinity, minHeight: 100, maxHeight: .infinity)
           
-          WaterfallView(panadapter: panadapter, leftWidth: leftSideIsOpen ? leftSideWidth : 0)
+          WaterfallView(panadapter: store.panadapter, leftWidth: leftSideWidth)
             .frame(minWidth: 500, maxWidth: .infinity, minHeight: 100, maxHeight: .infinity)
         }
         
@@ -47,21 +50,21 @@ public struct PanafallView: View {
           HStack {
             Spacer()
             Label("Rx", systemImage: "antenna.radiowaves.left.and.right").opacity(0.5)
-            Text(panadapter.rxAnt).font(.title).opacity(0.5)
+            Text(store.panadapter.rxAnt).font(.title).opacity(0.5)
               .padding(.trailing, 50)
           }
           
-          if panadapter.rfGain != 0 {
+          if store.panadapter.rfGain != 0 {
             HStack(spacing: 5) {
               Spacer()
               Group {
-                Text(panadapter.rfGain, format: .number)
+                Text(store.panadapter.rfGain, format: .number)
                 Text("Dbm").padding(.trailing, 50)
               }.font(.title).opacity(0.5)
             }
           }
           
-          if panadapter.wide {
+          if store.panadapter.wide {
             HStack {
               Spacer()
               Text("WIDE").font(.title).opacity(0.5)
@@ -83,8 +86,10 @@ public struct PanafallView: View {
 }
 
 private struct TopButtonsView: View {
-  var panadapter: Panadapter
-  let leftSideIsOpen: Binding<Bool>
+  @Bindable var store: StoreOf<PanafallCore>
+  
+//  var panadapter: Panadapter
+//  let leftSideIsOpen: Binding<Bool>
   
   @Environment(ApiModel.self) var apiModel
   
@@ -97,59 +102,58 @@ private struct TopButtonsView: View {
     VStack(alignment: .center, spacing: 20) {
       Image(systemName: "arrowshape.left").font(.title)
         .onTapGesture {
-          leftSideIsOpen.wrappedValue.toggle()
+          store.panafallLeftSideIsOpen.toggle()
         }
       Image(systemName: "xmark.circle").font(.title)
         .onTapGesture {
-          apiModel.removePanadapter(panadapter.id)
+          apiModel.removePanadapter(store.panadapter.id)
         }
       Button("Band") { bandPopover.toggle() }
         .popover(isPresented: $bandPopover , arrowEdge: .trailing) {
-          BandView( panadapter: panadapter)
+          BandView(store: store)
         }
       
       Button("Ant") { antennaPopover.toggle() }
         .popover(isPresented: $antennaPopover, arrowEdge: .trailing) {
-          AntennaView(panadapter: panadapter)
+          AntennaView(store: store)
         }
       
       Button("Disp") { displayPopover.toggle() }
         .popover(isPresented: $displayPopover, arrowEdge: .trailing) {
-          DisplayView(store: Store(initialState: DisplayCore.State()) {
-            DisplayCore()
-          }, panadapter: Panadapter(0x49999990, ApiModel.shared))
+          DisplayView(store: store)
         }
       Button("Dax") { daxPopover.toggle() }
         .popover(isPresented: $daxPopover, arrowEdge: .trailing) {
-          DaxView(panadapter: panadapter)
+          DaxView(store: store)
         }
     }
   }
 }
 
 private struct BottomButtonsView: View {
-  var panadapter: Panadapter
+  @Bindable var store: StoreOf<PanafallCore>
+//  var panadapter: Panadapter
   
   var body: some View {
     VStack(spacing: 20) {
       HStack {
         Image(systemName: "s.circle")
           .onTapGesture {
-            panadapter.setZoom(.segment)
+            store.panadapter.setZoom(.segment)
           }
         Image(systemName: "b.circle")
           .onTapGesture {
-            panadapter.setZoom(.band)
+            store.panadapter.setZoom(.band)
           }
       }
       HStack {
         Image(systemName: "minus.circle")
           .onTapGesture {
-            panadapter.setZoom(.minus)
+            store.panadapter.setZoom(.minus)
           }
         Image(systemName: "plus.circle")
           .onTapGesture {
-            panadapter.setZoom(.plus)
+            store.panadapter.setZoom(.plus)
           }
       }
     }.font(.title2)
@@ -157,5 +161,7 @@ private struct BottomButtonsView: View {
 }
 
 #Preview {
-  PanafallView(panadapter: Panadapter(0x49999990, ApiModel.shared))
+  PanafallView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1, ApiModel.shared), waterfall: Waterfall(1, ApiModel.shared))) {
+    PanafallCore()
+  })
 }

@@ -20,8 +20,8 @@ let package = Package(
     .library(name: "LevelIndicatorView", targets: ["LevelIndicatorView"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
-    .library(name: "Panadapter", targets: ["Panadapter"]),
-    .library(name: "Panafall", targets: ["Panafall"]),
+    .library(name: "PanadapterFeature", targets: ["PanadapterFeature"]),
+    .library(name: "PanafallFeature", targets: ["PanafallFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
     .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
@@ -30,7 +30,7 @@ let package = Package(
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
-    .library(name: "Waterfall", targets: ["Waterfall"]),
+    .library(name: "WaterfallFeature", targets: ["WaterfallFeature"]),
   ],
   
   dependencies: [
@@ -125,16 +125,16 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
 
-    // Panadapter
-    .target(name: "Panadapter", dependencies: [
+    // PanadapterFeature
+    .target(name: "PanadapterFeature", dependencies: [
       "FlagFeature",
       "FlexApiFeature",
     ]),
     
-    // Panafall
-    .target(name: "Panafall", dependencies: [
-      "Panadapter",
-      "Waterfall",
+    // PanafallFeature
+    .target(name: "PanafallFeature", dependencies: [
+      "PanadapterFeature",
+      "WaterfallFeature",
       "FlexApiFeature",
     ]),
 
@@ -186,9 +186,9 @@ let package = Package(
       "SharedFeature",
     ]),
 
-    // Waterfall
+    // WaterfallFeature
     .target(
-      name: "Waterfall",
+      name: "WaterfallFeature",
       
       dependencies: [
         "FlexApiFeature",

@@ -5,16 +5,17 @@
 //  Created by Douglas Adams on 12/20/22.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
 import FlexApiFeature
 import SharedFeature
 
 public struct BandView: View {
-  var panadapter: Panadapter
-  
-  public init(panadapter: Panadapter) {
-    self.panadapter = panadapter
+  @Bindable var store: StoreOf<PanafallCore>
+
+  public init(store: StoreOf<PanafallCore>) {
+    self.store = store
   }
   
   // FIXME: SHould be read from a file
@@ -37,8 +38,8 @@ public struct BandView: View {
     LazyVGrid(columns: columns, spacing: 5) {
       ForEach(bands, id: \.id) { band in
         Toggle(isOn: Binding(
-          get: { panadapter.band == band.label && !band.number.isEmpty },
-          set: {_ in if !band.number.isEmpty { panadapter.setProperty(.band, band.number) }} ))
+          get: { store.panadapter.band == band.label && !band.number.isEmpty },
+          set: {_ in if !band.number.isEmpty { store.panadapter.setProperty(.band, band.number) }} ))
         { Text(band.label).frame(width: 35) }
           .toggleStyle(.button)
           .disabled(band.number.isEmpty)
@@ -50,5 +51,8 @@ public struct BandView: View {
 }
 
 #Preview("BandView") {
-  BandView(panadapter: Panadapter("0x99999999".streamId!, ApiModel.shared))
+  BandView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1, ApiModel.shared), waterfall: Waterfall(1, ApiModel.shared))) {
+    PanafallCore()
+  })
+    
 }
