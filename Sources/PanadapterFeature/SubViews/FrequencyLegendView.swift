@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 
+import ListenerFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -17,9 +18,19 @@ struct FrequencyLegendView: View {
   let spacings: [(Int,Int)]
   let formats: [(Int,String)]
   
-  @Shared(.appStorage("frequencyLegend")) var frequencyLegend: Color = .green
+  @Shared(.appStorage("localLegend")) var localLegend: Color = .green
+  @Shared(.appStorage("smartlinkLegend")) var smartlinkLegend: Color = .yellow
 
   @State var startBandwidth: CGFloat?
+
+  private var legendColor: Color {
+    if ListenerModel.shared.activePacket?.source == .smartlink {
+      return smartlinkLegend
+    } else {
+      return localLegend
+    }
+  }
+  
 
   @MainActor private var xOffset: CGFloat { -CGFloat(panadapter.center - panadapter.bandwidth/2).truncatingRemainder(dividingBy: CGFloat(spacing)) }
   @MainActor private var pixelPerHz: CGFloat { size.width / CGFloat(panadapter.bandwidth) }
@@ -54,7 +65,7 @@ struct FrequencyLegendView: View {
   
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Divider().background(frequencyLegend)
+      Divider().background(legendColor)
       HStack(spacing: 0) {
         ForEach(legends, id:\.self) { frequencyValue in
           Text(String(format: format, frequencyValue/1_000_000)).frame(width: legendWidth)
@@ -75,11 +86,11 @@ struct FrequencyLegendView: View {
                 }
             )
             .offset(x: -legendWidth/2 )
-            .foregroundColor(frequencyLegend)
+            .foregroundColor(legendColor)
         }
         .offset(x: legendOffset)
       }
-      Divider().background(frequencyLegend)
+      Divider().background(legendColor)
     }
   }
 }

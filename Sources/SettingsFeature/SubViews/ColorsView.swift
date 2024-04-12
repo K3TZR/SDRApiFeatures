@@ -25,13 +25,13 @@ struct ColorsView: View {
           Button("Reset") { store.send(.reset("spectrumFill")) }
         }
         GridRow() {
-          Text("Freq Legend")
-          ColorPicker("", selection: $store.frequencyLegend).labelsHidden()
-          Button("Reset") { store.send(.reset("frequencyLegend")) }
+          Text("Local Legend")
+          ColorPicker("", selection: $store.localLegend).labelsHidden()
+          Button("Reset") { store.send(.reset("localLegend")) }
           
-          Text("Db Legend")
-          ColorPicker("", selection: $store.dbLegend).labelsHidden()
-          Button("Reset") { store.send(.reset("dbLegend")) }
+          Text("Smartlink Legend")
+          ColorPicker("", selection: $store.smartlinkLegend).labelsHidden()
+          Button("Reset") { store.send(.reset("smartlinkLegend")) }
         }
         GridRow() {
           Text("Grid lines")

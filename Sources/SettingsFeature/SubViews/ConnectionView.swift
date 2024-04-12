@@ -41,7 +41,7 @@ private struct HeadingView: View {
           .multilineTextAlignment(.trailing)
           .frame(width: 100)
         Toggle("Smartlink Login required", isOn: $store.loginRequired)
-        Toggle("Use Default radio", isOn: $store.useDefault)
+        Toggle("Use Default radio", isOn: $store.useDefaultEnabled)
       }
       GridRow {
         Text("MTU")

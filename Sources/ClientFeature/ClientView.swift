@@ -34,6 +34,7 @@ public struct ClientView: View {
           store.send(.connect(store.selection, nil))
           dismiss()
         }
+        .keyboardShortcut(.defaultAction)
         .frame(width: 150) }
       
       ForEach(store.guiClients) { guiClient in

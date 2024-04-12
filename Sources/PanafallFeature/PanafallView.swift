@@ -73,11 +73,11 @@ public struct PanafallView: View {
           }
         }
         
-        if leftSideIsOpen == false {
+        if store.panafallLeftSideIsOpen == false {
           Image(systemName: "arrowshape.right").font(.title)
             .offset(x: 20, y: 10)
             .onTapGesture {
-              leftSideIsOpen.toggle()
+              store.panafallLeftSideIsOpen.toggle()
             }
         }
       }

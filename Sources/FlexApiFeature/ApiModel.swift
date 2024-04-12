@@ -64,6 +64,8 @@ public final class ApiModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
+  public var testMode = true
+  
   public internal(set) var antList = [String]()
   public internal(set) var radio: Radio?
   public internal(set) var boundClientId: String?

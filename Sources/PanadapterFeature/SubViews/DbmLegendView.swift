@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 
+import ListenerFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -19,9 +20,18 @@ struct DbmLegendView: View {
   let size: CGSize
   let frequencyLegendHeight: CGFloat
 
-  @Shared(.appStorage("dbLegend")) var dbLegend: Color = .green
+  @Shared(.appStorage("localLegend")) var localLegend: Color = .green
   @Shared(.appStorage("dbSpacing")) var dbSpacing: Int = 10
+  @Shared(.appStorage("smartlinkLegend")) var smartlinkLegend: Color = .yellow
 
+  private var legendColor: Color {
+    if ListenerModel.shared.activePacket?.source == .smartlink {
+      return smartlinkLegend
+    } else {
+      return localLegend
+    }
+  }
+  
   @State var startDbm: CGFloat?
   
   @MainActor var offset: CGFloat { panadapter.maxDbm.truncatingRemainder(dividingBy: CGFloat(dbSpacing)) }
@@ -47,7 +57,7 @@ struct DbmLegendView: View {
         if value > panadapter.minDbm {
           Text(String(format: "%0.0f", value - offset))
             .position(x: size.width - 20, y: (offset + CGFloat(i) * CGFloat(dbSpacing)) * pixelPerDbm(size.height))
-            .foregroundColor(dbLegend)
+            .foregroundColor(legendColor)
         }
       }
       

@@ -346,6 +346,8 @@ extension ApiModel {
   private func isForThisClient(_ properties: KeyValuesArray) -> Bool {
     var clientHandle : UInt32 = 0
     
+    guard testMode == false else { return true }
+    
     if let connectionHandle = connectionHandle {
       // find the handle property
       for property in properties.dropFirst(2) where property.key == "client_handle" {

@@ -83,16 +83,15 @@ public struct SettingsCore {
     //    @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool
     //    @Shared(.appStorage("smartlinkUser")) var smartlinkUser: String
     @Shared(.appStorage("stationName")) var stationName: String = "My Radio"
-    @Shared(.appStorage("useDefault")) var useDefault: Bool = false
+    @Shared(.appStorage("useDefaultEnabled")) var useDefaultEnabled: Bool = false
     @Shared(.appStorage("knownRadios")) var knownRadios = [KnownRadio]()
     
     // ---------- Color Settings ----------
     @Shared(.appStorage("background")) var background: Color = .black
-    @Shared(.appStorage("dbLegend")) var dbLegend: Color = .green
     @Shared(.appStorage("dbLines")) var dbLines: Color = .white.opacity(0.3)
     @Shared(.appStorage("flagBackground")) var flagBackground: Color = .black
-    @Shared(.appStorage("frequencyLegend")) var frequencyLegend: Color = .green
     @Shared(.appStorage("gridLines")) var gridLines: Color = .white.opacity(0.3)
+    @Shared(.appStorage("localLegend")) var localLegend: Color = .green
     @Shared(.appStorage("marker")) var marker: Color = .yellow
     @Shared(.appStorage("markerEdge")) var markerEdge: Color = .red.opacity(0.2)
     @Shared(.appStorage("markerSegment")) var markerSegment: Color = .white.opacity(0.2)
@@ -100,6 +99,7 @@ public struct SettingsCore {
     @Shared(.appStorage("sliceBackground")) var sliceBackground: Color = .black
     @Shared(.appStorage("sliceFilter")) var sliceFilter: Color = .white.opacity(0.2)
     @Shared(.appStorage("sliceInactive")) var sliceInactive: Color = .yellow
+    @Shared(.appStorage("smartlinkLegend")) var smartlinkLegend: Color = .yellow
     @Shared(.appStorage("spectrumLine")) var spectrumLine: Color = .white
     @Shared(.appStorage("spectrumFill")) var spectrumFill: Color = .white
     @Shared(.appStorage("tnfDeep")) var tnfDeep: Color = .yellow.opacity(0.2)
