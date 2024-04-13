@@ -1,5 +1,5 @@
 //
-//  DaxAudioPlayer.swift
+//  DaxAudioOutput.swift
 //
 //
 //  Created by Douglas Adams on 11/14/23.
@@ -14,8 +14,8 @@ import SharedFeature
 import XCGLogFeature
 
 @Observable
-final public class DaxAudioPlayer: Equatable, DaxAudioHandler{
-  public static func == (lhs: DaxAudioPlayer, rhs: DaxAudioPlayer) -> Bool {
+final public class DaxAudioOutput: Equatable, DaxAudioHandler{
+  public static func == (lhs: DaxAudioOutput, rhs: DaxAudioOutput) -> Bool {
     lhs === rhs
   }
   
