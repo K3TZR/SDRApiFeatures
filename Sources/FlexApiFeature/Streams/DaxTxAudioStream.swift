@@ -63,7 +63,7 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private var _txSequenceNumber = 0
+  private var _txSequenceNumber: UInt8 = 0
   private var _vita: Vita?
 
   // ----------------------------------------------------------------------------
@@ -152,13 +152,13 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
         _vita!.packetSize = _vita!.payloadSize + MemoryLayout<VitaHeader>.size   // payload size + header size
         
         // set the sequence number
-        _vita!.sequence = _txSequenceNumber
+//        _vita!.sequence = _txSequenceNumber
         
         // encode the Vita class as data and send to radio
         
         // FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: 0x00) { Udp.shared.send(vitaData ) }
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { Udp.shared.send(vitaData ) }
         
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16
@@ -197,13 +197,13 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
         _vita!.packetSize = _vita!.payloadSize + MemoryLayout<VitaHeader>.size      // payload size + header size
         
         // set the sequence number
-        _vita!.sequence = _txSequenceNumber
+//        _vita!.sequence = _txSequenceNumber
         
         // encode the Vita class as data and send to radio
         
-        // FIXME: need sequence number ???
+//         FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: 0x00) { Udp.shared.send(vitaData ) }
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { Udp.shared.send(vitaData ) }
         
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16
