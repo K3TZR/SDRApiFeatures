@@ -42,7 +42,7 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
   public var daxChannel = 0
   public var rxGain = 0
   
-  public var delegate: DaxAudioHandler?
+  public var delegate: DaxAudioOutputHandler?
   //  public var delegate: StreamHandler?
   //  public private(set) var rxLostPacketCount = 0
   

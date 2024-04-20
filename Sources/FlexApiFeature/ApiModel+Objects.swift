@@ -81,18 +81,18 @@ extension ApiModel {
     switch type {
     case .amplifier:            amplifiers.removeAll()
     case .bandSetting:          bandSettings.removeAll()
-    case .daxIqStream:          daxIqStreams.removeAll()
-    case .daxMicAudioStream:    daxMicAudioStreams.removeAll()
-    case .daxRxAudioStream:     daxRxAudioStreams.removeAll()
-    case .daxTxAudioStream:     daxTxAudioStreams.removeAll()
+//    case .daxIqStream:          daxIqStreams.removeAll()
+//    case .daxMicAudioStream:    daxMicAudioStreams.removeAll()
+//    case .daxRxAudioStream:     daxRxAudioStreams.removeAll()
+//    case .daxTxAudioStream:     daxTxAudioStreams.removeAll()
     case .equalizer:            equalizers.removeAll()
     case .memory:               memories.removeAll()
     case .meter:                meters.removeAll()
     case .panadapter:
       panadapters.removeAll()
     case .profile:              profiles.removeAll()
-    case .remoteRxAudioStream:  remoteRxAudioStreams.removeAll()
-    case .remoteTxAudioStream:  remoteTxAudioStreams.removeAll()
+//    case .remoteRxAudioStream:  remoteRxAudioStreams.removeAll()
+//    case .remoteTxAudioStream:  remoteTxAudioStreams.removeAll()
     case .slice:                slices.removeAll()
     case .tnf:                  tnfs.removeAll()
     case .usbCable:             usbCables.removeAll()
@@ -196,23 +196,23 @@ extension ApiModel {
     }
   }
   
-  //  private func meterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
-  //    // get the id
-  //    if let id = UInt32(properties[0].key.components(separatedBy: ".")[0], radix: 10) {
-  //      // is it in use?
-  //      if inUse {
-  //        // YES, add it if not already present
-  //        if meters[id: id] == nil { meters.append( Meter(id) ) }
-  //        // parse the properties
-  //        meters[id: id]!.parse(properties )
-  //
-  //      } else {
-  //        // NO, remove it
-  //        meters.remove(id: id)
-  //        log("Meter \(id): REMOVED", .debug, #function, #file, #line)
-  //      }
-  //    }
-  //  }
+    private func meterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
+      // get the id
+      if let id = UInt32(properties[0].key.components(separatedBy: ".")[0], radix: 10) {
+        // is it in use?
+        if inUse {
+          // YES, add it if not already present
+          if meters[id: id] == nil { meters.append( Meter(id, self) ) }
+          // parse the properties
+          meters[id: id]!.parse(properties )
+  
+        } else {
+          // NO, remove it
+          meters.remove(id: id)
+          log("Meter \(id): REMOVED", .debug, #function, #file, #line)
+        }
+      }
+    }
   
   private func panadapterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
     // get the id
@@ -536,6 +536,20 @@ extension ApiModel {
     }
   }
   
+  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
+    
+    if slice == nil {
+      for meter in meters where meter.name == shortName.rawValue {
+        return meter
+      }
+    } else {
+      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
+        return meter
+      }
+    }
+    return nil
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Private Subscription methods
   

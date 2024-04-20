@@ -1,15 +1,16 @@
 //
-//  ApiStringView.swift
-//  ViewFeatures/ApiStringView
+//  ApiIntView.swift
+//  ApiIntFeature/ApiIntView
 //
 //  Created by Douglas Adams on 2/19/23.
 //
 
 import SwiftUI
 
-public struct ApiStringView: View {
+public struct ApiIntView: View {
   let hint: String
-  let value: String
+  let value: Int
+  let formatter: NumberFormatter
   let action: (String) -> Void
   let isValid: (String) -> Bool
   let width: CGFloat
@@ -20,7 +21,8 @@ public struct ApiStringView: View {
   public init
   (
     hint: String = "",
-    value: String,
+    value: Int,
+    formatter: NumberFormatter = NumberFormatter(),
     action: @escaping (String) -> Void,
     isValid: @escaping (String) -> Bool = { _ in true },
     width: CGFloat = 100,
@@ -31,6 +33,7 @@ public struct ApiStringView: View {
   {
     self.hint = hint
     self.value = value
+    self.formatter = formatter
     self.action = action
     self.isValid = isValid
     self.width = width
@@ -51,6 +54,7 @@ public struct ApiStringView: View {
         .focusable()
         .focused($entryFocus)
         .font(font)
+        .multilineTextAlignment(.trailing)
         .frame(width: width)
       
         .onAppear {
@@ -69,60 +73,52 @@ public struct ApiStringView: View {
         .onExitCommand {
           // abort (ESC key)
           entryMode = false
-          entryFocus = false
         }
       
         .onSubmit {
           // submit (ENTER key)
           action(valueString)
           entryMode = false
-          entryFocus = false
         }
       
     } else {
       ZStack {
         // Fixed view
-        Text(value)
+        Text(formatter.string(from: value as NSNumber)!)
           .font(font)
-          .frame(width: width, height: height, alignment: .leading)
+          .frame(width: width, height: height, alignment: .trailing)
           .overlay(
               bordered ?
               Rectangle()
                 .stroke(.secondary, lineWidth:1)
               : nil)
 
-          .onAppear {
-            if value.isEmpty {
-              // force focus & selection
-              self.entryFocus = true
-              valueString = value
-              entryMode = true
-            }
-          }
-
         // Tap target
         Rectangle()
           .foregroundColor(.clear)
           .frame(width: width, height: height)
-          .contentShape(Rectangle()) 
+          .contentShape(Rectangle())
           .onTapGesture {
             // switch to Editable view
-            valueString = value
+            valueString = NumberFormatter().string(from: value as NSNumber)!
             entryMode = true
           }
-
       }
     }
   }
 }
 
-struct ApiStringView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      ApiStringView(hint: "name", value: "Doug's Flex", action: { print("value = \($0)") }, isValid: {_ in true }, width: 140, font: .title3 )
-      
-      ApiStringView(value: "K3TZR", action: { print("value = \($0)") } )
-      
-    }.frame(width: 200, height: 50)
-  }
+//#Preview ("ApiIntView"){
+//  var formatter: NumberFormatter {
+//    let formatter = NumberFormatter()
+//    formatter.groupingSeparator = "."
+//    formatter.numberStyle = .decimal
+//    return formatter
+//  }
+//  
+//  ApiIntView(hint: "frequency", value: 14_200_000, formatter: formatter, action: { print("value = \($0)") }, isValid: {_ in true }, width: 140, font: .title3 )
+//}
+    
+#Preview("ApiIntView") {
+  ApiIntView(value: 600, action: { print("value = \($0)") } )
 }

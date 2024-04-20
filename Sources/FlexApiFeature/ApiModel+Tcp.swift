@@ -215,7 +215,7 @@ extension ApiModel {
     }
     
     if objectType == .stream {
-      parse(statusMessage)
+      StreamModel.shared.parse(statusMessage)
     } else {
       Task { await parse(objectType, statusMessage) }
     }

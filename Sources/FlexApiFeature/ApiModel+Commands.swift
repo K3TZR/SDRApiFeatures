@@ -275,6 +275,11 @@ extension ApiModel {
     sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
   }
   
+  // DaxTxAudioStream
+  public func requestDaxTxAudioStream(replyTo callback: ReplyHandler? = nil)  {
+    sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue)", replyTo: callback)
+  }
+  
   public func requestDaxRxAudioStream(daxChannel: Int) async throws -> String? {
     sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: streamCreationReply)
     let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
@@ -302,6 +307,16 @@ extension ApiModel {
       await rxAudioStream()
     }
     return reply
+  }
+
+  public func requestDaxStream(_ streamType: ObjectType, daxChannel: Int = 0, replyTo callback: ReplyHandler? = nil)  {
+    switch streamType {
+    case .daxMicAudioStream:  sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxRxAudioStream:   sendCommand("stream create type=\(streamType.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
+    case .daxTxAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxIqStream:        sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    default: return
+    }
   }
 
 }

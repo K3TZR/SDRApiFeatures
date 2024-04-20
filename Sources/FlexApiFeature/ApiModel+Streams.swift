@@ -17,81 +17,67 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public Stream methods
   
-  public func parse(_ statusMessage: String) {
-    enum Property: String {
-      case daxIq            = "dax_iq"
-      case daxMic           = "dax_mic"
-      case daxRx            = "dax_rx"
-      case daxTx            = "dax_tx"
-      case remoteRx         = "remote_audio_rx"
-      case remoteTx         = "remote_audio_tx"
-    }
-    
-    let properties = statusMessage.keyValuesArray()
-    
-    // is the 1st KeyValue a StreamId?
-    if let id = properties[0].key.streamId {
-      
-      Task {
-        await MainActor.run {
-          // is it a removal?
-          if statusMessage.contains(kRemoved) {
-            // YES
-            removeStream(having: id)
-            
-          } else {
-            // NO is it for me?
-            if isForThisClient(properties) {
-              // YES
-              guard properties.count > 1 else {
-                log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
-                return
-              }
-              guard let token = Property(rawValue: properties[1].value) else {
-                // log it and ignore the Key
-                log("ApiModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
-                return
-              }
-              switch token {
-                
-              case .daxIq:      daxIqStreamStatus(properties)
-              case .daxMic:     daxMicAudioStreamStatus(properties)
-              case .daxRx:      daxRxAudioStreamStatus(properties)
-              case .daxTx:      daxTxAudioStreamStatus(properties)
-              case .remoteRx:   remoteRxAudioStreamStatus(properties)
-              case .remoteTx:   remoteTxAudioStreamStatus(properties)
-              }
-            }
-          }
-        }
-      }
-    } else {
-      log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
-    }
-  }
+//  public func parse(_ statusMessage: String) {
+//    enum Property: String {
+//      case daxIq            = "dax_iq"
+//      case daxMic           = "dax_mic"
+//      case daxRx            = "dax_rx"
+//      case daxTx            = "dax_tx"
+//      case remoteRx         = "remote_audio_rx"
+//      case remoteTx         = "remote_audio_tx"
+//    }
+//    
+//    let properties = statusMessage.keyValuesArray()
+//    
+//    // is the 1st KeyValue a StreamId?
+//    if let id = properties[0].key.streamId {
+//      
+//      Task {
+//        await MainActor.run {
+//          // is it a removal?
+//          if statusMessage.contains(kRemoved) {
+//            // YES
+//            removeStream(having: id)
+//            
+//          } else {
+//            // NO is it for me?
+//            if isForThisClient(properties) {
+//              // YES
+//              guard properties.count > 1 else {
+//                log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+//                return
+//              }
+//              guard let token = Property(rawValue: properties[1].value) else {
+//                // log it and ignore the Key
+//                log("ApiModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
+//                return
+//              }
+//              switch token {
+//                
+//              case .daxIq:      daxIqStreamStatus(properties)
+//              case .daxMic:     daxMicAudioStreamStatus(properties)
+//              case .daxRx:      daxRxAudioStreamStatus(properties)
+//              case .daxTx:      daxTxAudioStreamStatus(properties)
+//              case .remoteRx:   remoteRxAudioStreamStatus(properties)
+//              case .remoteTx:   remoteTxAudioStreamStatus(properties)
+//              }
+//            }
+//          }
+//        }
+//      }
+//    } else {
+//      log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+//    }
+//  }
 
   /// Send a Remove Stream command to the radio
   /// - Parameter having: a StreamId
-  @MainActor public func sendRemoveStreams(_ ids: [UInt32?]) {
-    for id in ids where id != nil {
-      sendCommand("stream remove \(id!.hex)")
-    }
-  }
-  
-  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
+//  @MainActor public func sendRemoveStreams(_ ids: [UInt32?]) {
+//    for id in ids where id != nil {
+//      sendCommand("stream remove \(id!.hex)")
+//    }
+//  }
     
-    if slice == nil {
-      for meter in meters where meter.name == shortName.rawValue {
-        return meter
-      }
-    } else {
-      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
-        return meter
-      }
-    }
-    return nil
-  }
-  
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Subscription methods
@@ -152,83 +138,83 @@ extension ApiModel {
   /// Evaluate a Status messaage
   /// - Parameters:
   ///   - properties: properties in KeyValuesArray form
-  @MainActor private func daxIqStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if daxIqStreams[id: id] == nil { daxIqStreams.append( DaxIqStream(id) ) }
-      // parse the properties
-      daxIqStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
-    }
-  }
-
-  @MainActor private func daxMicAudioStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if daxMicAudioStreams[id: id] == nil { daxMicAudioStreams.append( DaxMicAudioStream(id) ) }
-      // parse the properties
-      daxMicAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
-    }
-  }
-
-  @MainActor private func daxTxAudioStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if daxTxAudioStreams[id: id] == nil { daxTxAudioStreams.append( DaxTxAudioStream(id) ) }
-      // parse the properties
-      daxTxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
-    }
-  }
-
-  @MainActor private func daxRxAudioStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if daxRxAudioStreams[id: id] == nil { daxRxAudioStreams.append( DaxRxAudioStream(id) ) }
-      // parse the properties
-      daxRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
-    }
-  }
-
-  @MainActor private func remoteRxAudioStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if remoteRxAudioStreams[id: id] == nil { remoteRxAudioStreams.append( RemoteRxAudioStream(id, self) ) }
-      // parse the properties
-      remoteRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(2)) )
-    }
-  }
-
-  @MainActor private func remoteTxAudioStreamStatus(_ properties: KeyValuesArray) {
-    // get the id
-    if let id = properties[0].key.streamId {
-      // add it if not already present
-      if remoteTxAudioStreams[id: id] == nil { remoteTxAudioStreams.append( RemoteTxAudioStream(id) ) }
-      // parse the properties
-      remoteTxAudioStreams[id: id]!.parse( Array(properties.dropFirst(2)) )
-    }
-  }
-  
-  @MainActor public func meterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
-    // get the id
-    if let id = UInt32(properties[0].key.components(separatedBy: ".")[0], radix: 10) {
-      // is it in use?
-      if inUse {
-        // YES, add it if not already present
-        if meters[id: id] == nil { meters.append( Meter(id, self) ) }
-        // parse the properties
-        meters[id: id]!.parse(properties )
-        
-      } else {
-        // NO, remove it
-        meters.remove(id: id)
-        log("Meter \(id): REMOVED", .debug, #function, #file, #line)
-      }
-    }
-  }
+//  @MainActor private func daxIqStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if daxIqStreams[id: id] == nil { daxIqStreams.append( DaxIqStream(id) ) }
+//      // parse the properties
+//      daxIqStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+//    }
+//  }
+//
+//  @MainActor private func daxMicAudioStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if daxMicAudioStreams[id: id] == nil { daxMicAudioStreams.append( DaxMicAudioStream(id) ) }
+//      // parse the properties
+//      daxMicAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+//    }
+//  }
+//
+//  @MainActor private func daxTxAudioStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if daxTxAudioStreams[id: id] == nil { daxTxAudioStreams.append( DaxTxAudioStream(id) ) }
+//      // parse the properties
+//      daxTxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+//    }
+//  }
+//
+//  @MainActor private func daxRxAudioStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if daxRxAudioStreams[id: id] == nil { daxRxAudioStreams.append( DaxRxAudioStream(id) ) }
+//      // parse the properties
+//      daxRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+//    }
+//  }
+//
+//  @MainActor private func remoteRxAudioStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if remoteRxAudioStreams[id: id] == nil { remoteRxAudioStreams.append( RemoteRxAudioStream(id, self) ) }
+//      // parse the properties
+//      remoteRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(2)) )
+//    }
+//  }
+//
+//  @MainActor private func remoteTxAudioStreamStatus(_ properties: KeyValuesArray) {
+//    // get the id
+//    if let id = properties[0].key.streamId {
+//      // add it if not already present
+//      if remoteTxAudioStreams[id: id] == nil { remoteTxAudioStreams.append( RemoteTxAudioStream(id) ) }
+//      // parse the properties
+//      remoteTxAudioStreams[id: id]!.parse( Array(properties.dropFirst(2)) )
+//    }
+//  }
+//  
+//  @MainActor public func meterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
+//    // get the id
+//    if let id = UInt32(properties[0].key.components(separatedBy: ".")[0], radix: 10) {
+//      // is it in use?
+//      if inUse {
+//        // YES, add it if not already present
+//        if meters[id: id] == nil { meters.append( Meter(id, self) ) }
+//        // parse the properties
+//        meters[id: id]!.parse(properties )
+//        
+//      } else {
+//        // NO, remove it
+//        meters.remove(id: id)
+//        log("Meter \(id): REMOVED", .debug, #function, #file, #line)
+//      }
+//    }
+//  }
   
   /// Process the Vita struct containing Meter data
   /// - Parameters:
@@ -308,32 +294,32 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Removal methods
 
-  private func removeStream(having id: UInt32) {
-    if daxIqStreams[id: id] != nil {
-      daxIqStreams.remove(id: id)
-      log("ApiModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-    }
-    else if daxMicAudioStreams[id: id] != nil {
-      daxMicAudioStreams.remove(id: id)
-      log("ApiModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-    }
-    else if daxRxAudioStreams[id: id] != nil {
-      daxRxAudioStreams.remove(id: id)
-      log("ApiModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-
-    } else if daxTxAudioStreams[id: id] != nil {
-      daxTxAudioStreams.remove(id: id)
-      log("ApiModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-    }
-    else if remoteRxAudioStreams[id: id] != nil {
-      remoteRxAudioStreams.remove(id: id)
-      log("ApiModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-    }
-    else if remoteTxAudioStreams[id: id] != nil {
-      remoteTxAudioStreams.remove(id: id)
-      log("ApiModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-    }
-  }
+//  private func removeStream(having id: UInt32) {
+//    if daxIqStreams[id: id] != nil {
+//      daxIqStreams.remove(id: id)
+//      log("ApiModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//    }
+//    else if daxMicAudioStreams[id: id] != nil {
+//      daxMicAudioStreams.remove(id: id)
+//      log("ApiModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//    }
+//    else if daxRxAudioStreams[id: id] != nil {
+//      daxRxAudioStreams.remove(id: id)
+//      log("ApiModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//
+//    } else if daxTxAudioStreams[id: id] != nil {
+//      daxTxAudioStreams.remove(id: id)
+//      log("ApiModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//    }
+//    else if remoteRxAudioStreams[id: id] != nil {
+//      remoteRxAudioStreams.remove(id: id)
+//      log("ApiModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//    }
+//    else if remoteTxAudioStreams[id: id] != nil {
+//      remoteTxAudioStreams.remove(id: id)
+//      log("ApiModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+//    }
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Helper methods
@@ -343,20 +329,20 @@ extension ApiModel {
   ///   - properties:     a KeyValuesArray
   ///   - clientHandle:   the handle of ???
   /// - Returns:          true if a mtch
-  private func isForThisClient(_ properties: KeyValuesArray) -> Bool {
-    var clientHandle : UInt32 = 0
-    
-    guard testMode == false else { return true }
-    
-    if let connectionHandle = connectionHandle {
-      // find the handle property
-      for property in properties.dropFirst(2) where property.key == "client_handle" {
-        clientHandle = property.value.handle ?? 0
-      }
-      return clientHandle == connectionHandle
-    }
-    return false
-  }
+//  private func isForThisClient(_ properties: KeyValuesArray) -> Bool {
+//    var clientHandle : UInt32 = 0
+//    
+//    guard testMode == false else { return true }
+//    
+//    if let connectionHandle = connectionHandle {
+//      // find the handle property
+//      for property in properties.dropFirst(2) where property.key == "client_handle" {
+//        clientHandle = property.value.handle ?? 0
+//      }
+//      return clientHandle == connectionHandle
+//    }
+//    return false
+//  }
 
   
   

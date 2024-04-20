@@ -14,7 +14,7 @@ import SharedFeature
 import XCGLogFeature
 
 @Observable
-final public class DaxAudioOutput: Equatable, DaxAudioHandler{
+final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   public static func == (lhs: DaxAudioOutput, rhs: DaxAudioOutput) -> Bool {
     lhs === rhs
   }
@@ -27,8 +27,8 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
   public var deviceId: AudioDeviceID
   public var gain: Double
   public var sampleRate: Double
-//  public var sliceLetter: String?
-
+  //  public var sliceLetter: String?
+  
   public var levels = SignalLevel(rms: -50,peak: -50)
   public var status = "Off"
   
@@ -43,7 +43,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
   private var _converter = AVAudioConverter()
   
   private var _ringBuffer = TPCircularBuffer()
-
+  
   private let _channelCount = 2
   private let _elementSize = MemoryLayout<Float>.size   // Bytes
   private let _frameCount = 128
@@ -53,7 +53,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
   private let _engine = AVAudioEngine()
   private var _interleavedBuffer = AVAudioPCMBuffer()
   private var _nonInterleavedBuffer = AVAudioPCMBuffer()
- 
+  
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -114,18 +114,18 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
                                   to: AVAudioFormat(streamDescription: &_nonInterleavedASBD)!)!
     // create the Ring buffer (actual size will be adjusted to fit virtual memory page size)
     let ringBufferSize = (_frameCount * _elementSize * _channelCount * _ringBufferCapacity) + _ringBufferOverage
-    guard _TPCircularBufferInit( &_ringBuffer, UInt32(ringBufferSize), MemoryLayout<TPCircularBuffer>.stride ) else { fatalError("DaxAudioPlayer: Ring Buffer not created") }
-
+    guard _TPCircularBufferInit( &_ringBuffer, UInt32(ringBufferSize), MemoryLayout<TPCircularBuffer>.stride ) else { fatalError("DaxAudioOutput: Ring Buffer not created") }
+    
     _srcNode = AVAudioSourceNode { [self] _, _, frameCount, audioBufferList -> OSStatus in
       // retrieve the requested number of frames
       var lengthInFrames = frameCount
       TPCircularBufferDequeueBufferListFrames(&_ringBuffer, &lengthInFrames, audioBufferList, nil, &_nonInterleavedASBD)
       return noErr
     }
-
+    
     _engine.attach(_srcNode)
     _engine.connect(_srcNode, to: _engine.mainMixerNode, format: AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: _sampleRate, channels: AVAudioChannelCount(_channelCount), interleaved: false)!)
-
+    
     setDevice(deviceId)
     setGain(gain)
     
@@ -159,7 +159,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
       }
       
     } catch {
-      fatalError("DaxAudioPlayer: Failed to start, error = \(error)")
+      fatalError("DaxAudioOutput: Failed to start, error = \(error)")
     }
     
   }
@@ -198,9 +198,9 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
     self.gain = gain
     if let streamId = streamId {
       Task {
-        if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
+        if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
           for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
-            if await ApiModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
+            if await StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
             }
           }
@@ -218,14 +218,14 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
   // ----------------------------------------------------------------------------
   // MARK: - Stream Handler protocol method
   
-  public func daxAudioHandler(payload: [UInt8], reducedBW: Bool = false) {
+  public func daxAudioOutputHandler(payload: [UInt8], reducedBW: Bool = false) {
     let oneOverMax: Float = 1.0 / Float(Int16.max)
     
     if reducedBW {
       // Reduced Bandwidth - Int16, BigEndian, 1 Channel
       // allocate temporary array
       var floatPayload = [Float](repeating: 0, count: payload.count / MemoryLayout<Int16>.size)
-
+      
       payload.withUnsafeBytes { (payloadPtr) in
         // Int16 Mono Samples
         // get a pointer to the data in the payload
@@ -243,7 +243,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
       // reduced BW is mono, copy same data to Left & right channels
       memcpy(_nonInterleavedBuffer.floatChannelData![0], floatPayload, floatPayload.count * MemoryLayout<Float>.size)
       memcpy(_nonInterleavedBuffer.floatChannelData![1], floatPayload, floatPayload.count * MemoryLayout<Float>.size)
-
+      
       // append the data to the Ring buffer
       TPCircularBufferCopyAudioBufferList(&_ringBuffer, &_nonInterleavedBuffer.mutableAudioBufferList.pointee, nil, UInt32(_frameCount), &_nonInterleavedASBD)
       
@@ -251,7 +251,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
       // Full Bandwidth - Float32, BigEndian, 2 Channel, interleaved
       // copy the data to the buffer
       memcpy(_interleavedBuffer.floatChannelData![0], payload, payload.count)
-            
+      
       // convert Float32, BigEndian, 2 Channel, interleaved -> Float32, BigEndian, 2 Channel, non-interleaved
       do {
         try _converter.convert(to: _nonInterleavedBuffer, from: _interleavedBuffer)
@@ -259,7 +259,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
         TPCircularBufferCopyAudioBufferList(&_ringBuffer, &_nonInterleavedBuffer.mutableAudioBufferList.pointee, nil, UInt32(_frameCount), &_nonInterleavedASBD)
         
       } catch {
-        fatalError("DaxAudioPlayer: Conversion error = \(error)")
+        fatalError("DaxAudioOutput: Conversion error = \(error)")
       }
     }
   }
@@ -273,10 +273,8 @@ final public class DaxAudioOutput: Equatable, DaxAudioHandler{
         self.streamId = streamId
         
         start()
-        Task {
-          await MainActor.run { ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self }
-        }
-        log("DaxAudioPlayer: audioOutput STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+        StreamModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self
+        log("DaxAudioOutput: output STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }
     }
   }

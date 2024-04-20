@@ -8,16 +8,13 @@ let package = Package(
   platforms: [.macOS(.v14)],
   
   products: [
-    .library(name: "ApiIntView", targets: ["ApiIntView"]),
-    .library(name: "ApiStringView", targets: ["ApiStringView"]),
+    .library(name: "CustomControlFeature", targets: ["CustomControlFeature"]),
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
-    .library(name: "ControlsFeature", targets: ["ControlsFeature"]),
     .library(name: "DaxAudioFeature", targets: ["DaxAudioFeature"]),
     .library(name: "DirectFeature", targets: ["DirectFeature"]),
     .library(name: "FlagAntennaFeature", targets: ["FlagAntennaFeature"]),
     .library(name: "FlagFeature", targets: ["FlagFeature"]),
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
-    .library(name: "LevelIndicatorView", targets: ["LevelIndicatorView"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "PanadapterFeature", targets: ["PanadapterFeature"]),
@@ -27,6 +24,7 @@ let package = Package(
     .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
     .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
+    .library(name: "SideControlsFeature", targets: ["SideControlsFeature"]),
     .library(name: "TcpFeature", targets: ["TcpFeature"]),
     .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
@@ -45,28 +43,15 @@ let package = Package(
   
   // --------------- Modules ---------------
   targets: [
-    // ApiIntView
-    .target(name: "ApiIntView", dependencies: [
-    ]),
-    
-    // ApiStringView
-    .target(name: "ApiStringView", dependencies: [
-    ]),
-    
     // ClientFeature
     .target(name: "ClientFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       "SharedFeature"
     ]),
     
-    // ControlsFeature
-    .target(name: "ControlsFeature", dependencies: [
-      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      "ApiIntView",
-      "ApiStringView",
-      "LevelIndicatorView",
-      "FlexApiFeature",
-      "SharedFeature"
+    // CustomControlFeature
+    .target(name: "CustomControlFeature", dependencies: [
+      "SharedFeature",
     ]),
     
     // DaxAudioFeature
@@ -89,9 +74,8 @@ let package = Package(
     // FlagFeature
     .target(name: "FlagFeature", dependencies: [
       "FlagAntennaFeature",
-      "ApiIntView",
+      "CustomControlFeature",
       "FlexApiFeature",
-      "LevelIndicatorView",
       "SharedFeature",
     ]),
 
@@ -105,11 +89,6 @@ let package = Package(
       "SharedFeature",
     ]),
     
-    // LevelIndicatorView
-    .target(name: "LevelIndicatorView", dependencies: [
-      "SharedFeature",
-    ]),
-
     // ListenerFeature
     .target(name: "ListenerFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
@@ -166,6 +145,14 @@ let package = Package(
       .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
     ]),
 
+    // SideControlsFeature
+    .target(name: "SideControlsFeature", dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+      "CustomControlFeature",
+      "FlexApiFeature",
+      "SharedFeature"
+    ]),
+    
     // TcpFeature
     .target(name: "TcpFeature", dependencies: [
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),

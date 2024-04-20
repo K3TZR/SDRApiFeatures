@@ -49,7 +49,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
   
   public var active = false
   public var streamId: UInt32?
-    
+  
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
@@ -62,18 +62,18 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
   private var _opusConverter: AVAudioConverter!
   private var _interleaveConverter: AVAudioConverter!
   private var _opusInterleaveConverter: AVAudioConverter!
-
+  
   // ring buffer uses the larger frameCountOpus (vs frameCountUncompressed), size is somewhat arbitrary
   private var _frameCountOpus = 240
   private var _frameCountUncompressed = 128
-
+  
   private let _sampleRate: Double = 24_000
   private let _channelCount = 2
   private let _elementSize = MemoryLayout<Float>.size   // Bytes
   private var _ringBufferCapacity = 20      // number of AudioBufferLists in the Ring buffer
   private var _ringBufferOverage  = 2_048   // allowance for Ring buffer metadata (in Bytes)
   private var _ringBuffer = TPCircularBuffer()
-    
+  
   private var _engine = AVAudioEngine()
   private var _interleavedBuffer = AVAudioPCMBuffer()
   private var _nonInterleavedBuffer = AVAudioPCMBuffer()
@@ -149,16 +149,16 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
       // Float32, Host, 2 Channel, interleaved
       _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_opusInterleavedASBD)!, frameCapacity: UInt32(_frameCountOpus))!
       _interleavedBuffer.frameLength = _interleavedBuffer.frameCapacity
-
+      
       // Float32, Host, 2 Channel, non-interleaved
       _nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_nonInterleavedASBD)!, frameCapacity: UInt32(_frameCountOpus * _channelCount))!
       _nonInterleavedBuffer.frameLength = _nonInterleavedBuffer.frameCapacity
-
+      
     } else {
       // Float32, BigEndian, 2 Channel, interleaved
       _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_interleavedBigEndianASBD)!, frameCapacity: UInt32(_frameCountUncompressed))!
       _interleavedBuffer.frameLength = _interleavedBuffer.frameCapacity
-
+      
       // Float32, Host, 2 Channel, non-interleaved
       _nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_nonInterleavedASBD)!, frameCapacity: UInt32(_frameCountUncompressed * _channelCount))!
       _nonInterleavedBuffer.frameLength = _nonInterleavedBuffer.frameCapacity
@@ -166,7 +166,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
     // create the Float32, Host, non-interleaved Ring buffer (actual size will be adjusted to fit virtual memory page size)
     let ringBufferSize = (_frameCountOpus * _elementSize * _channelCount * _ringBufferCapacity) + _ringBufferOverage
     guard _TPCircularBufferInit( &_ringBuffer, UInt32(ringBufferSize), MemoryLayout<TPCircularBuffer>.stride ) else { fatalError("Ring Buffer not created") }
-
+    
     _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
       // retrieve the requested number of frames
       var lengthInFrames = frameCount
@@ -179,7 +179,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
                                                                                sampleRate: _sampleRate,
                                                                                channels: AVAudioChannelCount(_channelCount),
                                                                                interleaved: false)!)
-
+    
     active = true
     
     // empty the ring buffer
@@ -270,9 +270,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
         self.streamId = streamId
         
         start()
-        Task {
-          await MainActor.run { ApiModel.shared.remoteRxAudioStreams[id: streamId]?.delegate = self }
-        }
+        StreamModel.shared.remoteRxAudioStreams[id: streamId]?.delegate = self
         log("RemoteRxAudioPlayer: audioOutput STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }
     }

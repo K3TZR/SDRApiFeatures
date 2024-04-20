@@ -18,9 +18,9 @@ import SharedFeature
 // MARK: - View
 
 public struct ControlsView: View {
-  @Bindable var store: StoreOf<ControlsFeature>
+  @Bindable var store: StoreOf<SideControlsFeature>
   
-  public init(store: StoreOf<ControlsFeature>) {
+  public init(store: StoreOf<SideControlsFeature>) {
     self.store = store
   }
   
@@ -79,8 +79,8 @@ public struct ControlsView: View {
 // MARK: - Preview
 
 #Preview {
-  ControlsView(store: Store(initialState: ControlsFeature.State()) {
-    ControlsFeature()
+  ControlsView(store: Store(initialState: SideControlsFeature.State()) {
+    SideControlsFeature()
   })
   .environment(ApiModel.shared)
   

@@ -58,7 +58,7 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
     }}}
   public internal(set) var micGainScalar: Float = 0
   
-  public var delegate: DaxAudioHandler?
+  public var delegate: DaxAudioOutputHandler?
 //  public var rxLostPacketCount = 0
   
   public enum Property: String {

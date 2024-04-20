@@ -6,6 +6,7 @@
 //  Copyright © 2017 Douglas Adams & Mario Illgen. All rights reserved.
 //
 
+import AVFoundation
 import Foundation
 
 import SharedFeature
@@ -36,6 +37,8 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
   public let id: UInt32
   public var initialized = false
   public var isStreaming = false
+
+  public var delegate: DaxAudioInputHandler?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -100,7 +103,9 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
 
   
   
-  
+  public func send(_ buffer: AVAudioPCMBuffer) {
+    
+  }
   
   
   

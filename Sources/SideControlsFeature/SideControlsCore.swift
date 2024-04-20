@@ -12,7 +12,7 @@ import FlexApiFeature
 import SharedFeature
 
 @Reducer
-public struct ControlsFeature {
+public struct SideControlsFeature {
   public init() {}
   
   @ObservableState

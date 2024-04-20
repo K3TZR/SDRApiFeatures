@@ -140,14 +140,14 @@ public final class ApiModel {
 
 //  public var streamStatus = IdentifiedArrayOf<VitaStatus>()
   
-  public var meterStream: MeterStream?
-  
-  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
-  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
-  public var daxTxAudioStreams = IdentifiedArrayOf<DaxTxAudioStream>()
-  public var daxMicAudioStreams = IdentifiedArrayOf<DaxMicAudioStream>()
-  public var remoteRxAudioStreams = IdentifiedArrayOf<RemoteRxAudioStream>()
-  public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
+//  public var meterStream: MeterStream?
+//  
+//  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
+//  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
+//  public var daxTxAudioStreams = IdentifiedArrayOf<DaxTxAudioStream>()
+//  public var daxMicAudioStreams = IdentifiedArrayOf<DaxMicAudioStream>()
+//  public var remoteRxAudioStreams = IdentifiedArrayOf<RemoteRxAudioStream>()
+//  public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
 
   
   var _streamSubscription: Task<(), Never>? = nil

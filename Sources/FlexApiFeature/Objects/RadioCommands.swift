@@ -113,10 +113,10 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - DaxTxAudioStream methods
   
-  //    public func requestDaxTxAudioStream(callback: ReplyHandler? = nil) {
-  //        // tell the Radio to create a Stream
-  //        _api.send("stream create type=dax_tx", replyTo: callback)
-  //    }
+//  public func requestDaxTxAudioStream(callback: ReplyHandler? = nil) {
+//    // tell the Radio to create a Stream
+//    _apiModel.sendCommand("stream create type=dax_tx", replyTo: callback)
+//  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Equalizer methods

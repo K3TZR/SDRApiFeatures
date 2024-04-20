@@ -14,7 +14,7 @@ import SharedFeature
 import XCGLogFeature
 
 @Observable
-final public class DaxAudioInput: Equatable {
+final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
   public static func == (lhs: DaxAudioInput, rhs: DaxAudioInput) -> Bool {
     lhs === rhs
   }
@@ -51,6 +51,9 @@ final public class DaxAudioInput: Equatable {
   public func start() {
     print("Start")
     
+    guard streamId != nil else { fatalError("StreamId is nil")}
+    let id = streamId!
+    
     active = true
     // Get the native audio format of the engine's input bus
     let inputFormat = _engine.inputNode.inputFormat(forBus: 0)
@@ -67,7 +70,9 @@ final public class DaxAudioInput: Equatable {
     //  audioEngine.connect(mixerNode, to: audioEngine.outputNode, format: outputFormat)
     _engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: outputFormat) {(buffer, time) in
       
-      print(time, buffer)
+//      print(time, buffer)
+      
+      StreamModel.shared.daxTxAudioStreams[id:id]?.send(buffer)
     }
     
     _engine.prepare()
@@ -105,9 +110,9 @@ final public class DaxAudioInput: Equatable {
     self.gain = gain
     if let streamId = streamId {
       Task {
-        if let sliceLetter = await ApiModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
+        if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
           for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
-            if await ApiModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
+            if await StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
             }
           }
@@ -121,7 +126,30 @@ final public class DaxAudioInput: Equatable {
     
     // FIXME: how to update sample rate ???
   }
+
+  public func daxAudioInputHandler(payload: [UInt8], reducedBW: Bool) {
+    //
+  }
+  
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Stream reply handler
+  
+  public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    if reply != kNoError {
+      if let streamId = reply.streamId {
+        self.streamId = streamId
+        
+        start()
+        Task {
+          await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
+        }
+        log("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+      }
+    }
+  }
 }
+
 //
 //  // ----------------------------------------------------------------------------
 //  // MARK: - Stream Handler protocol method
