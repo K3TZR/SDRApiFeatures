@@ -47,6 +47,7 @@ final public class StreamStatistics: ObservableObject {
   ]
 }
 
+@Observable
 final public class StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -57,9 +58,11 @@ final public class StreamModel {
   public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
   public var daxTxAudioStreams = IdentifiedArrayOf<DaxTxAudioStream>()
   public var daxMicAudioStreams = IdentifiedArrayOf<DaxMicAudioStream>()
+  public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
   public var remoteRxAudioStreams = IdentifiedArrayOf<RemoteRxAudioStream>()
   public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
-  
+  public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
+
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
@@ -81,10 +84,10 @@ final public class StreamModel {
         
         switch vita.classCode {
         case .panadapter:
-          if let object = await ApiModel.shared.panadapters[id: vita.streamId] { await object.vitaProcessor(vita) }
+          if let object = panadapterStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
         case .waterfall:
-          if let object = await ApiModel.shared.waterfalls[id: vita.streamId] { await object.vitaProcessor(vita) }
+          if let object = waterfallStreams[id: vita.streamId] { object.vitaProcessor(vita) }
           
         case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
           if let object = daxIqStreams[id: vita.streamId] { object.vitaProcessor(vita) }
@@ -133,7 +136,7 @@ final public class StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public Stream methods
   
-  public func parse(_ statusMessage: String) {
+  public func parse(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
     enum Property: String {
       case daxIq            = "dax_iq"
       case daxMic           = "dax_mic"
@@ -155,7 +158,7 @@ final public class StreamModel {
         
       } else {
         // NO is it for me?
-        if isForThisClient(properties) {
+        if isForThisClient(properties, connectionHandle, testMode) {
           // YES
           guard properties.count > 1 else {
             log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
@@ -189,59 +192,6 @@ final public class StreamModel {
       ApiModel.shared.sendCommand("stream remove \(id!.hex)")
     }
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Stream Subscription methods
-
-  /// Subscribe to UDP streams
-//  func subscribeToStreams()  {
-//    _streamSubscription = Task(priority: .high) {
-//
-//      log("ApiModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
-//      for await vita in Udp.shared.inboundStreams {
-//        Task {
-//          await MainActor.run { self.streamStatus[id: vita.classCode]?.packets += 1 }
-//        }
-//        switch vita.classCode {
-//        case .panadapter:
-//          if let object = self.panadapters[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        case .waterfall:
-//          if let object = self.waterfalls[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
-//          if let object = self.daxIqStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        case .daxAudio:
-//          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita)}
-//          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//          if let object = self.remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        case .daxReducedBw:
-//          if let object = self.daxRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//          if let object = self.daxMicAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        case .meter:
-//          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-//          meterStream!.vitaProcessor(vita)
-//
-//        case .opus:
-//          if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-//
-//        default:
-//          // log the error
-//          log("ApiModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
-//        }
-//      }
-//      log("ApiModel: UDP stream  subscription STOPPED", .debug, #function, #file, #line)
-//    }
-//  }
-//
-//  /// Unsubscribe from UDP streams
-//  private func unSubscribeToStreams() {
-//    log("ApiModel: stream subscription CANCELLED", .debug, #function, #file, #line)
-//    _streamSubscription?.cancel()
-//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods
@@ -309,99 +259,6 @@ final public class StreamModel {
     }
   }
   
-//  public func meterStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
-//    // get the id
-//    if let id = UInt32(properties[0].key.components(separatedBy: ".")[0], radix: 10) {
-//      // is it in use?
-//      if inUse {
-//        // YES, add it if not already present
-//        if meters[id: id] == nil { meters.append( Meter(id, self) ) }
-//        // parse the properties
-//        meters[id: id]!.parse(properties )
-//        
-//      } else {
-//        // NO, remove it
-//        meters.remove(id: id)
-//        log("Meter \(id): REMOVED", .debug, #function, #file, #line)
-//      }
-//    }
-//  }
-  
-  /// Process the Vita struct containing Meter data
-  /// - Parameters:
-  ///   - vita:        a Vita struct
-//  private func meterVitaProcessor(_ vita: Vita) {
-//    let kDbDbmDbfsSwrDenom: Float = 128.0   // denominator for Db, Dbm, Dbfs, Swr
-//    let kDegDenom: Float = 64.0             // denominator for Degc, Degf
-//
-//    var meterIds = [UInt32]()
-//
-//    //    if isStreaming == false {
-//    //      isStreaming = true
-//    //      streamId = vita.streamId
-//    //      // log the start of the stream
-//    //      log("Meter \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
-//    //    }
-//
-//    // NOTE:  there is a bug in the Radio (as of v2.2.8) that sends
-//    //        multiple copies of meters, this code ignores the duplicates
-//
-//    vita.payloadData.withUnsafeBytes { payloadPtr in
-//      // four bytes per Meter
-//      let numberOfMeters = Int(vita.payloadSize / 4)
-//
-//      // pointer to the first Meter number / Meter value pair
-//      let ptr16 = payloadPtr.bindMemory(to: UInt16.self)
-//
-//      // for each meter in the Meters packet
-//      for i in 0..<numberOfMeters {
-//        // get the Meter id and the Meter value
-//        let id: UInt32 = UInt32(CFSwapInt16BigToHost(ptr16[2 * i]))
-//        let value: UInt16 = CFSwapInt16BigToHost(ptr16[(2 * i) + 1])
-//
-//        // is this a duplicate?
-//        if !meterIds.contains(id) {
-//          // NO, add it to the list
-//          meterIds.append(id)
-//
-//          // find the meter (if present) & update it
-//          if let meter = meters[id: id] {
-//            //          meter.streamHandler( value)
-//            let newValue = Int16(bitPattern: value)
-//            let previousValue = meter.value
-//
-//            // check for unknown Units
-//            guard let token = Units(rawValue: meter.units) else {
-//              //      // log it and ignore it
-//              //      log("Meter \(desc) \(description) \(group) \(name) \(source): unknown units - \(units))", .warning, #function, #file, #line)
-//              return
-//            }
-//            var adjNewValue: Float = 0.0
-//            switch token {
-//
-//            case .db, .dbm, .dbfs, .swr:        adjNewValue = Float(exactly: newValue)! / kDbDbmDbfsSwrDenom
-//            case .volts, .amps:                 adjNewValue = Float(exactly: newValue)! / 256.0
-//            case .degc, .degf:                  adjNewValue = Float(exactly: newValue)! / kDegDenom
-//            case .rpm, .watts, .percent, .none: adjNewValue = Float(exactly: newValue)!
-//            }
-//            // did it change?
-//            if adjNewValue != previousValue {
-//              let value = adjNewValue
-//              Task {
-//                await MainActor.run { meters[id: id]?.value = value }
-//              }
-//            }
-//          }
-//        }
-//      }
-//    }
-//  }
-
-  
-  
-  
-  
-  
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Removal methods
 
@@ -440,23 +297,19 @@ final public class StreamModel {
   ///   - properties:     a KeyValuesArray
   ///   - clientHandle:   the handle of ???
   /// - Returns:          true if a mtch
-  private func isForThisClient(_ properties: KeyValuesArray) -> Bool {
-//    var clientHandle : UInt32 = 0
-//    
-//    guard testMode == false else { return true }
-//    
-//    if let connectionHandle = connectionHandle {
-//      // find the handle property
-//      for property in properties.dropFirst(2) where property.key == "client_handle" {
-//        clientHandle = property.value.handle ?? 0
-//      }
-//      return clientHandle == connectionHandle
-//    }
-//    return false
+  private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?, _ testMode: Bool) -> Bool {
+    var clientHandle : UInt32 = 0
     
-    // FIXME:
+    guard testMode == false else { return true }
     
-    return true
+    if let connectionHandle {
+      // find the handle property
+      for property in properties.dropFirst(2) where property.key == "client_handle" {
+        clientHandle = property.value.handle ?? 0
+      }
+      return clientHandle == connectionHandle
+    }
+    return false
   }
 
   

@@ -18,7 +18,7 @@ import XCGLogFeature
 //      processing of a stream of Audio to the Radio. RemoteTxAudioStream instances
 //      are added / removed by the incoming TCP messages. RemoteTxAudioStream instances
 //      periodically send Audio in a UDP stream. They are collected in the
-//      Model.RemoteTxAudioStreams collection..
+//      Model.RemoteTxAudioStreams collection.
 @Observable
 public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHandler {
   public static func == (lhs: RemoteTxAudioStream, rhs: RemoteTxAudioStream) -> Bool {

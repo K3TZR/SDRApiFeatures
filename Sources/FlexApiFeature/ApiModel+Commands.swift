@@ -34,18 +34,8 @@ extension ApiModel {
     let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
     
     // register to be notified when reply received
-//    addReplyHandler(sequenceNumber, (replyTo: callback, command: command, continuation: nil))
     addReplyHandler(sequenceNumber, (replyTo: callback, command: command))
   }
-
-//  public func sendCommandAwaitReply(_ command: String) async throws -> String {
-//    return try await withCheckedThrowingContinuation{ continuation in
-//      let sequenceNumber = Tcp.shared.send(command)
-//      // register to be resumed when reply received
-//      addReplyHandler(sequenceNumber, (replyTo: nil, command: command, continuation: continuation))
-//      return
-//    }
-//  }
   
   /// Send data to the Radio (hardware) via UDP
   /// - Parameters:
@@ -255,66 +245,17 @@ extension ApiModel {
     //    sendTcp("radio static_net_params" + " ip=\(staticIp) gateway=\(staticGateway) netmask=\(staticMask)")
   }
   
-  // RemoteRxAudioStream
-  public func requestRemoteRxAudioStream(isCompressed: Bool = true, replyTo callback: ReplyHandler? = nil)  {
-    sendCommand("stream create type=\(ObjectType.remoteRxAudioStream.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
-  }
+  // ----------------------------------------------------------------------------
+  // MARK: Stream methods
   
-  // RemoteTxAudioStream
-  public func requestRemoteTxAudioStream(replyTo callback: ReplyHandler? = nil) {
-    sendCommand("stream create type=\(ObjectType.remoteTxAudioStream.rawValue)", replyTo: callback)
-  }
-  
-  // DaxMicAudioStream
-  public func requestDaxMicAudioStream(replyTo callback: ReplyHandler? = nil)  {
-    sendCommand("stream create type=\(ObjectType.daxMicAudioStream.rawValue)", replyTo: callback)
-  }
-  
-  // DaxRxAudioStream
-  public func requestDaxRxAudioStream(daxChannel: Int, replyTo callback: ReplyHandler? = nil)  {
-    sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
-  }
-  
-  // DaxTxAudioStream
-  public func requestDaxTxAudioStream(replyTo callback: ReplyHandler? = nil)  {
-    sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue)", replyTo: callback)
-  }
-  
-  public func requestDaxRxAudioStream(daxChannel: Int) async throws -> String? {
-    sendCommand("stream create type=\(ObjectType.daxRxAudioStream.rawValue), dax_channel=\(daxChannel)", replyTo: streamCreationReply)
-    let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
-      await rxAudioStream()
-    }
-    return reply
-  }
-
-  @MainActor func streamCreationReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-    if command.contains(ObjectType.daxRxAudioStream.rawValue) { _awaitRxAudioStream?.resume(returning: (reply)) }
-//    _awaitRxAudioStream?.resume(returning: (reply))
-  }
-
-  
-  public func requestDaxStream(_ streamType: ObjectType, daxChannel: Int = 0) async throws -> String? {
-    
+  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
     switch streamType {
-    case .daxMicAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: streamCreationReply)
-    case .daxRxAudioStream:    sendCommand("stream create type=\(streamType.rawValue), dax_channel=\(daxChannel)", replyTo: streamCreationReply)
-    case .daxTxAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: streamCreationReply)
-    default: return nil
-    }
-    
-    let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
-      await rxAudioStream()
-    }
-    return reply
-  }
-
-  public func requestDaxStream(_ streamType: ObjectType, daxChannel: Int = 0, replyTo callback: ReplyHandler? = nil)  {
-    switch streamType {
-    case .daxMicAudioStream:  sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxRxAudioStream:   sendCommand("stream create type=\(streamType.rawValue), dax_channel=\(daxChannel)", replyTo: callback)
-    case .daxTxAudioStream:   sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxIqStream:        sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .remoteRxAudioStream:  sendCommand("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
+    case .remoteTxAudioStream:  sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxMicAudioStream:    sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxRxAudioStream:     sendCommand("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
+    case .daxTxAudioStream:     sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxIqStream:          sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
     default: return
     }
   }

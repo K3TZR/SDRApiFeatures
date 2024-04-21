@@ -22,7 +22,7 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
   
-  func parse(_ type: ObjectType, _ statusMessage: String) async {
+  func parse(_ type: ObjectType, _ statusMessage: String) {
     
     switch type {
     case .amplifier:            amplifierStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
@@ -39,6 +39,7 @@ extension ApiModel {
     case .profile:              profileStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse), statusMessage)
     case .radio:                radio!.parse(statusMessage.keyValuesArray())
     case .slice:                sliceStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
+    case .stream:               StreamModel.shared.parse(statusMessage, connectionHandle, testMode)
     case .tnf:                  tnfStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
     case .transmit:             preProcessTransmit(statusMessage)
     case .usbCable:             usbCableStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
@@ -47,9 +48,9 @@ extension ApiModel {
     case .xvtr:                 xvtrStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
       
     case .panadapter, .waterfall: break                                                   // handled by "display"
-    case .stream: break                                                                   // handled by streamModel
-    case .daxIqStream, .daxMicAudioStream, .daxRxAudioStream, .daxTxAudioStream:  break   // handled by "stream"
-    case .remoteRxAudioStream, .remoteTxAudioStream:  break                               // handled by "stream"
+                                                                   
+//    case .daxIqStream, .daxMicAudioStream, .daxRxAudioStream, .daxTxAudioStream:  break   // handled by "stream"
+//    case .remoteRxAudioStream, .remoteTxAudioStream:  break                               // handled by "stream"
     }
   }
   
@@ -58,17 +59,17 @@ extension ApiModel {
     radio = nil
     removeAll(of: .amplifier)
     removeAll(of: .bandSetting)
-    removeAll(of: .daxIqStream)
-    removeAll(of: .daxMicAudioStream)
-    removeAll(of: .daxRxAudioStream)
-    removeAll(of: .daxTxAudioStream)
+//    removeAll(of: .daxIqStream)
+//    removeAll(of: .daxMicAudioStream)
+//    removeAll(of: .daxRxAudioStream)
+//    removeAll(of: .daxTxAudioStream)
     removeAll(of: .equalizer)
     removeAll(of: .memory)
     removeAll(of: .meter)
     removeAll(of: .panadapter)
     removeAll(of: .profile)
-    removeAll(of: .remoteRxAudioStream)
-    removeAll(of: .remoteTxAudioStream)
+//    removeAll(of: .remoteRxAudioStream)
+//    removeAll(of: .remoteTxAudioStream)
     removeAll(of: .slice)
     removeAll(of: .tnf)
     removeAll(of: .usbCable)
@@ -223,12 +224,14 @@ extension ApiModel {
         // YES, add it if not already present
         if panadapters[id: id] == nil {
           panadapters.append( Panadapter(id, self) )
+          StreamModel.shared.panadapterStreams.append( PanadapterStream(id) )
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
       } else {
         // NO, remove it
         panadapters.remove(id: id)
+        StreamModel.shared.panadapterStreams.remove(id: id)
         log("Panadapter \(id.hex): REMOVED", .debug, #function, #file, #line)
       }
     }
@@ -311,13 +314,17 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if waterfalls[id: id] == nil { waterfalls.append( Waterfall(id, self) ) }
+        if waterfalls[id: id] == nil {
+          waterfalls.append( Waterfall(id, self) )
+          StreamModel.shared.waterfallStreams.append( WaterfallStream(id) )
+        }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
         
       } else {
         // NO, remove it
         waterfalls.remove(id: id)
+        StreamModel.shared.waterfallStreams.remove(id: id)
         log("Waterfall \(id.hex): REMOVED", .info, #function, #file, #line)
       }
     }

@@ -212,13 +212,8 @@ extension ApiModel {
       // YES, set the API state to finish the UDP initialization
       firstStatusMessageReceived = true
       _awaitFirstStatusMessage!.resume()
-    }
-    
-    if objectType == .stream {
-      StreamModel.shared.parse(statusMessage)
-    } else {
-      Task { await parse(objectType, statusMessage) }
-    }
+    }    
+    parse(objectType, statusMessage)
   }
   
   /// Parse the Reply to a Client Gui command
