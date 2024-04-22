@@ -192,7 +192,7 @@ final public class StreamModel {
       ApiModel.shared.sendCommand("stream remove \(id!.hex)")
     }
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods
 
@@ -312,8 +312,28 @@ final public class StreamModel {
     return false
   }
 
+  private func udpStatus(_ status: UdpStatus) {
+    switch status.statusType {
+      
+    case .didUnBind:
+      log("ApiModel: Udp unbound from port, \(status.receivePort)", .debug, #function, #file, #line)
+    case .failedToBind:
+      log("ApiModel: Udp failed to bind, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
+    case .readError:
+      log("ApiModel: Udp read error, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
+    }
+  }
   
-  
+  // Process the AsyncStream of UDP status changes
+  private func subscribeToUdpStatus() {
+    Task(priority: .high) {
+      log("ApiModel: UdpStatus subscription STARTED", .debug, #function, #file, #line)
+      for await status in Udp.shared.statusStream {
+        udpStatus(status)
+      }
+      log("ApiModel: UdpStatus subscription STOPPED", .debug, #function, #file, #line)
+    }
+  }
   
   /*
    "stream set 0x" + _streamId.ToString("X") + " daxiq_rate=" + _sampleRate
@@ -329,18 +349,3 @@ final public class StreamModel {
    "stream create type=remote_audio_tx"
    */
 }
-
-//@Observable
-//public class VitaStatus: Identifiable {
-//  public var type: Vita.PacketClassCodes
-//  public var packets = 0
-//  public var errors = 0
-//
-//  public var id: Vita.PacketClassCodes { type }
-//
-//  public init(_ type: Vita.PacketClassCodes)
-//  {
-//    self.type = type
-//  }
-//}
-//}

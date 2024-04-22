@@ -343,6 +343,19 @@ public final class ApiModel {
     _awaitClientIpValidation?.resume(returning: reply)
   }
 
+  /// Connect to a Radio
+  /// - Parameter params:     a struct of parameters
+  /// - Returns:              success / failure
+  private func connect(_ packet: Packet) -> Bool {
+    return Tcp.shared.connect(packet.source == .smartlink,
+                              packet.requiresHolePunch,
+                              packet.negotiatedHolePunchPort,
+                              packet.publicTlsPort,
+                              packet.port,
+                              packet.publicIp,
+                              packet.localInterfaceIP)
+  }
+
   private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool) {
     let guiClientId = UserDefaults.standard.string(forKey: "guiClientId")
     
@@ -401,6 +414,17 @@ public final class ApiModel {
     _pinger = nil
   }
 
+  /// Process the AsyncStream of inbound TCP messages
+  private func subscribeToMessages()  {
+    Task(priority: .high) {
+      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
+      for await tcpMessage in Tcp.shared.inboundMessagesStream {
+        tcpInbound(tcpMessage.text)
+      }
+      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
+    }
+  }
+  
   private func wanValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitWanValidation = continuation

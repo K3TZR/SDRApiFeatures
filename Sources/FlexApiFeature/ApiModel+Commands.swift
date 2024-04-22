@@ -134,6 +134,23 @@ extension ApiModel {
   }
   
   // ----------------------------------------------------------------------------
+  // MARK: - Meter methods
+  
+  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
+    
+    if slice == nil {
+      for meter in meters where meter.name == shortName.rawValue {
+        return meter
+      }
+    } else {
+      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
+        return meter
+      }
+    }
+    return nil
+  }
+  
+ // ----------------------------------------------------------------------------
   // MARK: - Slice methods
   
   /// Find a Slice by DAX Channel
@@ -187,7 +204,7 @@ extension ApiModel {
   //    objectModel.activeSlice = slice
   //  }
   
-  @MainActor public func sliceMove(_ panadapter: Panadapter, _ clickFrequency: Int) {
+  public func sliceMove(_ panadapter: Panadapter, _ clickFrequency: Int) {
     
     let slices = slices.filter{ $0.panadapterId == panadapter.id }
     if slices.count == 1 {
