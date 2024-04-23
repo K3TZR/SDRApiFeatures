@@ -20,11 +20,9 @@ import XCGLogFeature
 @Observable
 public final class Cwx {
   // ----------------------------------------------------------------------------
-  // MARK: - Initialization (singleton)
+  // MARK: - Initialization
 
-//  public static var shared = Cwx()
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
+  public init() {
     macros = [String](repeating: "", count: kMaxNumberOfMacros)
   }
   
@@ -57,11 +55,6 @@ public final class Cwx {
     case sent
     case wpm            = "wpm"
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods

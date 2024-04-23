@@ -13,17 +13,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class UsbCable: Identifiable, Equatable {
-  public nonisolated static func == (lhs: UsbCable, rhs: UsbCable) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class UsbCable: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String, _ apiModel: ApiModel) {
+  public init(_ id: String) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -51,6 +46,9 @@ public final class UsbCable: Identifiable, Equatable {
   public var usbLog = false
   
   public private(set) var cableType: UsbCableType = .bcd
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum UsbCableType: String {
     case bcd
@@ -82,11 +80,6 @@ public final class UsbCable: Identifiable, Equatable {
     case usbLog      = "log"
     //        case usbLogLine = "log_line"
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -142,6 +135,9 @@ public final class UsbCable: Identifiable, Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func usbCableSetAndSend(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -151,7 +147,7 @@ public final class UsbCable: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: UsbCable.Property, _ value: String) {
-    _apiModel.sendCommand("usb_cable set \(id) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("usb_cable set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

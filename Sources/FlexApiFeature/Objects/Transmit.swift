@@ -13,17 +13,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Transmit: Equatable {
-  public nonisolated static func == (lhs: Transmit, rhs: Transmit) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Transmit {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -77,6 +71,9 @@ public final class Transmit: Equatable {
   public var voxEnabled = false
   public var voxDelay = 0
   public var voxLevel = 0
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     // properties received from the radio                           // REQUIRED when sending to the radio
@@ -144,11 +141,6 @@ public final class Transmit: Equatable {
     .txFilterLow : "filter_low",
     .txMonitorEnabled : "mon"
   ]
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -224,6 +216,9 @@ public final class Transmit: Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Transmit.Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -243,21 +238,21 @@ public final class Transmit: Equatable {
     
     switch property {
     case .mox:
-      _apiModel.sendCommand("xmit \(value)")
+      ApiModel.shared.sendCommand("xmit \(value)")
       
     case .cwBreakInEnabled, .cwBreakInDelay, .cwlEnabled, .cwIambicEnabled,
         .cwPitch, .cwSidetoneEnabled, .cwSyncCwxEnabled, .cwIambicMode,
         .cwSwapPaddles, .cwSpeed:
-      _apiModel.sendCommand("cw \(rawProperty) \(value)")
+      ApiModel.shared.sendCommand("cw \(rawProperty) \(value)")
       
     case .micBiasEnabled, .micBoostEnabled, .micSelection, .micAccEnabled:
-      _apiModel.sendCommand("mic \(rawProperty) \(value)")
+      ApiModel.shared.sendCommand("mic \(rawProperty) \(value)")
       
     case .tune:
-      _apiModel.sendCommand("transmit \(rawProperty) \(value)")
+      ApiModel.shared.sendCommand("transmit \(rawProperty) \(value)")
       
     default:
-      _apiModel.sendCommand("transmit set \(rawProperty)=\(value)")
+      ApiModel.shared.sendCommand("transmit set \(rawProperty)=\(value)")
     }
   }
 

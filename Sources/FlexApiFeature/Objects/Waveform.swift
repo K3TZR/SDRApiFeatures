@@ -12,17 +12,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Waveform: Equatable {
-  public nonisolated static func == (lhs: Waveform, rhs: Waveform) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Waveform {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -30,15 +24,13 @@ public final class Waveform: Equatable {
   public internal(set) var initialized  = false
 
   public var list = ""
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case list = "installed_list"
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods

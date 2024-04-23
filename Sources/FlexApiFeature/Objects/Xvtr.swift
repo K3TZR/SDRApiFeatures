@@ -12,17 +12,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Xvtr: Identifiable, Equatable {
-  public nonisolated static func == (lhs: Xvtr, rhs: Xvtr) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Xvtr: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -42,6 +37,9 @@ public final class Xvtr: Identifiable, Equatable {
   public var rfFrequency: Hz = 0
   public var rxGain = 0
   public var rxOnly = false
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case create
@@ -58,11 +56,6 @@ public final class Xvtr: Identifiable, Equatable {
     case rxOnly         = "rx_only"
     case twoMeterInt    = "two_meter_int"
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -105,6 +98,9 @@ public final class Xvtr: Identifiable, Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -115,9 +111,9 @@ public final class Xvtr: Identifiable, Equatable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .create:     _apiModel.sendCommand("xvtr create")
-    case .remove:     _apiModel.sendCommand("xvtr remove \(id.hex)")
-    default:          _apiModel.sendCommand("xvtr set \(id.hex) \(property.rawValue)=\(value)")
+    case .create:     ApiModel.shared.sendCommand("xvtr create")
+    case .remove:     ApiModel.shared.sendCommand("xvtr remove \(id.hex)")
+    default:          ApiModel.shared.sendCommand("xvtr set \(id.hex) \(property.rawValue)=\(value)")
     }
   }
   

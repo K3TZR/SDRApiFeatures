@@ -13,17 +13,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Wan: Equatable {
-  public nonisolated static func == (lhs: Wan, rhs: Wan) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Wan {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -37,6 +31,9 @@ public final class Wan: Equatable {
   public internal(set) var publicUpnpTlsPort: Int = -1
   public internal(set) var publicUpnpUdpPort: Int = -1
   public internal(set) var upnpSupported: Bool = false
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case publicTlsPort      = "public_tls_port"
@@ -47,11 +44,6 @@ public final class Wan: Equatable {
     case serverConnected    = "server_connected"
     case upnpSupported      = "upnp_supported"
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods

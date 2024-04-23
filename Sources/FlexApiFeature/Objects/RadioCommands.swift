@@ -28,7 +28,7 @@ extension Radio {
     // TODO: test this
     
     // tell the Radio to remove a Stream
-    _apiModel.sendCommand("transmit band remove " + "\(id)", replyTo: callback)
+    ApiModel.shared.sendCommand("transmit band remove " + "\(id)", replyTo: callback)
     
     // notify all observers
     //    NC.post(.bandSettingWillBeRemoved, object: self as Any?)
@@ -123,7 +123,7 @@ extension Radio {
   
   public func requestEqualizerInfo(_ eqType: String, callback:  ReplyHandler? = nil) {
     // ask the Radio for an Equalizer's settings
-    _apiModel.sendCommand("eq " + eqType + " info", replyTo: callback)
+    ApiModel.shared.sendCommand("eq " + eqType + " info", replyTo: callback)
   }
   
   // ----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ extension Radio {
   // MARK: - Panadapter methods
   
   public func requestRfGainList(_ streamId: UInt32, callback: ReplyHandler? = nil) {
-    _apiModel.sendCommand("display pan rfgain_info \(streamId.hex)", replyTo: callback)
+    ApiModel.shared.sendCommand("display pan rfgain_info \(streamId.hex)", replyTo: callback)
   }
 
   //    public func requestPanadapter(_ dimensions: CGSize = CGSize(width: 100, height: 100), callback: ReplyHandler? = nil) {

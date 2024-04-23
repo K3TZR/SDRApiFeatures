@@ -13,17 +13,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Equalizer: Identifiable, Equatable {
-  public nonisolated static func == (lhs: Equalizer, rhs: Equalizer) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Equalizer: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String, _ apiModel: ApiModel) {
+  public init(_ id: String) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -46,6 +41,9 @@ public final class Equalizer: Identifiable, Equatable {
     case rx = "rxsc"
     case tx = "txsc"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     // properties received from the radio
@@ -59,6 +57,7 @@ public final class Equalizer: Identifiable, Equatable {
     case hz8000 = "8000hz"
     case eqEnabled = "mode"
   }
+  
   static let altProperty: [Property : String] = [
     // alternate properties REQUIRED when sending to the radio
     .hz63 : "63Hz",
@@ -70,11 +69,6 @@ public final class Equalizer: Identifiable, Equatable {
     .hz4000 : "4000Hz",
     .hz8000 : "8000Hz"
   ]
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -113,6 +107,9 @@ public final class Equalizer: Identifiable, Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -140,7 +137,7 @@ public final class Equalizer: Identifiable, Equatable {
       // YES
       rawProperty = altValue
     }
-    _apiModel.sendCommand("eq \(id) \(rawProperty)=\(value)")
+    ApiModel.shared.sendCommand("eq \(id) \(rawProperty)=\(value)")
   }
 
   /* ----- from FlexApi -----

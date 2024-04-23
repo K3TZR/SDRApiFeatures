@@ -13,17 +13,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Atu: Equatable {
-  public nonisolated static func == (lhs: Atu, rhs: Atu) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Atu {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -35,11 +29,6 @@ public final class Atu: Equatable {
   public var status: Status = .none
   public var usingMemory: Bool = false
   
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
-
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -94,6 +83,9 @@ public final class Atu: Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     guard property == .enabled || property == .memoriesEnabled else { return }
     parse([(property.rawValue, value)])
@@ -105,8 +97,8 @@ public final class Atu: Equatable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .enabled:            _apiModel.sendCommand("atu \(value == "1" ? "start": "bypass")")
-    case .memoriesEnabled:    _apiModel.sendCommand("atu set \(property.rawValue)=\(value)")
+    case .enabled:            ApiModel.shared.sendCommand("atu \(value == "1" ? "start": "bypass")")
+    case .memoriesEnabled:    ApiModel.shared.sendCommand("atu set \(property.rawValue)=\(value)")
     default:                  break
     }
   }

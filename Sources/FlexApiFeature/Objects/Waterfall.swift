@@ -13,43 +13,31 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Waterfall: Identifiable, Equatable {
-  public nonisolated static func == (lhs: Waterfall, rhs: Waterfall) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Waterfall: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Published properties
-  
-  public var isStreaming = false
-  public var waterfallFrame: WaterfallFrame?
-
-  public var autoBlackEnabled = false
-  public var autoBlackLevel: UInt32 = 0
-  public var blackLevel = 0
-  public var clientHandle: UInt32 = 0
-  public var colorGain = 0
-//  public var delegate: StreamHandler?
-  public var gradientIndex = 0
-  public var lineDuration = 0
-  public var panadapterId: UInt32?
-  
-  public var selectedGradient = Waterfall.gradients[0]
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public let id: UInt32
   public var initialized = false
+
+  public var autoBlackEnabled = false
+  public var autoBlackLevel: UInt32 = 0
+  public var blackLevel = 0
+  public var clientHandle: UInt32 = 0
+  public var colorGain = 0
+  public var gradientIndex = 0
+  public var lineDuration = 0
+  public var panadapterId: UInt32?
   
+  public var selectedGradient = Waterfall.gradients[0]
+
   public static let gradients = [
     "Basic",
     "Dark",
@@ -59,36 +47,9 @@ public final class Waterfall: Identifiable, Equatable {
     "Tritanopia"
   ]
 
-//  private static let kNumberOfFrames = 10
-//
-//  private struct PayloadHeader {    // struct to mimic payload layout
-//    var firstBinFreq: UInt64        // 8 bytes
-//    var binBandwidth: UInt64        // 8 bytes
-//    var lineDuration : UInt32       // 4 bytes
-//    var segmentBinCount: UInt16     // 2 bytes
-//    var height: UInt16              // 2 bytes
-//    var frameNumber: UInt32         // 4 bytes
-//    var autoBlackLevel: UInt32      // 4 bytes
-//    var frameBinCount: UInt16       // 2 bytes
-//    var startingBinNumber: UInt16   // 2 bytes
-//  }
-//  
-//  private var _accumulatedBins = 0
-//  private var _expectedFrameNumber = -1
-//  private var _frames = [WaterfallFrame](repeating: WaterfallFrame(), count:kNumberOfFrames )
-//  private var _index: Int = 0
-//  private var _segmentBinCount = 0
-//  private var _startingBinNumber = 0
-
-//  public enum Gradients: String {
-//    case basic = "Basic"
-//    case dark = "Dark"
-//    case deuteranopia = "Deuteranopia"
-//    case grayscale = "Grayscale"
-//    case purple = "Purple"
-//    case tritanopia = "Tritanopia"
-//  }
-  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+    
   public enum Property: String {
     case clientHandle         = "client_handle"   // New Api only
     
@@ -118,17 +79,6 @@ public final class Waterfall: Identifiable, Equatable {
     case wide
     case xPixels              = "x_pixels"
     case xvtr
-  }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
-
-
-
-  public func setIsStreaming() {
-    Task { await MainActor.run { isStreaming = true }}
   }
 
   // ----------------------------------------------------------------------------
@@ -168,95 +118,8 @@ public final class Waterfall: Identifiable, Equatable {
     }
   }
   
-  
-  
-//  /// Process the Waterfall Vita struct
-//  ///      The payload of the incoming Vita struct is converted to a WaterfallFrame and
-//  ///      passed to the Waterfall Stream Handler
-//  /// - Parameters:
-//  ///   - vita:       a Vita struct
-//  public func vitaProcessor(_ vita: Vita) {
-//    if isStreaming == false {
-//      isStreaming = true
-//      
-//      // log the start of the stream
-//      log("Waterfall \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
-//
-////      Task { await MainActor.run { waterfalls[id: vita.streamId]?.setIsStreaming() }}
-//    }
-//    
-//    // Bins are just beyond the payload
-//    let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
-//    
-//    vita.payloadData.withUnsafeBytes { ptr in
-//      // map the payload to the Payload struct
-//      let hdr = ptr.bindMemory(to: PayloadHeader.self)
-//      
-//      // validate the packet (could be incomplete at startup)
-//      _startingBinNumber = Int(CFSwapInt16BigToHost(hdr[0].startingBinNumber))
-//      _segmentBinCount = Int(CFSwapInt16BigToHost(hdr[0].segmentBinCount))
-//      _frames[_index].frameBinCount = Int(CFSwapInt16BigToHost(hdr[0].frameBinCount))
-//      _frames[_index].frameNumber = Int(CFSwapInt32BigToHost(hdr[0].frameNumber))
-//      
-//      if _frames[_index].frameBinCount == 0 { return }
-//      if _startingBinNumber + _segmentBinCount > _frames[_index].frameBinCount { return }
-//      
-//      // populate frame values
-//      _frames[_index].firstBinFreq = CGFloat(CFSwapInt64BigToHost(hdr[0].firstBinFreq)) / 1.048576E6
-//      _frames[_index].binBandwidth = CGFloat(CFSwapInt64BigToHost(hdr[0].binBandwidth)) / 1.048576E6
-//      _frames[_index].lineDuration = Int( CFSwapInt32BigToHost(hdr[0].lineDuration) )
-//      _frames[_index].height = Int( CFSwapInt16BigToHost(hdr[0].height) )
-//      _frames[_index].autoBlackLevel = CFSwapInt32BigToHost(hdr[0].autoBlackLevel)
-//      
-//      // are we waiting for the start of a frame?
-//      if _expectedFrameNumber == -1 {
-//        // YES, is it the start of a frame?
-//        if _startingBinNumber == 0 {
-//          // YES, START OF A FRAME
-//          _expectedFrameNumber = _frames[_index].frameNumber
-//        } else {
-//          // NO, NOT THE START OF A FRAME
-//          return
-//        }
-//      }
-//      // is it the expected frame?
-//      if _expectedFrameNumber != _frames[_index].frameNumber {
-//        // NOT THE EXPECTED FRAME, wait for the next start of frame
-//        log("Waterfall: missing frame(s), expected = \(_expectedFrameNumber), received = \(_frames[_index].frameNumber), accumulatedBins = \(_accumulatedBins), frameBinCount = \(_frames[_index].frameBinCount)", .debug, #function, #file, #line)
-//        _expectedFrameNumber = -1
-//        _accumulatedBins = 0
-//        
-////        Task { await MainActor.run { streamStatus[id: vita.classCode]?.errors += 1 }}
-//        
-//        return
-//      }
-//      // copy the data
-//      vita.payloadData.withUnsafeBytes { ptr in
-//        // Swap the byte ordering of the data & place it in the bins
-//        for i in 0..<_segmentBinCount {
-//          _frames[_index].bins[i+_startingBinNumber] = CFSwapInt16BigToHost( ptr.load(fromByteOffset: byteOffsetToBins + (2 * i), as: UInt16.self) )
-//        }
-//      }
-//      _accumulatedBins += _segmentBinCount
-//
-//      // is it a complete Frame?
-//      if _accumulatedBins == _frames[_index].frameBinCount {
-//        // updated just to be consistent (so that downstream won't use the wrong count)
-//
-//        // YES, post it
-//        waterfallFrame = _frames[_index]
-//
-//        // update the expected frame number & dataframe index
-//        _expectedFrameNumber += 1
-//        _accumulatedBins = 0
-//        _index = (_index + 1) % Waterfall.kNumberOfFrames
-//      }
-//    }
-//  }
-
-  
-  
-  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
   
   public func setProperty(_ property: Waterfall.Property, _ value: String) {
     parse([(property.rawValue, value)])
@@ -267,7 +130,7 @@ public final class Waterfall: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: Waterfall.Property, _ value: String) {
-    _apiModel.sendCommand("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

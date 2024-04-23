@@ -13,21 +13,16 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Radio: Equatable {
-  public nonisolated static func == (lhs: Radio, rhs: Radio) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization & Dependencies
   
-  public init(_ packet: Packet, _ apiModel: ApiModel) {
+  public init(_ packet: Packet) {
     self.packet = packet
-    _apiModel = apiModel
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Published properties
+  // MARK: - Public properties
   
   public var addressType = "DHCP"
   public internal(set) var alpha = false
@@ -41,9 +36,6 @@ public final class Radio: Equatable {
   public internal(set) var sliceList = [UInt32]()
   public var tnfsEnabled = false
   public internal(set) var uptime = 0
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Public properties
   
   public nonisolated static let kDaxChannels = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   public nonisolated static let kDaxIqChannels = [0, 1, 2, 3, 4]
@@ -122,7 +114,10 @@ public final class Radio: Equatable {
   public internal(set) var tcxoPresent = false
   
   public var regionList = ["USA"]
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+  
   public enum Property: String {
     case alpha
     case atuPresent               = "atu_present"
@@ -205,9 +200,7 @@ public final class Radio: Equatable {
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
-  
-  var _apiModel: ApiModel
-  
+
   private var _cw = false
   private var _digital = false
   private var _initialized = false
@@ -319,7 +312,10 @@ public final class Radio: Equatable {
       log("Radio: initialized, name = \(name)", .debug, #function, #file, #line)
     }
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String = "") {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -339,13 +335,13 @@ public final class Radio: Equatable {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      _apiModel.sendCommand("radio set \(property.rawValue)=\(value)")
+      ApiModel.shared.sendCommand("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      _apiModel.sendCommand("radio \(property.rawValue) \(value)")
+      ApiModel.shared.sendCommand("radio \(property.rawValue) \(value)")
     case .calibrate:
-      _apiModel.sendCommand("radio pll_start")
+      ApiModel.shared.sendCommand("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      _apiModel.sendCommand("mixer \(property.rawValue) \(value)")
+      ApiModel.shared.sendCommand("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       
@@ -370,7 +366,7 @@ public final class Radio: Equatable {
   }
 
   private func filterSend(_ type: Property, _ property: Property, _ value: String) {
-    _apiModel.sendCommand("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

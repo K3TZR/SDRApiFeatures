@@ -13,17 +13,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Gps: Equatable {
-  public nonisolated static func == (lhs: Gps, rhs: Gps) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Gps {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -41,6 +35,9 @@ public final class Gps: Equatable {
   public var track: Double = 0
   public var tracked = false
   public var visible = false
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public  enum Property: String {
     case altitude
@@ -55,11 +52,6 @@ public final class Gps: Equatable {
     case tracked
     case visible
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -97,7 +89,10 @@ public final class Gps: Equatable {
       log("Gps: initialized", .debug, #function, #file, #line)
     }
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)

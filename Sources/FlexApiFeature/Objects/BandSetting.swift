@@ -13,11 +13,7 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class BandSetting: Identifiable, Equatable {
-  public nonisolated static func == (lhs: BandSetting, rhs: BandSetting) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class BandSetting: Identifiable {  
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -25,6 +21,7 @@ public final class BandSetting: Identifiable, Equatable {
     self.id = id
     _apiModel = apiModel
   }
+
   // ------------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -42,6 +39,9 @@ public final class BandSetting: Identifiable, Equatable {
   public var tx1Enabled: Bool = false
   public var tx2Enabled: Bool = false
   public var tx3Enabled: Bool  = false
+
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case accTxEnabled       = "acc_tx_enabled"
@@ -100,6 +100,9 @@ public final class BandSetting: Identifiable, Equatable {
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(id, property, value)
@@ -109,7 +112,7 @@ public final class BandSetting: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ id: UInt32, _ property: Property, _ value: String) {
-    _apiModel.sendCommand("eq \(id) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("eq \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

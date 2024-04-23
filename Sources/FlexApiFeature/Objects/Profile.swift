@@ -14,17 +14,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Profile: Identifiable, Equatable{
-  public nonisolated static func == (lhs: Profile, rhs: Profile) -> Bool {
-    lhs.id == rhs.id
-  }
-
+public final class Profile: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String, _ apiModel: ApiModel) {
+  public init(_ id: String) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -35,16 +30,14 @@ public final class Profile: Identifiable, Equatable{
   
   public var current: String = ""
   public var list = [String]()
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case list = "list"
     case current = "current"
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -90,21 +83,24 @@ public final class Profile: Identifiable, Equatable{
     }
   }
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ cmd: String, _ profileName: String) {
     guard id == "mic" || id == "tx" || id == "global" else { return }
     
     switch cmd {
     case "delete":
-      _apiModel.sendCommand("profile \(id) delete \"\(profileName)\"")
+      ApiModel.shared.sendCommand("profile \(id) delete \"\(profileName)\"")
       list.removeAll(where: { $0 == profileName })
     case "create":
       list.append(profileName)
-      _apiModel.sendCommand("profile \(id) " + "create \"\(profileName)\"")
+      ApiModel.shared.sendCommand("profile \(id) " + "create \"\(profileName)\"")
     case "reset":
-      _apiModel.sendCommand("profile \(id) " + "reset \"\(profileName)\"")
+      ApiModel.shared.sendCommand("profile \(id) " + "reset \"\(profileName)\"")
     default:
       current = profileName
-      _apiModel.sendCommand("profile \(id) " + "load \"\(profileName)\"")
+      ApiModel.shared.sendCommand("profile \(id) " + "load \"\(profileName)\"")
     }
   }
 

@@ -12,17 +12,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Slice: Identifiable, Equatable {
-  public nonisolated static func == (lhs: Slice, rhs: Slice) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Slice: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
 
     // set filterLow & filterHigh to default values
     setupDefaultFilters(mode)
@@ -30,6 +25,9 @@ public final class Slice: Identifiable, Equatable {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
+  
+  public let id: UInt32
+  public var initialized: Bool = false
   
   public var autoPan: Bool = false
   public var clientHandle: UInt32 = 0
@@ -109,12 +107,6 @@ public final class Slice: Identifiable, Equatable {
   public var xitEnabled: Bool = false
   public var xitOffset: Int = 0
   
-  // ----------------------------------------------------------------------------
-  // MARK: - Public properties
-  
-  public let id: UInt32
-  public var initialized: Bool = false
-  
   public let daxChoices = Radio.kDaxChannels
   public var filters = [(low: Int, high: Int)]()
   
@@ -132,11 +124,6 @@ public final class Slice: Identifiable, Equatable {
     "DIGL": [(-1500,-300), (-1700,-300), (-1900,-300), (-2100,-300), (-2400,-300), (-2700,-300), (-3000,-300), (-3200,-300), (-3600,-300), (-4300,-300)],
     "RTTY": [(-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115)]
   ]
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -249,9 +236,12 @@ public final class Slice: Identifiable, Equatable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    _apiModel.sendCommand("slice remove " + " \(id)", replyTo: callback)
+    ApiModel.shared.sendCommand("slice remove " + " \(id)", replyTo: callback)
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Slice.Property, _ value: String) {
 //    var adjustedValue = value
     
@@ -268,15 +258,15 @@ public final class Slice: Identifiable, Equatable {
   private func send(_ property: Slice.Property, _ value: String) {
     switch property {
     case .filterLow, .filterHigh:
-      _apiModel.sendCommand("filt \(id) \(filterLow) \(filterHigh)")
+      ApiModel.shared.sendCommand("filt \(id) \(filterLow) \(filterHigh)")
     case .frequency:
-      _apiModel.sendCommand("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
+      ApiModel.shared.sendCommand("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
     case .locked:
-      _apiModel.sendCommand("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
+      ApiModel.shared.sendCommand("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
     case .audioGain, .audioLevel:
-      _apiModel.sendCommand("slice set \(id) audio_level=\(value)")
+      ApiModel.shared.sendCommand("slice set \(id) audio_level=\(value)")
     default:
-      _apiModel.sendCommand("slice set \(id) \(property.rawValue)=\(value)")
+      ApiModel.shared.sendCommand("slice set \(id) \(property.rawValue)=\(value)")
     }
   }
   

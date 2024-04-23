@@ -110,7 +110,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id, self) ) }
+        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id) ) }
         // parse the properties
         amplifiers[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -146,7 +146,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if equalizers[id: id] == nil { equalizers.append( Equalizer(id, self) ) }
+      if equalizers[id: id] == nil { equalizers.append( Equalizer(id) ) }
       // parse the properties
       equalizers[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -163,7 +163,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if memories[id: id] == nil { memories.append( Memory(id, self) ) }
+        if memories[id: id] == nil { memories.append( Memory(id) ) }
         // parse the properties
         memories[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -181,7 +181,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if meters[id: id] == nil { meters.append( Meter(id, self) ) }
+        if meters[id: id] == nil { meters.append( Meter(id) ) }
         // parse the properties
         meters[id: id]!.parse(properties )
         
@@ -201,7 +201,7 @@ extension ApiModel {
         // parse the properties
         // YES, add it if not already present
         if panadapters[id: id] == nil {
-          panadapters.append( Panadapter(id, self) )
+          panadapters.append( Panadapter(id) )
           StreamModel.shared.panadapterStreams.append( PanadapterStream(id) )
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
@@ -221,7 +221,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if profiles[id: id] == nil { profiles.append( Profile(id, self) ) }
+      if profiles[id: id] == nil { profiles.append( Profile(id) ) }
       // parse the properties
       profiles[id: id]!.parse(statusMessage )
       
@@ -238,7 +238,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if slices[id: id] == nil { slices.append(Slice(id, self)) }
+        if slices[id: id] == nil { slices.append(Slice(id)) }
         // parse the properties
         slices[id: id]!.parse(Array(properties.dropFirst(1)) )
 //        if slices[id: id]!.active { activeSlice = slices[id: id] }
@@ -257,7 +257,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if tnfs[id: id] == nil { tnfs.append( Tnf(id, self) ) }
+        if tnfs[id: id] == nil { tnfs.append( Tnf(id) ) }
         // parse the properties
         tnfs[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -275,7 +275,7 @@ extension ApiModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if usbCables[id: id] == nil { usbCables.append( UsbCable(id, self) ) }
+      if usbCables[id: id] == nil { usbCables.append( UsbCable(id) ) }
       // parse the properties
       usbCables[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -293,7 +293,7 @@ extension ApiModel {
       if inUse {
         // YES, add it if not already present
         if waterfalls[id: id] == nil {
-          waterfalls.append( Waterfall(id, self) )
+          waterfalls.append( Waterfall(id) )
           StreamModel.shared.waterfallStreams.append( WaterfallStream(id) )
         }
         // parse the properties
@@ -314,7 +314,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id, self) ) }
+        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id) ) }
         // parse the properties
         xvtrs[id: id]!.parse(Array(properties.dropFirst(1)) )
         

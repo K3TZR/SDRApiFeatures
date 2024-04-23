@@ -36,13 +36,13 @@ public final class ApiModel {
       UserDefaults.standard.set(UUID().uuidString, forKey: "guiClientId")
     }
     
-    atu = Atu(self)
-    cwx = Cwx(self)
-    gps = Gps(self)
-    interlock = Interlock(self)
-    transmit = Transmit(self)
-    wan = Wan(self)
-    waveform = Waveform(self)
+    atu = Atu()
+    cwx = Cwx()
+    gps = Gps()
+    interlock = Interlock()
+    transmit = Transmit()
+    wan = Wan()
+    waveform = Waveform()
   }
   
   // ----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ public final class ApiModel {
     
     if let packet = ListenerModel.shared.activePacket, let station = ListenerModel.shared.activeStation {
       // Instantiate a Radio
-      radio = Radio(packet, self)
+      radio = Radio(packet)
       // connect to it
       guard radio != nil else { throw ApiError.instantiation }
       log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)

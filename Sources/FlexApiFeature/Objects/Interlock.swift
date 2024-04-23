@@ -13,17 +13,11 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Interlock: Equatable {
-  public nonisolated static func == (lhs: Interlock, rhs: Interlock) -> Bool {
-    lhs === rhs
-  }
-  
+public final class Interlock {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ apiModel: ApiModel) {
-    _apiModel = apiModel
-  }
+  public init() {}
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -50,6 +44,9 @@ public final class Interlock: Equatable {
   public var tx2Delay = 0
   public var tx3Enabled = false
   public var tx3Delay = 0
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case accTxEnabled       = "acc_tx_enabled"
@@ -100,11 +97,6 @@ public final class Interlock: Equatable {
     case clientTxInhibit    = "CLIENT_TX_INHIBIT"
     case xvtrRxOnly         = "XVTR_RX_OLY"
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -152,7 +144,10 @@ public final class Interlock: Equatable {
       log("Interlock: initialized", .debug, #function, #file, #line)
     }
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -162,7 +157,7 @@ public final class Interlock: Equatable {
   // MARK: - Private Send methods
   
   public func send(_ property: Property, _ value: String) {
-    _apiModel.sendCommand("interlock \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("interlock \(property.rawValue)=\(value)")
   }
     
   /* ----- from FlexApi -----

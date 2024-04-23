@@ -13,17 +13,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Tnf: Identifiable, Equatable {
-  public nonisolated static func == (lhs: Tnf, rhs: Tnf) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Tnf: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ----------------------------------------------------------------------------
@@ -37,6 +32,9 @@ public final class Tnf: Identifiable, Equatable {
   public var permanent = false
   public var width: Hz = 0
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+  
   public enum Property: String {
     case depth
     case frequency = "freq"
@@ -49,11 +47,6 @@ public final class Tnf: Identifiable, Equatable {
     case deep     = 2
     case veryDeep = 3
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -87,13 +80,16 @@ public final class Tnf: Identifiable, Equatable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    _apiModel.sendCommand("tnf remove " + " \(id)", replyTo: callback)
+    ApiModel.shared.sendCommand("tnf remove " + " \(id)", replyTo: callback)
 
     // remove it immediately (Tnf does not send status on removal)
-    _apiModel.tnfs.remove(id: id)
+    ApiModel.shared.tnfs.remove(id: id)
     log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Tnf.Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
@@ -103,7 +99,7 @@ public final class Tnf: Identifiable, Equatable {
   // MARK: - Private Send methods
   
   private func send(_ property: Tnf.Property, _ value: String) {
-    _apiModel.sendCommand("tnf set \(id) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendCommand("tnf set \(id) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

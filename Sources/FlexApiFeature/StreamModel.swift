@@ -111,7 +111,8 @@ final public class StreamModel {
           //          }
           
         case .meter:
-          await Meter.vitaProcessor(vita)
+          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+          meterStream?.vitaProcessor(vita)
           
         case .opus:
           if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }

@@ -13,17 +13,12 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Amplifier: Identifiable, Equatable{
-  public nonisolated static func == (lhs: Amplifier, rhs: Amplifier) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class Amplifier: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
   }
   
   // ----------------------------------------------------------------------------
@@ -41,6 +36,9 @@ public final class Amplifier: Identifiable, Equatable{
   public var serialNumber: String = ""
   public var state: String = ""
   
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+  
   public enum Property: String {
     case ant
     case handle
@@ -50,11 +48,6 @@ public final class Amplifier: Identifiable, Equatable{
     case serialNumber  = "serial_num"
     case state
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -89,7 +82,10 @@ public final class Amplifier: Identifiable, Equatable{
       }
     }
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
   public func setProperty(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
