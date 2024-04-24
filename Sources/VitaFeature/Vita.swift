@@ -39,7 +39,7 @@ public class Vita {
   // MARK: - Public properties
   
   public static let DiscoveryStreamId              : UInt32 = 0x00000800
-  public var classCode                             : PacketClassCodes = .panadapter      // Packet class code
+  public var classCode                             : ClassCode = .panadapter      // Packet class code
   public var classIdPresent                        : Bool = true                         // Class ID present
   public var packetSize                            : Int = 0                             // Size of packet (32 bit chunks)
   public var payloadData                           = [UInt8]()                           // Array of bytes in payload
@@ -89,7 +89,7 @@ public class Vita {
     let kTsfTypeMask                        : UInt8 = 0x30
     let kPacketSequenceMask                 : UInt8 = 0x0f
     let kInformationClassCodeMask           : UInt32 = 0xffff0000
-    let kPacketClassCodeMask                : UInt32 = 0x0000ffff
+    let kClassCodeMask                      : UInt32 = 0x0000ffff
     let kOffsetOptionals                    = 4                                   // byte offset to optional header section
     let kTrailerSize                        = 4                                   // Size of a trailer (bytes)
     
@@ -147,7 +147,7 @@ public class Vita {
       let value = CFSwapInt32BigToHost(vitaOptionals.advanced(by: headerCount + 1).pointee)
       vita.informationClassCode = (value & kInformationClassCodeMask) >> 16
       
-      guard let cc = PacketClassCodes(rawValue: UInt16(value & kPacketClassCodeMask)) else {return nil}
+      guard let cc = ClassCode(rawValue: UInt16(value & kClassCodeMask)) else {return nil}
       vita.classCode = cc
       
       // Increment past these items
@@ -316,8 +316,8 @@ public class Vita {
     case .opusTxV2:     self.init(packetType: .extDataWithStream, classCode: .daxAudio, streamId: streamId, tsi: .other, tsf: .sampleCount)
     case .opusTx:       self.init(packetType: .extDataWithStream, classCode: .opus, streamId: streamId, tsi: .other, tsf: .sampleCount)
     case .txAudio:
-      var classCode = PacketClassCodes.daxAudio
-      if reducedBW { classCode = PacketClassCodes.daxAudioReducedBw }
+      var classCode = ClassCode.daxAudio
+      if reducedBW { classCode = ClassCode.daxAudioReducedBw }
       self.init(packetType: .ifDataWithStream, classCode: classCode, streamId: streamId, tsi: .other, tsf: .sampleCount)
     }
   }
@@ -330,7 +330,7 @@ public class Vita {
   ///   - tsi:            the type of Integer Time Stamp
   ///   - tsf:            the type of Fractional Time Stamp
   /// - Returns:          a partially populated Vita struct
-  init(packetType: PacketTypes, classCode: PacketClassCodes, streamId: UInt32, tsi: TsiTypes, tsf: TsfTypes) {
+  init(packetType: PacketTypes, classCode: ClassCode, streamId: UInt32, tsi: TsiTypes, tsf: TsfTypes) {
     assert(packetType == .extDataWithStream || packetType == .ifDataWithStream)
     
     self.packetType = packetType
@@ -413,7 +413,7 @@ extension Vita {
   }
   
   /// Class codes
-  public enum PacketClassCodes : UInt16 {    // Packet Class Codes
+  public enum ClassCode: UInt16 {    // Packet Class Codes
     case daxAudio          = 0x03e3
     case daxAudioReducedBw = 0x0123
     case daxIq24           = 0x02e3

@@ -13,39 +13,53 @@ import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
-public class StreamStatus: ObservableObject, Identifiable {
-  @Published public var type: Vita.PacketClassCodes
+//public class StreamStatus: ObservableObject, Identifiable {
+//  @Published public var type: Vita.ClassCode
+//  @Published public var packets = 0
+//  @Published public var errors = 0
+//  
+//  public var id: Vita.ClassCode { type }
+//  
+//  public init(_ type: Vita.ClassCode)
+//  {
+//    self.type = type
+//  }
+//}
+
+final public class StreamStatus: ObservableObject, Identifiable {
+  public var type: Vita.ClassCode
+  public var name: String
   @Published public var packets = 0
   @Published public var errors = 0
   
-  public var id: Vita.PacketClassCodes { type }
+  public var id: Vita.ClassCode { type }
   
-  public init(_ type: Vita.PacketClassCodes)
-  {
+  public init(_ type: Vita.ClassCode) {
     self.type = type
+    name = type.description()
   }
 }
 
-final public class StreamStatistics: ObservableObject {
-  public static var shared = StreamStatistics()
-  private init() {}
-
-    // ----------------------------------------------------------------------------
-  // MARK: - Public properties
-  
-  public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
-    StreamStatus(Vita.PacketClassCodes.daxAudio),
-    StreamStatus(Vita.PacketClassCodes.daxAudioReducedBw),
-    StreamStatus(Vita.PacketClassCodes.daxIq24),
-    StreamStatus(Vita.PacketClassCodes.daxIq48),
-    StreamStatus(Vita.PacketClassCodes.daxIq96),
-    StreamStatus(Vita.PacketClassCodes.daxIq192),
-    StreamStatus(Vita.PacketClassCodes.meter),
-    StreamStatus(Vita.PacketClassCodes.opus),
-    StreamStatus(Vita.PacketClassCodes.panadapter),
-    StreamStatus(Vita.PacketClassCodes.waterfall),
-  ]
-}
+//@MainActor
+//final public class StreamStatistics: ObservableObject {
+//  public init() {}
+//
+//    // ----------------------------------------------------------------------------
+//  // MARK: - Public properties
+//  
+//  public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
+//    StreamStatus(Vita.ClassCode.daxAudio),
+//    StreamStatus(Vita.ClassCode.daxAudioReducedBw),
+//    StreamStatus(Vita.ClassCode.daxIq24),
+//    StreamStatus(Vita.ClassCode.daxIq48),
+//    StreamStatus(Vita.ClassCode.daxIq96),
+//    StreamStatus(Vita.ClassCode.daxIq192),
+//    StreamStatus(Vita.ClassCode.meter),
+//    StreamStatus(Vita.ClassCode.opus),
+//    StreamStatus(Vita.ClassCode.panadapter),
+//    StreamStatus(Vita.ClassCode.waterfall),
+//  ]
+//}
 
 @Observable
 final public class StreamModel {
@@ -63,24 +77,23 @@ final public class StreamModel {
   public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
   public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
   
-  public var streamCounts: [Vita.PacketClassCodes:Int] = [
-    .panadapter: 0,
-    .waterfall: 0,
-    .daxIq24: 0,
-    .daxIq48: 0,
-    .daxIq96: 0,
-    .daxIq192: 0,
-    .daxAudio: 0,
-    .daxAudioReducedBw: 0,
-    .meter: 0,
-    .opus: 0,
+  public var streamStatistics: IdentifiedArrayOf<StreamStatus> = [
+    StreamStatus(Vita.ClassCode.daxAudio),
+    StreamStatus(Vita.ClassCode.daxAudioReducedBw),
+    StreamStatus(Vita.ClassCode.daxIq24),
+    StreamStatus(Vita.ClassCode.daxIq48),
+    StreamStatus(Vita.ClassCode.daxIq96),
+    StreamStatus(Vita.ClassCode.daxIq192),
+    StreamStatus(Vita.ClassCode.meter),
+    StreamStatus(Vita.ClassCode.opus),
+    StreamStatus(Vita.ClassCode.panadapter),
+    StreamStatus(Vita.ClassCode.waterfall),
   ]
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
   private var _streamSubscription: Task<(), Never>? = nil
-  private var _streamStatistics = StreamStatistics.shared
   
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
@@ -93,10 +106,10 @@ final public class StreamModel {
       log("StreamModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
       for await vita in Udp.shared.inboundStreams {
         // update the statistics
-//        _streamStatistics.streamStatus[id: vita.classCode]?.packets += 1
-        
-        streamCounts[vita.classCode]! += 1
-        
+        Task {
+          await MainActor.run { streamStatistics[id: vita.classCode]?.packets += 1 }
+        }
+                
         switch vita.classCode {
         case .panadapter:
           if let object = panadapterStreams[id: vita.streamId] { object.vitaProcessor(vita) }
