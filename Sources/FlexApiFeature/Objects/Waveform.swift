@@ -20,8 +20,6 @@ public final class Waveform {
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
-  
-  public internal(set) var initialized  = false
 
   public var list = ""
 
@@ -31,6 +29,11 @@ public final class Waveform {
   public enum Property: String {
     case list = "installed_list"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _initialized  = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -53,9 +56,9 @@ public final class Waveform {
       }
     }
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Waveform: initialized", .debug, #function, #file, #line)
     }
   }

@@ -24,19 +24,18 @@ public final class Xvtr: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
   
-  public var isValid = false
-  public var preferred = false
-  public var twoMeterInt = 0
-  public var ifFrequency: Hz = 0
-  public var loError = 0
-  public var name = ""
-  public var maxPower = 0
-  public var order = 0
-  public var rfFrequency: Hz = 0
-  public var rxGain = 0
-  public var rxOnly = false
+  public private(set) var isValid = false
+  public private(set) var preferred = false
+  public private(set) var twoMeterInt = 0
+  public private(set) var ifFrequency: Hz = 0
+  public private(set) var loError = 0
+  public private(set) var name = ""
+  public private(set) var maxPower = 0
+  public private(set) var order = 0
+  public private(set) var rfFrequency: Hz = 0
+  public private(set) var rxGain = 0
+  public private(set) var rxOnly = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -56,6 +55,11 @@ public final class Xvtr: Identifiable {
     case rxOnly         = "rx_only"
     case twoMeterInt    = "two_meter_int"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -91,9 +95,9 @@ public final class Xvtr: Identifiable {
       }
     }
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Xvtr \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
     }
   }

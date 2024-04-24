@@ -13,18 +13,16 @@ import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
-//public class StreamStatus: ObservableObject, Identifiable {
-//  @Published public var type: Vita.ClassCode
-//  @Published public var packets = 0
-//  @Published public var errors = 0
-//  
-//  public var id: Vita.ClassCode { type }
-//  
-//  public init(_ type: Vita.ClassCode)
-//  {
-//    self.type = type
-//  }
-//}
+public enum StreamType: String {
+  case daxIqStream = "dax_iq"
+  case daxMicAudioStream = "dax_mic"
+  case daxRxAudioStream = "dax_rx"
+  case daxTxAudioStream = "dax_tx"
+  case panadapter = "pan"
+  case remoteRxAudioStream = "remote_audio_rx"
+  case remoteTxAudioStream = "remote_audio_tx"
+  case waterfall
+}
 
 final public class StreamStatus: ObservableObject, Identifiable {
   public var type: Vita.ClassCode
@@ -39,27 +37,6 @@ final public class StreamStatus: ObservableObject, Identifiable {
     name = type.description()
   }
 }
-
-//@MainActor
-//final public class StreamStatistics: ObservableObject {
-//  public init() {}
-//
-//    // ----------------------------------------------------------------------------
-//  // MARK: - Public properties
-//  
-//  public var streamStatus: IdentifiedArrayOf<StreamStatus> = [
-//    StreamStatus(Vita.ClassCode.daxAudio),
-//    StreamStatus(Vita.ClassCode.daxAudioReducedBw),
-//    StreamStatus(Vita.ClassCode.daxIq24),
-//    StreamStatus(Vita.ClassCode.daxIq48),
-//    StreamStatus(Vita.ClassCode.daxIq96),
-//    StreamStatus(Vita.ClassCode.daxIq192),
-//    StreamStatus(Vita.ClassCode.meter),
-//    StreamStatus(Vita.ClassCode.opus),
-//    StreamStatus(Vita.ClassCode.panadapter),
-//    StreamStatus(Vita.ClassCode.waterfall),
-//  ]
-//}
 
 @Observable
 final public class StreamModel {

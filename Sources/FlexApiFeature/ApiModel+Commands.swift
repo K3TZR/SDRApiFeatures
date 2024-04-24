@@ -58,10 +58,10 @@ extension ApiModel {
   //  }
   
   public func bindToGuiClient(_ clientId: UUID?, callback:  ReplyHandler? = nil) {
-    if let clientId = clientId, ApiModel.shared.isGui == false, boundClientId == nil {
-      sendCommand("client bind client_id=" + clientId.uuidString, replyTo: callback)
-    }
-    Task { await MainActor.run { boundClientId = clientId?.uuidString }}
+//    if let clientId = clientId, ApiModel.shared.isGui == false, boundClientId == nil {
+//      sendCommand("client bind client_id=" + clientId.uuidString, replyTo: callback)
+//    }
+//    Task { await MainActor.run { boundClientId = clientId?.uuidString }}
   }
   // ----------------------------------------------------------------------------
   // MARK: - Public Request methods

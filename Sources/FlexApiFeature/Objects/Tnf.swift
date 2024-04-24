@@ -25,12 +25,11 @@ public final class Tnf: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
   
-  public var depth: UInt = 0
-  public var frequency: Hz = 0
-  public var permanent = false
-  public var width: Hz = 0
+  public private(set) var depth: UInt = 0
+  public private(set) var frequency: Hz = 0
+  public private(set) var permanent = false
+  public private(set) var width: Hz = 0
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -47,6 +46,11 @@ public final class Tnf: Identifiable {
     case deep     = 2
     case veryDeep = 3
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -71,9 +75,9 @@ public final class Tnf: Identifiable {
       case .width:      width = property.value.mhzToHz
       }
       // is it initialized?
-      if initialized == false && frequency != 0 {
+      if _initialized == false && frequency != 0 {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Tnf \(id): ADDED, frequency = \(frequency.hzToMhz)", .debug, #function, #file, #line)
       }
     }

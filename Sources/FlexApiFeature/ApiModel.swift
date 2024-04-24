@@ -35,129 +35,32 @@ public final class ApiModel {
     if UserDefaults.standard.string(forKey: "guiClientId") == nil {
       UserDefaults.standard.set(UUID().uuidString, forKey: "guiClientId")
     }
-    
-//    atu = Atu()
-//    cwx = Cwx()
-//    gps = Gps()
-//    interlock = Interlock()
-//    transmit = Transmit()
-//    wan = Wan()
-//    waveform = Waveform()
   }
-//  
-//  // ----------------------------------------------------------------------------
-//  // MARK: - Public properties
-//  
-//  // Dynamic Models
-//  public var amplifiers = IdentifiedArrayOf<Amplifier>()
-//  public var bandSettings = IdentifiedArrayOf<BandSetting>()
-//  public var equalizers = IdentifiedArrayOf<Equalizer>()
-//  public var memories = IdentifiedArrayOf<Memory>()
-//  public var meters = IdentifiedArrayOf<Meter>()
-//  public var panadapters = IdentifiedArrayOf<Panadapter>()
-//  public var profiles = IdentifiedArrayOf<Profile>()
-//  public var slices = IdentifiedArrayOf<Slice>()
-//  public var tnfs = IdentifiedArrayOf<Tnf>()
-//  public var usbCables = IdentifiedArrayOf<UsbCable>()
-//  public var waterfalls = IdentifiedArrayOf<Waterfall>()
-//  public var xvtrs = IdentifiedArrayOf<Xvtr>()
-//  
-//  // Static Models
-//  public var atu: Atu!
-//  public var cwx: Cwx!
-//  public var gps: Gps!
-//  public var interlock: Interlock!
-//  public var transmit: Transmit!
-//  public var wan: Wan!
-//  public var waveform: Waveform!
 
   // Reply Handlers
   public var replyHandlers : [UInt: ReplyTuple] {
     get { ApiModel.replyQ.sync { _replyHandlers } }
     set { ApiModel.replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
-  
-  public internal(set) var isGui = true
-  
+    
   public var activeSlice: Slice?
-  public internal(set) var antList = [String]()
-  public internal(set) var atuPresent = false
-  public internal(set) var boundClientId: String?
-  public internal(set) var callsign = ""
-  public internal(set) var chassisSerial = ""
   public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var clientInitialized: Bool = false
   public internal(set) var connectionHandle: UInt32?
-  public internal(set) var fpgaMbVersion = ""
-  public internal(set) var gateway = ""
-  public internal(set) var gpsPresent = false
-  public internal(set) var ipAddress = ""
   public var knownRadios = IdentifiedArrayOf<KnownRadio>()
-  public internal(set) var location = ""
-  public internal(set) var lowBandwidthConnect = false
-  public internal(set) var macAddress = ""
-  public internal(set) var micList = [String]()
-  public internal(set) var netmask = ""
-  public internal(set) var nickname = ""
+//  public internal(set) var lowBandwidthConnect = false
   public internal(set) var nthPingReceived = false
-  public internal(set) var numberOfScus = 0
-  public internal(set) var numberOfSlices = 0
-  public internal(set) var numberOfTx = 0
-  public internal(set) var picDecpuVersion = ""
-  public internal(set) var psocMbPa100Version = ""
-  public internal(set) var psocMbtrxVersion = ""
-//  public internal(set) var radio: Radio?
-  public internal(set) var radioModel = ""
-  public internal(set) var radioOptions = ""
-  public internal(set) var region = ""
-  public internal(set) var radioScreenSaver = ""
-  public internal(set) var sliceList = [UInt32]()               // FIXME: may not belong here
-  public internal(set) var smartSdrMB = ""
-  public internal(set) var softwareVersion = ""
   public var testMode = true
   public internal(set) var uptime = 0
 
-//  public enum ObjectType: String {
-//    case amplifier
-//    case atu
-//    case bandSetting = "band"
-//    case client
-//    case cwx
-////    case daxIqStream = "dax_iq"
-////    case daxMicAudioStream = "dax_mic"
-////    case daxRxAudioStream = "dax_rx"
-////    case daxTxAudioStream = "dax_tx"
-//    case display
-//    case equalizer = "eq"
-//    case gps
-//    case interlock
-//    case memory
-//    case meter
-//    case panadapter = "pan"
-//    case profile
-//    case radio
-////    case remoteRxAudioStream = "remote_audio_rx"
-////    case remoteTxAudioStream = "remote_audio_tx"
-//    case slice
-//    case stream
-//    case tnf
-//    case transmit
-//    case usbCable = "usb_cable"
-//    case wan
-//    case waterfall
-//    case waveform
-//    case xvtr
-//  }
-  
-  public enum StreamType: String {
-    case daxIqStream = "dax_iq"
-    case daxMicAudioStream = "dax_mic"
-    case daxRxAudioStream = "dax_rx"
-    case daxTxAudioStream = "dax_tx"
-    case panadapter = "pan"
-    case remoteRxAudioStream = "remote_audio_rx"
-    case remoteTxAudioStream = "remote_audio_tx"
-    case waterfall
-  }
+  public internal(set) var smartSdrMB = ""
+  public internal(set) var fpgaMbVersion = ""
+  public internal(set) var picDecpuVersion = ""
+  public internal(set) var psocMbPa100Version = ""
+  public internal(set) var psocMbtrxVersion = ""
+
+  public internal(set) var antList = [String]()
+  public internal(set) var sliceList = [UInt32]()               // FIXME: may not belong here
+  public internal(set) var micList = [String]()
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -190,15 +93,15 @@ public final class ApiModel {
   ///   - programName: program name
   ///   - mtuValue: max transort unit
   ///   - lowBandwidthDax: true = use low bw
-  public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false) async throws {
-    self.isGui = isGui
+  public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
+//    self.isGui = isGui
     
     nthPingReceived = false
     
     if let packet = ListenerModel.shared.activePacket, let station = ListenerModel.shared.activeStation {
       // Instantiate a Radio
       try await MainActor.run{
-        ObjectModel.shared.radio = Radio(packet)
+        ObjectModel.shared.radio = Radio(packet, isGui)
         guard ObjectModel.shared.radio != nil else { throw ApiError.instantiation }
       }
       log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
@@ -262,7 +165,7 @@ public final class ApiModel {
       }
       
       // send the initial commands
-      sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax)
+      sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax, lowBandwidthConnect)
       log("ApiModel: initial commands sent", .info, #function, #file, #line)
       
       startPinging()
@@ -310,16 +213,8 @@ public final class ApiModel {
     psocMbtrxVersion = ""
     psocMbPa100Version = ""
     fpgaMbVersion = ""
-    
-    // clear Published lists
-//    Task {
-//      await MainActor.run {
-        antList.removeAll()
-        micList.removeAll()
-//        //    rfGainList.removeAll()
-//        //    sliceList.removeAll()
-//      }
-//    }
+    antList.removeAll()
+    micList.removeAll()
   }
 
   func tcpInbound(_ message: String) {
@@ -341,61 +236,102 @@ public final class ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private methods
 
+  private func awaitFirstStatusMessage() async {
+    return await withCheckedContinuation{ continuation in
+      _awaitFirstStatusMessage = continuation
+      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
+    }
+  }
+  
+  private func clientIpValidation() async -> (String) {
+    return await withCheckedContinuation{ continuation in
+      _awaitClientIpValidation = continuation
+      log("Api: Client ip request sent", .debug, #function, #file, #line)
+    }
+  }
+  
+  private func clientIpReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    // YES, resume it
+    _awaitClientIpValidation?.resume(returning: reply)
+  }
+
+  /// Connect to a Radio
+  /// - Parameter params:     a struct of parameters
+  /// - Returns:              success / failure
+  private func connect(_ packet: Packet) -> Bool {
+    return Tcp.shared.connect(packet.source == .smartlink,
+                              packet.requiresHolePunch,
+                              packet.negotiatedHolePunchPort,
+                              packet.publicTlsPort,
+                              packet.port,
+                              packet.publicIp,
+                              packet.localInterfaceIP)
+  }
+
   /// Parse the Reply to an Info command
   /// - Parameters:
   ///   - suffix:          a reply string
   private func parseInfoReply(_ suffix: String) {
-    enum Property: String {
-        case atuPresent               = "atu_present"
-        case callsign
-        case chassisSerial            = "chassis_serial"
-        case gateway
-        case gps
-        case ipAddress                = "ip"
-        case location
-        case macAddress               = "mac"
-        case model
-        case netmask
-        case name
-        case numberOfScus             = "num_scu"
-        case numberOfSlices           = "num_slice"
-        case numberOfTx               = "num_tx"
-        case options
-        case region
-        case screensaver
-        case softwareVersion          = "software_ver"
-    }
-      // process each key/value pair, <key=value>
-    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
-          // check for unknown Keys
-          guard let token = Property(rawValue: property.key) else {
-              // log it and ignore the Key
-              log("ApiModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-              continue
-          }
-          // Known keys, in alphabetical order
-          switch token {
-
-          case .atuPresent:       atuPresent = property.value.bValue
-          case .callsign:         callsign = property.value
-          case .chassisSerial:    chassisSerial = property.value
-          case .gateway:          gateway = property.value
-          case .gps:              gpsPresent = (property.value != "Not Present")
-          case .ipAddress:        ipAddress = property.value
-          case .location:         location = property.value
-          case .macAddress:       macAddress = property.value
-          case .model:            radioModel = property.value
-          case .netmask:          netmask = property.value
-          case .name:             nickname = property.value
-          case .numberOfScus:     numberOfScus = property.value.iValue
-          case .numberOfSlices:   numberOfSlices = property.value.iValue
-          case .numberOfTx:       numberOfTx = property.value.iValue
-          case .options:          radioOptions = property.value
-          case .region:           region = property.value
-          case .screensaver:      radioScreenSaver = property.value
-          case .softwareVersion:  softwareVersion = property.value
-          }
+    
+    let properties = suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",")
+    Task {
+      await MainActor.run {
+        ObjectModel.shared.radio?.parse(properties)
       }
+    }
+//
+//    
+//    enum Property: String {
+//        case atuPresent               = "atu_present"
+//        case callsign
+//        case chassisSerial            = "chassis_serial"
+//        case gateway
+//        case gps
+//        case ipAddress                = "ip"
+//        case location
+//        case macAddress               = "mac"
+//        case model
+//        case netmask
+//        case name
+//        case numberOfScus             = "num_scu"
+//        case numberOfSlices           = "num_slice"
+//        case numberOfTx               = "num_tx"
+//        case options
+//        case region
+//        case screensaver
+//        case softwareVersion          = "software_ver"
+//    }
+//      // process each key/value pair, <key=value>
+//    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
+//          // check for unknown Keys
+//          guard let token = Property(rawValue: property.key) else {
+//              // log it and ignore the Key
+//              log("ApiModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+//              continue
+//          }
+//          // Known keys, in alphabetical order
+//          switch token {
+//
+//          case .atuPresent:       atuPresent = property.value.bValue
+//          case .callsign:         callsign = property.value
+//          case .chassisSerial:    chassisSerial = property.value
+//          case .gateway:          gateway = property.value
+//          case .gps:              gpsPresent = (property.value != "Not Present")
+//          case .ipAddress:        ipAddress = property.value
+//          case .location:         location = property.value
+//          case .macAddress:       macAddress = property.value
+//          case .model:            radioModel = property.value
+//          case .netmask:          netmask = property.value
+//          case .name:             nickname = property.value
+//          case .numberOfScus:     numberOfScus = property.value.iValue
+//          case .numberOfSlices:   numberOfSlices = property.value.iValue
+//          case .numberOfTx:       numberOfTx = property.value.iValue
+//          case .options:          radioOptions = property.value
+//          case .region:           region = property.value
+//          case .screensaver:      radioScreenSaver = property.value
+//          case .softwareVersion:  softwareVersion = property.value
+//          }
+//      }
   }
   
   /// Parse a Message.
@@ -545,39 +481,7 @@ public final class ApiModel {
     }
   }
 
-  private func awaitFirstStatusMessage() async {
-    return await withCheckedContinuation{ continuation in
-      _awaitFirstStatusMessage = continuation
-      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
-    }
-  }
-  
-  private func clientIpValidation() async -> (String) {
-    return await withCheckedContinuation{ continuation in
-      _awaitClientIpValidation = continuation
-      log("Api: Client ip request sent", .debug, #function, #file, #line)
-    }
-  }
-  
-  private func clientIpReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-    // YES, resume it
-    _awaitClientIpValidation?.resume(returning: reply)
-  }
-
-  /// Connect to a Radio
-  /// - Parameter params:     a struct of parameters
-  /// - Returns:              success / failure
-  private func connect(_ packet: Packet) -> Bool {
-    return Tcp.shared.connect(packet.source == .smartlink,
-                              packet.requiresHolePunch,
-                              packet.negotiatedHolePunchPort,
-                              packet.publicTlsPort,
-                              packet.port,
-                              packet.publicIp,
-                              packet.localInterfaceIP)
-  }
-
-  private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool) {
+  private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool, _ lowBandwidthConnect: Bool) {
     let guiClientId = UserDefaults.standard.string(forKey: "guiClientId")
     
     if isGui && guiClientId == nil {

@@ -17,12 +17,16 @@ public final class Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization & Dependencies
   
-  public init(_ packet: Packet) {
+  public init(_ packet: Packet, _ isGui: Bool = true) {
     self.packet = packet
+    self.isGui = isGui
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
+  
+  public let packet: Packet
+  public let isGui: Bool
   
   public var addressType = "DHCP"
   public internal(set) var alpha = false
@@ -43,7 +47,6 @@ public final class Radio {
 //  public var clientInitialized = false
   
   // FIXME: needs to be dynamic
-  public let packet: Packet
   public var pingerEnabled = true
   public var hardwareVersion: String?
   
@@ -224,53 +227,53 @@ public final class Radio {
         // Known tokens, in alphabetical order
         switch token {
           
-        case .alpha:                    alpha = property.value.bValue
+        case .alpha:                    alpha = property.value.bValue                               //
         case .atuPresent:               atuPresent = property.value.bValue
-        case .backlight:                backlight = property.value.iValue
-        case .bandPersistenceEnabled:   bandPersistenceEnabled = property.value.bValue
-        case .binauralRxEnabled:        binauralRxEnabled = property.value.bValue
-        case .calFreq:                  calFreq = Int(property.value.dValue * 1_000_000)
-        case .callsign:                 callsign = property.value
+        case .backlight:                backlight = property.value.iValue                           //
+        case .bandPersistenceEnabled:   bandPersistenceEnabled = property.value.bValue              //
+        case .binauralRxEnabled:        binauralRxEnabled = property.value.bValue                   //
+        case .calFreq:                  calFreq = Int(property.value.dValue * 1_000_000)            //
+        case .callsign:                 callsign = property.value                                   //
         case .chassisSerial:            chassisSerial = property.value
         case .daxIqAvailable:           daxIqAvailable = property.value.iValue
-        case .daxIqCapacity:            daxIqCapacity = property.value.iValue
-        case .enforcePrivateIpEnabled:  enforcePrivateIpEnabled = property.value.bValue
-        case .freqErrorPpb:             freqErrorPpb = property.value.iValue
-        case .fullDuplexEnabled:        fullDuplexEnabled = property.value.bValue
-        case .frontSpeakerMute:         frontSpeakerMute = property.value.bValue
+        case .daxIqCapacity:            daxIqCapacity = property.value.iValue                       //
+        case .enforcePrivateIpEnabled:  enforcePrivateIpEnabled = property.value.bValue             //
+        case .freqErrorPpb:             freqErrorPpb = property.value.iValue                        //
+        case .fullDuplexEnabled:        fullDuplexEnabled = property.value.bValue                   //
+//        case .frontSpeakerMute:         frontSpeakerMute = property.value.bValue
         case .gateway:                  gateway = property.value
         case .gps:                      gpsPresent = (property.value != "Not Present")
-        case .headphoneGain, .headphonegain:            headphoneGain = property.value.iValue
-        case .headphoneMute, .headphonemute:            headphoneMute = property.value.bValue
+        case .headphoneGain, .headphonegain:            headphoneGain = property.value.iValue       //
+        case .headphoneMute, .headphonemute:            headphoneMute = property.value.bValue       //
         case .ipAddress:                ipAddress = property.value
-        case .lineoutGain, .lineoutgain:              lineoutGain = property.value.iValue
-        case .lineoutMute, .lineoutmute:              lineoutMute = property.value.bValue
+        case .lineoutGain, .lineoutgain:              lineoutGain = property.value.iValue           //
+        case .lineoutMute, .lineoutmute:              lineoutMute = property.value.bValue           //
         case .location:                 location = property.value
-        case .lowLatencyDigital:        lowLatencyDigital = property.value.bValue
+        case .lowLatencyDigital:        lowLatencyDigital = property.value.bValue                   //
         case .macAddress:               macAddress = property.value
         case .model:                    radioModel = property.value
-        case .muteLocalAudio:           muteLocalAudio = property.value.bValue
+        case .muteLocalAudio:           muteLocalAudio = property.value.bValue                      //
         case .name:                     name = property.value
-        case .nickname:                 name = property.value
+        case .nickname:                 name = property.value                                       //
         case .netmask:                  netmask = property.value
         case .numberOfScus:             numberOfScus = property.value.iValue
         case .numberOfSlices:           numberOfSlices = property.value.iValue
         case .numberOfTx:               numberOfTx = property.value.iValue
         case .options:                  radioOptions = property.value
-        case .panadapters:              availablePanadapters = property.value.iValue
-        case .pllDone:                  startCalibration = property.value.bValue
-        case .radioAuthenticated:       radioAuthenticated = property.value.bValue
+        case .panadapters:              availablePanadapters = property.value.iValue                //
+        case .pllDone:                  startCalibration = property.value.bValue                    //
+//        case .radioAuthenticated:       radioAuthenticated = property.value.bValue
         case .region:                   region = property.value
         case .screensaver:              radioScreenSaver = property.value
-        case .remoteOnEnabled:          remoteOnEnabled = property.value.bValue
-        case .rttyMark:                 rttyMark = property.value.iValue
-        case .serverConnected:          serverConnected = property.value.bValue
-        case .slices:                   availableSlices = property.value.iValue
-        case .snapTuneEnabled:          snapTuneEnabled = property.value.bValue
+        case .remoteOnEnabled:          remoteOnEnabled = property.value.bValue                     //
+        case .rttyMark:                 rttyMark = property.value.iValue                            //
+//        case .serverConnected:          serverConnected = property.value.bValue
+        case .slices:                   availableSlices = property.value.iValue                     //
+//        case .snapTuneEnabled:          snapTuneEnabled = property.value.bValue
         case .softwareVersion:          softwareVersion = property.value
-        case .tnfsEnabled:              tnfsEnabled = property.value.bValue
+        case .tnfsEnabled:              tnfsEnabled = property.value.bValue                         //
           
-        case .flexControlEnabled:       flexControlEnabled = property.value.bValue
+//        case .flexControlEnabled:       flexControlEnabled = property.value.bValue
           
           
         case .cw:                       _cw = true
@@ -286,23 +289,25 @@ public final class Radio {
           if _digital              { filterDigitalLevel = property.value.iValue ; _digital = false}
           if _voice                { filterVoiceLevel = property.value.iValue ; _voice = false}
           
-        case .staticGateway:            staticGateway = property.value
-        case .staticIp:                 staticIp = property.value
-        case .staticMask:               staticMask = property.value
+//        case .staticGateway:            staticGateway = property.value
+//        case .staticIp:                 staticIp = property.value
+//        case .staticMask:               staticMask = property.value
           
-        case .extPresent:               extPresent = property.value.bValue
-        case .gpsdoPresent:             gpsdoPresent = property.value.bValue
+//        case .extPresent:               extPresent = property.value.bValue
+//        case .gpsdoPresent:             gpsdoPresent = property.value.bValue
         case .locked:                   locked = property.value.bValue
         case .setting:                  setting = property.value
         case .state:                    state = property.value
-        case .tcxoPresent:              tcxoPresent = property.value.bValue
+//        case .tcxoPresent:              tcxoPresent = property.value.bValue
           
         case .filterSharpness:          break
         case .staticNetParams:          break
         case .oscillator:               break
-        case .calibrate:                break
-        case .reboot:                   break
-        case .addressType:              addressType = property.value
+//        case .calibrate:                break
+//        case .reboot:                   break
+//        case .addressType:              addressType = property.value
+          
+        default:  print("----->>>>> token received: \(token)")
         }
       }
     // is the Radio initialized?
