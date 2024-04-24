@@ -58,7 +58,7 @@ extension ApiModel {
   //  }
   
   public func bindToGuiClient(_ clientId: UUID?, callback:  ReplyHandler? = nil) {
-    if let clientId = clientId, _isGui == false, boundClientId == nil {
+    if let clientId = clientId, ApiModel.shared.isGui == false, boundClientId == nil {
       sendCommand("client bind client_id=" + clientId.uuidString, replyTo: callback)
     }
     Task { await MainActor.run { boundClientId = clientId?.uuidString }}
@@ -133,39 +133,9 @@ extension ApiModel {
     sendCommand("display panafall create x=50, y=50", replyTo: callback)
   }
   
-  // ----------------------------------------------------------------------------
-  // MARK: - Meter methods
-  
-  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
-    
-    if slice == nil {
-      for meter in meters where meter.name == shortName.rawValue {
-        return meter
-      }
-    } else {
-      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
-        return meter
-      }
-    }
-    return nil
-  }
-  
  // ----------------------------------------------------------------------------
   // MARK: - Slice methods
   
-  /// Find a Slice by DAX Channel
-  ///
-  /// - Parameter channel:    Dax channel number
-  /// - Returns:              a Slice (if any)
-  ///
-  public func findSlice(using channel: Int) -> Slice? {
-      // find the Slices with the specified Channel (if any)
-      let filteredSlices = slices.filter { $0.daxChannel == channel }
-      guard filteredSlices.count >= 1 else { return nil }
-      
-      // return the first one
-      return filteredSlices[0]
-  }
 
   public func removeSlice(_ id: UInt32, callback: ReplyHandler? = nil) {
     sendCommand("slice remove \(id)", replyTo: callback)
@@ -204,40 +174,6 @@ extension ApiModel {
   //    objectModel.activeSlice = slice
   //  }
   
-  public func sliceMove(_ panadapter: Panadapter, _ clickFrequency: Int) {
-    
-    let slices = slices.filter{ $0.panadapterId == panadapter.id }
-    if slices.count == 1 {
-      let roundedFrequency = clickFrequency - (clickFrequency % slices[0].step)
-      slices[0].setProperty(.frequency, roundedFrequency.hzToMhz)
-      
-    } else {
-      let nearestSlice = slices.min{ a, b in
-        abs(clickFrequency - a.frequency) < abs(clickFrequency - b.frequency)
-      }
-      if let nearestSlice {
-        let roundedFrequency = clickFrequency - (clickFrequency % nearestSlice.step)
-        nearestSlice.setProperty(.frequency, roundedFrequency.hzToMhz)
-      }
-    }
-  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Tnf methods
-  
-  /// Remove a Tnf
-  /// - Parameters:
-  ///   _ id:                            a TnfId
-  ///   - callback:     ReplyHandler (optional)
-  public func removeTnf(_ id: UInt32, callback: ReplyHandler? = nil) {
-    sendCommand("tnf remove \(id)", replyTo: callback)
-    
-    // remove it immediately (Tnf does not send status on removal)
-    Task {
-      await _ = MainActor.run { tnfs.remove(id: id) }
-      log("ApiModel: Tnf removed, id = \(id)", .debug, #function, #file, #line)
-    }
-  }
   
   public func requestTnf(at frequency: Hz, callback: ReplyHandler? = nil) {
     sendCommand("tnf create " + "freq" + "=\(frequency.hzToMhz)", replyTo: callback)

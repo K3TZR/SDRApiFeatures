@@ -99,16 +99,9 @@ public final class DaxIqStream: Identifiable, Equatable {
       log("DaxIqStream \(id.hex) ADDED: channel = \(channel)", .debug, #function, #file, #line)
     }
   }
-
   
-  
-  
-  
-  
-  
-  
-  
-  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
   
   /// Set a property
   /// - Parameters:

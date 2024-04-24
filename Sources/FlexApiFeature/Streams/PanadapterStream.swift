@@ -33,6 +33,7 @@ public final class PanadapterStream: Identifiable {
   public let id: UInt32
   public var isStreaming = false  
   public var panadapterFrame: PanadapterFrame?
+  public var totalFrames = 0
   
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
@@ -69,13 +70,12 @@ public final class PanadapterStream: Identifiable {
   /// - Parameters:
   ///   - vita:        a Vita struct
   public func vitaProcessor(_ vita: Vita) {
-    if isStreaming == false {
+    if isStreaming {
+      totalFrames += 1
+    } else {
       isStreaming = true
-      
       // log the start of the stream
       log("Panadapter \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
-      
-//      Task { await MainActor.run {  _apiModel.panadapters[id: vita.streamId]?.setIsStreaming() }}
     }
     
     // Bins are just beyond the payload

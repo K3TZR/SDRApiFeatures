@@ -83,7 +83,7 @@ public final class Tnf: Identifiable {
     ApiModel.shared.sendCommand("tnf remove " + " \(id)", replyTo: callback)
 
     // remove it immediately (Tnf does not send status on removal)
-    ApiModel.shared.tnfs.remove(id: id)
+    ObjectModel.shared.tnfs.remove(id: id)
     log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
   }
   

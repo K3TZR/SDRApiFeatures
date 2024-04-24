@@ -219,12 +219,9 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
     }
     return true
   }
-
   
-  
-  
-  
-  
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
   
   /// Set a property
   /// - Parameters:

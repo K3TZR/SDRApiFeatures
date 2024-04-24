@@ -62,6 +62,19 @@ final public class StreamModel {
   public var remoteRxAudioStreams = IdentifiedArrayOf<RemoteRxAudioStream>()
   public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
   public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
+  
+  public var streamCounts: [Vita.PacketClassCodes:Int] = [
+    .panadapter: 0,
+    .waterfall: 0,
+    .daxIq24: 0,
+    .daxIq48: 0,
+    .daxIq96: 0,
+    .daxIq192: 0,
+    .daxAudio: 0,
+    .daxAudioReducedBw: 0,
+    .meter: 0,
+    .opus: 0,
+  ]
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -80,7 +93,9 @@ final public class StreamModel {
       log("StreamModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
       for await vita in Udp.shared.inboundStreams {
         // update the statistics
-        _streamStatistics.streamStatus[id: vita.classCode]?.packets += 1
+//        _streamStatistics.streamStatus[id: vita.classCode]?.packets += 1
+        
+        streamCounts[vita.classCode]! += 1
         
         switch vita.classCode {
         case .panadapter:

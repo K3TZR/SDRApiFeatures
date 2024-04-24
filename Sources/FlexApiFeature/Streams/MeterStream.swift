@@ -77,7 +77,7 @@ public final class MeterStream: Identifiable, Equatable {
           
           // find the meter (if present) & update it
           Task {
-            if let meter = await ApiModel.shared.meters[id: id] {
+            if let meter = await ObjectModel.shared.meters[id: id] {
               //          meter.streamHandler( value)
               let newValue = Int16(bitPattern: value)
               let previousValue = await meter.value
@@ -99,7 +99,7 @@ public final class MeterStream: Identifiable, Equatable {
               // did it change?
               if adjNewValue != previousValue {
                 let value = adjNewValue
-                await ApiModel.shared.meters[id: id]?.setValue(value)
+                await ObjectModel.shared.meters[id: id]?.setValue(value)
               }
             }
           }

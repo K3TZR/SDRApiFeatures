@@ -104,9 +104,9 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
       log("DaxMicAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
-
+  
   // ----------------------------------------------------------------------------
-  // MARK: - Public Command methods
+  // MARK: - Public set property methods
   
   /// Set a property
   /// - Parameters:

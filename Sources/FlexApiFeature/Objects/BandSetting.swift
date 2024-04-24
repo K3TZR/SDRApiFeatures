@@ -17,9 +17,8 @@ public final class BandSetting: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, _ apiModel: ApiModel) {
+  public init(_ id: UInt32) {
     self.id = id
-    _apiModel = apiModel
   }
 
   // ------------------------------------------------------------------------------
@@ -56,11 +55,6 @@ public final class BandSetting: Identifiable {
     case tx2Enabled         = "tx2_enabled"
     case tx3Enabled         = "tx3_enabled"
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-  private var _apiModel: ApiModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods

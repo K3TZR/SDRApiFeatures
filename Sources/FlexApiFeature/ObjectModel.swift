@@ -1,10 +1,11 @@
 //
-//  ApiModel+Objects.swift
+//  ObjectModel.swift
 //
 //
 //  Created by Douglas Adams on 10/22/23.
 //
 
+import ComposableArchitecture
 import Foundation
 
 import ListenerFeature
@@ -12,25 +13,187 @@ import SharedFeature
 import TcpFeature
 import XCGLogFeature
 
-extension ApiModel {
+@MainActor
+@Observable
+final public class ObjectModel {
+  // ----------------------------------------------------------------------------
+  // MARK: - Singleton
+  
+  public static var shared = ObjectModel()
+  private init() {
+//    subscribeToTcpMessages()
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public properties
+  
+  public var radio: Radio?
+  
+  // Dynamic Models
+  public var amplifiers = IdentifiedArrayOf<Amplifier>()
+  public var bandSettings = IdentifiedArrayOf<BandSetting>()
+  public var equalizers = IdentifiedArrayOf<Equalizer>()
+  public var memories = IdentifiedArrayOf<Memory>()
+  public var meters = IdentifiedArrayOf<Meter>()
+  public var panadapters = IdentifiedArrayOf<Panadapter>()
+  public var profiles = IdentifiedArrayOf<Profile>()
+  public var slices = IdentifiedArrayOf<Slice>()
+  public var tnfs = IdentifiedArrayOf<Tnf>()
+  public var usbCables = IdentifiedArrayOf<UsbCable>()
+  public var waterfalls = IdentifiedArrayOf<Waterfall>()
+  public var xvtrs = IdentifiedArrayOf<Xvtr>()
+  
+  // Static Models
+  public var atu = Atu()
+  public var cwx = Cwx()
+  public var gps = Gps()
+  public var interlock = Interlock()
+  public var transmit = Transmit()
+  public var wan = Wan()
+  public var waveform = Waveform()
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+  
+  public enum ObjectType: String {
+    case amplifier
+    case atu
+    case bandSetting = "band"
+    case client
+    case cwx
+//    case daxIqStream = "dax_iq"
+//    case daxMicAudioStream = "dax_mic"
+//    case daxRxAudioStream = "dax_rx"
+//    case daxTxAudioStream = "dax_tx"
+    case display
+    case equalizer = "eq"
+    case gps
+    case interlock
+    case memory
+    case meter
+    case panadapter = "pan"
+    case profile
+    case radio
+//    case remoteRxAudioStream = "remote_audio_rx"
+//    case remoteTxAudioStream = "remote_audio_tx"
+    case slice
+    case stream
+    case tnf
+    case transmit
+    case usbCable = "usb_cable"
+    case wan
+    case waterfall
+    case waveform
+    case xvtr
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public methods
+
+  public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool = false) {
+    
+    // Check for unknown Object Types
+    guard let objectType = ObjectType(rawValue: statusType)  else {
+      // log it and ignore the message
+      log("ApiModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
+      return
+    }
+    
+
+    switch objectType {
+    case .amplifier:            amplifierStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
+    case .atu:                  atu.parse( Array(statusMessage.keyValuesArray() ))
+    case .bandSetting:          bandSettingStatus(Array(statusMessage.keyValuesArray().dropFirst(1) ), !statusMessage.contains(kRemoved))
+    case .client:               preProcessClient(statusMessage.keyValuesArray(), !statusMessage.contains(kDisconnected), connectionHandle)
+    case .cwx:                  cwx.parse( Array(statusMessage.keyValuesArray().dropFirst(1) ))
+    case .display:              preProcessDisplay(statusMessage)
+    case .equalizer:            equalizerStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
+    case .gps:                  gps.parse( Array(statusMessage.keyValuesArray(delimiter: "#").dropFirst(1)) )
+    case .interlock:            preProcessInterlock(statusMessage)
+    case .memory:               memoryStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
+    case .meter:                meterStatus(statusMessage.keyValuesArray(delimiter: "#"), !statusMessage.contains(kRemoved))
+    case .profile:              profileStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse), statusMessage)
+    case .radio:                radio!.parse(statusMessage.keyValuesArray())
+    case .slice:                sliceStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
+    case .stream:               StreamModel.shared.parse(statusMessage, connectionHandle, testMode)
+    case .tnf:                  tnfStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
+    case .transmit:             preProcessTransmit(statusMessage)
+    case .usbCable:             usbCableStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
+    case .wan:                  wan.parse( Array(statusMessage.keyValuesArray().dropFirst(1)) )
+    case .waveform:             waveform.parse( Array(statusMessage.keyValuesArray(delimiter: "=").dropFirst(1)) )
+    case .xvtr:                 xvtrStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
+      
+    case .panadapter, .waterfall: break                                                   // handled by "display"
+    }
+  }
+
+  // ----- Meter methods -----
+  
+  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
+    
+    if slice == nil {
+      for meter in meters where meter.name == shortName.rawValue {
+        return meter
+      }
+    } else {
+      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
+        return meter
+      }
+    }
+    return nil
+  }
+
+  // ----- Slice methods -----
+  
+  /// Find a Slice by DAX Channel
+  ///
+  /// - Parameter channel:    Dax channel number
+  /// - Returns:              a Slice (if any)
+  ///
+  public func findSlice(using channel: Int) -> Slice? {
+      // find the Slices with the specified Channel (if any)
+      let filteredSlices = slices.filter { $0.daxChannel == channel }
+      guard filteredSlices.count >= 1 else { return nil }
+      
+      // return the first one
+      return filteredSlices[0]
+  }
+
+  public func sliceMove(_ panadapter: Panadapter, _ clickFrequency: Int) {
+    
+    let slices = slices.filter{ $0.panadapterId == panadapter.id }
+    if slices.count == 1 {
+      let roundedFrequency = clickFrequency - (clickFrequency % slices[0].step)
+      slices[0].setProperty(.frequency, roundedFrequency.hzToMhz)
+      
+    } else {
+      let nearestSlice = slices.min{ a, b in
+        abs(clickFrequency - a.frequency) < abs(clickFrequency - b.frequency)
+      }
+      if let nearestSlice {
+        let roundedFrequency = clickFrequency - (clickFrequency % nearestSlice.step)
+        nearestSlice.setProperty(.frequency, roundedFrequency.hzToMhz)
+      }
+    }
+  }
+
+  // ----- Tnf methods -----
+  
+  /// Remove a Tnf
+  /// - Parameters:
+  ///   _ id:                            a TnfId
+  ///   - callback:     ReplyHandler (optional)
+  public func removeTnf(_ id: UInt32, callback: ReplyHandler? = nil) {
+    ApiModel.shared.sendCommand("tnf remove \(id)", replyTo: callback)
+    
+    // remove it immediately (Tnf does not send status on removal)
+    tnfs.remove(id: id)
+    log("ObjectModel: Tnf removed, id = \(id)", .debug, #function, #file, #line)
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
 
-  func tcpInbound(_ message: String) {
-    // pass to the Tester (if any)
-    //    _testerDelegate?.tcpInbound(message)
-    
-    // switch on the first character of the text
-    switch message.prefix(1) {
-      
-    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
-    case "M", "m":  parseMessage( message.dropFirst() )
-    case "R", "r":  parseReply( message )
-    case "S", "s":  parseStatus( message.dropFirst() )
-    case "V", "v":  Task { await MainActor.run { radio?.hardwareVersion = String(message.dropFirst()) }}
-    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
-    }
-  }
 
   /// Remove all Radio objects
   func removeAllObjects() {    
@@ -53,7 +216,7 @@ extension ApiModel {
     removeAll(of: .usbCable)
     removeAll(of: .waterfall)
     removeAll(of: .xvtr)
-    replyHandlers.removeAll()
+    ApiModel.shared.replyHandlers.removeAll()
   }
   
   func removeAll(of type: ObjectType) {
@@ -80,7 +243,7 @@ extension ApiModel {
     case .xvtr:                 xvtrs.removeAll()
     default:            break
     }
-    log("ApiModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
+    log("ObjectModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
   }
   
 //  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
@@ -128,7 +291,7 @@ extension ApiModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id, self) ) }
+        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id) ) }
         // parse the properties
         bandSettings[id: id]!.parse(Array(properties.dropFirst(1)) )
       } else {
@@ -329,13 +492,13 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private Pre-Process methods
   
-  private func preProcessClient(_ properties: KeyValuesArray, _ inUse: Bool = true) {
+  private func preProcessClient(_ properties: KeyValuesArray, _ inUse: Bool = true, _ connectionHandle: UInt32?) {
     // is there a valid handle"
     if let handle = properties[0].key.handle {
       switch properties[1].key {
         
-      case kConnected:       parseConnection(properties: properties, handle: handle)
-      case kDisconnected:    parseDisconnection(properties: properties, handle: handle)
+      case kConnected:       parseConnection(properties: properties, handle: handle, connectionHandle: connectionHandle)
+      case kDisconnected:    parseDisconnection(properties: properties, handle: handle, connectionHandle: connectionHandle)
       default:                      break
       }
     }
@@ -389,40 +552,11 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private parse methods
   
-  private func parse(_ type: ObjectType, _ statusMessage: String) {
-    
-    switch type {
-    case .amplifier:            amplifierStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
-    case .atu:                  atu.parse( Array(statusMessage.keyValuesArray() ))
-    case .bandSetting:          bandSettingStatus(Array(statusMessage.keyValuesArray().dropFirst(1) ), !statusMessage.contains(kRemoved))
-    case .client:               preProcessClient(statusMessage.keyValuesArray(), !statusMessage.contains(kDisconnected))
-    case .cwx:                  cwx.parse( Array(statusMessage.keyValuesArray().dropFirst(1) ))
-    case .display:              preProcessDisplay(statusMessage)
-    case .equalizer:            equalizerStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
-    case .gps:                  gps.parse( Array(statusMessage.keyValuesArray(delimiter: "#").dropFirst(1)) )
-    case .interlock:            preProcessInterlock(statusMessage)
-    case .memory:               memoryStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
-    case .meter:                meterStatus(statusMessage.keyValuesArray(delimiter: "#"), !statusMessage.contains(kRemoved))
-    case .profile:              profileStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse), statusMessage)
-    case .radio:                radio!.parse(statusMessage.keyValuesArray())
-    case .slice:                sliceStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
-    case .stream:               StreamModel.shared.parse(statusMessage, connectionHandle, testMode)
-    case .tnf:                  tnfStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
-    case .transmit:             preProcessTransmit(statusMessage)
-    case .usbCable:             usbCableStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
-    case .wan:                  wan.parse( Array(statusMessage.keyValuesArray().dropFirst(1)) )
-    case .waveform:             waveform.parse( Array(statusMessage.keyValuesArray(delimiter: "=").dropFirst(1)) )
-    case .xvtr:                 xvtrStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
-      
-    case .panadapter, .waterfall: break                                                   // handled by "display"
-    }
-  }
-  
   /// Parse a client connect status message
   /// - Parameters:
   ///   - properties: message properties as a KeyValuesArray
   ///   - handle: the radio's connection handle
-  private func parseConnection(properties: KeyValuesArray, handle: UInt32) {
+  private func parseConnection(properties: KeyValuesArray, handle: UInt32, connectionHandle: UInt32?) {
     var clientId = ""
     var program = ""
     var station = ""
@@ -436,7 +570,7 @@ extension ApiModel {
     }
     
     // if handle is mine, this client is fully initialized
-    if handle == connectionHandle { clientInitialized = true }
+//    if handle == connectionHandle { clientInitialized = true }
     
     // parse remaining properties
     for property in properties.dropFirst(2) {
@@ -444,7 +578,7 @@ extension ApiModel {
       // check for unknown properties
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore this Key
-        log("ApiModel: unknown client property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+        log("ObjectModel: unknown client property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
         continue
       }
       // Known properties, in alphabetical order
@@ -473,12 +607,12 @@ extension ApiModel {
           packet.guiClients[id: handle] = guiClient
           
           // log the addition
-          log("ApiModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+          log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
 
-          if !_isGui && station == ListenerModel.shared.activeStation {
-             boundClientId = clientId
-            sendCommand("client bind client_id=\(boundClientId!)")
-            log("ApiModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
+        if !ApiModel.shared.isGui && station == ListenerModel.shared.activeStation {
+            ApiModel.shared.boundClientId = clientId
+            ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
+            log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
 //        }
       } else {
@@ -492,17 +626,17 @@ extension ApiModel {
         packet.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ApiModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+        log("ObjectModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
 
           packet.guiClients[id: handle] = guiClient
 
-          if !_isGui && station == ListenerModel.shared.activeStation {
-             boundClientId = clientId
-            sendCommand("client bind client_id=\(boundClientId!)")
-            log("ApiModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
+          if !ApiModel.shared.isGui && station == ListenerModel.shared.activeStation {
+            ApiModel.shared.boundClientId = clientId
+            ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
+            log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
         }
       }
@@ -513,7 +647,7 @@ extension ApiModel {
   /// - Parameters:
   ///   - properties: message properties as a KeyValuesArray
   ///   - handle: the radio's connection handle
-  private func parseDisconnection(properties: KeyValuesArray, handle: UInt32) {
+  private func parseDisconnection(properties: KeyValuesArray, handle: UInt32, connectionHandle: UInt32?) {
     var reason = ""
     
     enum Property: String {
@@ -540,7 +674,7 @@ extension ApiModel {
         case .wanValidationFailed:  if property.value.bValue { reason = "Wan validation failed" }
         }
       }
-      log("ApiModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
+      log("ObjectModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
       
       //      apiModel.disconnect(reason)
       
@@ -554,209 +688,64 @@ extension ApiModel {
   /// - Parameters:
   ///   - suffix:          a reply string
   private func parseInfoReply(_ suffix: String) {
-    enum Property: String {
-        case atuPresent               = "atu_present"
-        case callsign
-        case chassisSerial            = "chassis_serial"
-        case gateway
-        case gps
-        case ipAddress                = "ip"
-        case location
-        case macAddress               = "mac"
-        case model
-        case netmask
-        case name
-        case numberOfScus             = "num_scu"
-        case numberOfSlices           = "num_slice"
-        case numberOfTx               = "num_tx"
-        case options
-        case region
-        case screensaver
-        case softwareVersion          = "software_ver"
-    }
-      // process each key/value pair, <key=value>
-    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
-          // check for unknown Keys
-          guard let token = Property(rawValue: property.key) else {
-              // log it and ignore the Key
-              log("ApiModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-              continue
-          }
-          // Known keys, in alphabetical order
-          switch token {
-          
-          case .atuPresent:       atuPresent = property.value.bValue
-          case .callsign:         callsign = property.value
-          case .chassisSerial:    chassisSerial = property.value
-          case .gateway:          gateway = property.value
-          case .gps:              gpsPresent = (property.value != "Not Present")
-          case .ipAddress:        ipAddress = property.value
-          case .location:         location = property.value
-          case .macAddress:       macAddress = property.value
-          case .model:            radioModel = property.value
-          case .netmask:          netmask = property.value
-          case .name:             nickname = property.value
-          case .numberOfScus:     numberOfScus = property.value.iValue
-          case .numberOfSlices:   numberOfSlices = property.value.iValue
-          case .numberOfTx:       numberOfTx = property.value.iValue
-          case .options:          radioOptions = property.value
-          case .region:           region = property.value
-          case .screensaver:      radioScreenSaver = property.value
-          case .softwareVersion:  softwareVersion = property.value
-          }
-      }
+//    enum Property: String {
+//        case atuPresent               = "atu_present"
+//        case callsign
+//        case chassisSerial            = "chassis_serial"
+//        case gateway
+//        case gps
+//        case ipAddress                = "ip"
+//        case location
+//        case macAddress               = "mac"
+//        case model
+//        case netmask
+//        case name
+//        case numberOfScus             = "num_scu"
+//        case numberOfSlices           = "num_slice"
+//        case numberOfTx               = "num_tx"
+//        case options
+//        case region
+//        case screensaver
+//        case softwareVersion          = "software_ver"
+//    }
+//      // process each key/value pair, <key=value>
+//    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
+//          // check for unknown Keys
+//          guard let token = Property(rawValue: property.key) else {
+//              // log it and ignore the Key
+//              log("ObjectModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+//              continue
+//          }
+//          // Known keys, in alphabetical order
+//          switch token {
+//          
+//          case .atuPresent:       atuPresent = property.value.bValue
+//          case .callsign:         callsign = property.value
+//          case .chassisSerial:    chassisSerial = property.value
+//          case .gateway:          gateway = property.value
+//          case .gps:              gpsPresent = (property.value != "Not Present")
+//          case .ipAddress:        ipAddress = property.value
+//          case .location:         location = property.value
+//          case .macAddress:       macAddress = property.value
+//          case .model:            radioModel = property.value
+//          case .netmask:          netmask = property.value
+//          case .name:             nickname = property.value
+//          case .numberOfScus:     numberOfScus = property.value.iValue
+//          case .numberOfSlices:   numberOfSlices = property.value.iValue
+//          case .numberOfTx:       numberOfTx = property.value.iValue
+//          case .options:          radioOptions = property.value
+//          case .region:           region = property.value
+//          case .screensaver:      radioScreenSaver = property.value
+//          case .softwareVersion:  softwareVersion = property.value
+//          }
+//      }
   }
 
-  /// Parse a Message.
-  /// - Parameters:
-  ///   - commandSuffix:      a Command Suffix
-  private func parseMessage(_ msg: Substring) {
-    // separate it into its components
-    let components = msg.components(separatedBy: "|")
-    
-    // ignore incorrectly formatted messages
-    if components.count < 2 {
-      log("ApiModel: incomplete message = c\(msg)", .warning, #function, #file, #line)
-      return
-    }
-    let msgText = components[1]
-    
-    // log it
-    log("ApiModel: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
-    
-    // FIXME: Take action on some/all errors?
-  }
   
-  /// Parse Replies
-  /// - Parameters:
-  ///   - commandSuffix:      a Reply Suffix
-  private func parseReply(_ message: String) {
-    
-    let replySuffix = message.dropFirst()
-    
-    // separate it into its components
-    let components = replySuffix.components(separatedBy: "|")
-    // ignore incorrectly formatted replies
-    if components.count < 2 {
-      log("ApiModel: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
-      return
-    }
-    
-    // get the sequence number, reply and any additional data
-    let seqNum = components[0].sequenceNumber
-    let reply = components[1]
-    let suffix = components.count < 3 ? "" : components[2]
-    
-    // is the sequence number in the reply handlers?
-    //    if let replyTuple = ObjectModel.shared.replyHandlers[ seqNum ] {
-    if let replyTuple = replyHandlers[ seqNum ] {
-      // YES
-      let command = replyTuple.command
-
-      // Remove the object from the notification list
-      removeReplyHandler(components[0].sequenceNumber)
-
-      // Anything other than kNoError is an error, log it and ignore the Reply
-      guard reply == kNoError else {
-        // ignore non-zero reply from "client program" command
-        if !command.hasPrefix("client program ") {
-          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
-        }
-        return
-      }
-      
-      // process replies to the internal "sendCommands"?
-      switch command {
-
-      case "slice list":    sliceList = suffix.valuesArray().compactMap { UInt32($0, radix: 10) }
-      case "ant list":      antList = suffix.valuesArray( delimiter: "," )
-      case "info":          parseInfoReply(suffix)
-      case "mic list":      micList = suffix.valuesArray(  delimiter: "," )
-      case "radio uptime":  uptime = Int(suffix) ?? 0
-      case "version":       parseVersionReply(suffix)
-
-      default: break
-      }
-      
-      // did the replyTuple include a callback?
-      if let handler = replyTuple.replyTo {
-        // YES, call the sender's Handler
-        handler(command, seqNum, reply, suffix)
-      }
-    } else {
-      log("ApiModel: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
-    }
-  }
   
-  /// Parse a Status
-  /// - Parameters:
-  ///   - commandSuffix:      a Command Suffix
-  private func parseStatus(_ commandSuffix: Substring) {
-    
-    // separate it into its components ( [0] = <apiHandle>, [1] = <remainder> )
-    let components = commandSuffix.components(separatedBy: "|")
-    
-    // ignore incorrectly formatted status
-    guard components.count > 1 else {
-      log("ApiModel: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
-      return
-    }
-    
-    // find the space & get the msgType
-    let spaceIndex = components[1].firstIndex(of: " ")!
-    let statusType = String(components[1][..<spaceIndex])
-    
-    // everything past the msgType is in the remainder
-    let messageIndex = components[1].index(after: spaceIndex)
-    let statusMessage = String(components[1][messageIndex...])
-    
-    // Check for unknown Object Types
-    guard let objectType = ObjectType(rawValue: statusType)  else {
-      // log it and ignore the message
-      log("ApiModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
-      return
-    }
-    
-    // is this status message the first for our handle?
-    if firstStatusMessageReceived == false && components[0].handle == connectionHandle {
-      // YES, set the API state to finish the UDP initialization
-      firstStatusMessageReceived = true
-      _awaitFirstStatusMessage!.resume()
-    }
-    parse(objectType, statusMessage)
-  }
   
-  /// Parse the Reply to a Version command, reply format: <key=value>#<key=value>#...<key=value>
-  /// - Parameters:
-  ///   - suffix:          a reply string
-  private func parseVersionReply(_ suffix: String) {
-    enum Property: String {
-      case fpgaMb                   = "fpga-mb"
-      case psocMbPa100              = "psoc-mbpa100"
-      case psocMbTrx                = "psoc-mbtrx"
-      case smartSdrMB               = "smartsdr-mb"
-      case picDecpu                 = "pic-decpu"
-    }
-    // process each key/value pair, <key=value>
-    for property in suffix.keyValuesArray(delimiter: "#") {
-      // check for unknown Keys
-      guard let token = Property(rawValue: property.key) else {
-        // log it and ignore the Key
-        log("ApiModel: unknown version property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-        continue
-      }
-      // Known tokens, in alphabetical order
-      switch token {
-        
-      case .smartSdrMB:   smartSdrMB = property.value
-      case .picDecpu:     picDecpuVersion = property.value
-      case .psocMbTrx:    psocMbtrxVersion = property.value
-      case .psocMbPa100:  psocMbPa100Version = property.value
-      case .fpgaMb:       fpgaMbVersion = property.value
-      }
-    }
-  }
   
+
 //  public func altAntennaName(for stdName: String) -> String {
 //    // return alternate name (if any)
 //    for antenna in settingsModel.altAntennaNames where antenna.stdName == stdName {
