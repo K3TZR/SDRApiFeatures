@@ -30,16 +30,11 @@ public final class Radio {
   
   public var addressType = "DHCP"
   public internal(set) var alpha = false
-  public internal(set) var antList = [String]()
   public internal(set) var calFreq: Hz = 0
-//  public internal(set) var connectionHandle: UInt32?
   public internal(set) var freqErrorPpb = 0
-  public internal(set) var micList = [String]()
   public internal(set) var mox = false
   public internal(set) var rfGainList = [String]()
-  public internal(set) var sliceList = [UInt32]()
   public var tnfsEnabled = false
-  public internal(set) var uptime = 0
   
   public nonisolated static let kDaxChannels = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   public nonisolated static let kDaxIqChannels = [0, 1, 2, 3, 4]
@@ -69,7 +64,6 @@ public final class Radio {
   public internal(set) var filterDigitalLevel = 0
   public internal(set) var filterVoiceLevel = 0
   public internal(set) var flexControlEnabled = false
-  public var fpgaMbVersion = ""
   public internal(set) var frontSpeakerMute = false
   public var fullDuplexEnabled = false
   public internal(set) var gateway = ""
@@ -92,10 +86,7 @@ public final class Radio {
   public internal(set) var numberOfSlices = 0
   public internal(set) var numberOfTx = 0
   public internal(set) var oscillator = ""
-  public var picDecpuVersion = ""
   public var program = ""
-  public var psocMbPa100Version = ""
-  public var psocMbtrxVersion = ""
   public internal(set) var radioAuthenticated = false
   public internal(set) var radioModel = ""
   public internal(set) var radioOptions = ""
@@ -105,7 +96,6 @@ public final class Radio {
   public internal(set) var rttyMark = 0
   public internal(set) var serverConnected = false
   public internal(set) var setting = ""
-  public var smartSdrMB = ""
   public internal(set) var snapTuneEnabled = false
   public internal(set) var softwareVersion = ""
   public internal(set) var startCalibration = false
@@ -117,12 +107,26 @@ public final class Radio {
   public internal(set) var tcxoPresent = false
   
   public var regionList = ["USA"]
+
+  public var fpgaMbVersion = ""
+  public var picDecpuVersion = ""
+  public var psocMbPa100Version = ""
+  public var psocMbtrxVersion = ""
+  public var smartSdrMB = ""
+
+  public internal(set) var antList = [String]()
+  public internal(set) var sliceList = [UInt32]()               // FIXME: may not belong here
+  public internal(set) var micList = [String]()
   
+  public internal(set) var uptime = 0
+
+
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
   public enum Property: String {
     case alpha
+    case antList                  = "ant_list"
     case atuPresent               = "atu_present"
     case backlight
     case bandPersistenceEnabled   = "band_persistence_enabled"
@@ -148,6 +152,7 @@ public final class Radio {
     case location
     case lowLatencyDigital        = "low_latency_digital_modes"
     case macAddress               = "mac"
+    case micList                  = "mic_list"
     case model
     case muteLocalAudio           = "mute_local_audio_when_remote"
     case name
@@ -170,6 +175,7 @@ public final class Radio {
     case snapTuneEnabled          = "snap_tune_enabled"
     case softwareVersion          = "software_ver"
     case tnfsEnabled              = "tnf_enabled"
+    case uptime
 
     case cw                       = "CW"
     case digital                  = "DIGITAL"
@@ -199,6 +205,12 @@ public final class Radio {
     case lineoutmute              = "lineout mute"
     
     case addressType
+    
+    case fpgaMb                   = "fpga-mb"
+    case psocMbPa100              = "psoc-mbpa100"
+    case psocMbTrx                = "psoc-mbtrx"
+    case smartSdrMB               = "smartsdr-mb"
+    case picDecpu                 = "pic-decpu"
   }
 
   // ----------------------------------------------------------------------------
@@ -228,6 +240,7 @@ public final class Radio {
         switch token {
           
         case .alpha:                    alpha = property.value.bValue                               //
+        case .antList:                  antList = property.value.valuesArray()
         case .atuPresent:               atuPresent = property.value.bValue
         case .backlight:                backlight = property.value.iValue                           //
         case .bandPersistenceEnabled:   bandPersistenceEnabled = property.value.bValue              //
@@ -251,6 +264,7 @@ public final class Radio {
         case .location:                 location = property.value
         case .lowLatencyDigital:        lowLatencyDigital = property.value.bValue                   //
         case .macAddress:               macAddress = property.value
+        case .micList:                  micList = property.value.valuesArray()
         case .model:                    radioModel = property.value
         case .muteLocalAudio:           muteLocalAudio = property.value.bValue                      //
         case .name:                     name = property.value
@@ -272,6 +286,7 @@ public final class Radio {
 //        case .snapTuneEnabled:          snapTuneEnabled = property.value.bValue
         case .softwareVersion:          softwareVersion = property.value
         case .tnfsEnabled:              tnfsEnabled = property.value.bValue                         //
+        case .uptime:                   uptime = property.value.iValue
           
 //        case .flexControlEnabled:       flexControlEnabled = property.value.bValue
           
@@ -306,7 +321,13 @@ public final class Radio {
 //        case .calibrate:                break
 //        case .reboot:                   break
 //        case .addressType:              addressType = property.value
-          
+
+        case .smartSdrMB:   smartSdrMB = property.value
+        case .picDecpu:     picDecpuVersion = property.value
+        case .psocMbTrx:    psocMbtrxVersion = property.value
+        case .psocMbPa100:  psocMbPa100Version = property.value
+        case .fpgaMb:       fpgaMbVersion = property.value
+
         default:  print("----->>>>> token received: \(token)")
         }
       }
@@ -317,6 +338,14 @@ public final class Radio {
       log("Radio: initialized, name = \(name)", .debug, #function, #file, #line)
     }
   }
+  
+  
+  
+  
+  
+  
+  
+  
   
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
@@ -366,6 +395,10 @@ public final class Radio {
     case .staticNetParams, .oscillator, .staticGateway, .staticIp, .staticMask, .extPresent:
       break
     case .gpsdoPresent, .locked, .setting, .state, .tcxoPresent:
+      break
+    case .fpgaMb, .picDecpu, .psocMbTrx, .psocMbPa100, .smartSdrMB:
+      break
+    case .antList, .micList, .uptime:
       break
     }
   }

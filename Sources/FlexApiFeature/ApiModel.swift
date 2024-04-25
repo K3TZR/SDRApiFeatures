@@ -30,7 +30,7 @@ public final class ApiModel {
   public static var shared = ApiModel()
   private init() {
 
-    subscribeToMessages()
+    subscribeToTcpMessages()
     
     if UserDefaults.standard.string(forKey: "guiClientId") == nil {
       UserDefaults.standard.set(UUID().uuidString, forKey: "guiClientId")
@@ -42,25 +42,10 @@ public final class ApiModel {
     get { ApiModel.replyQ.sync { _replyHandlers } }
     set { ApiModel.replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
     
-  public var activeSlice: Slice?
-  public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var clientInitialized: Bool = false
   public internal(set) var connectionHandle: UInt32?
-  public var knownRadios = IdentifiedArrayOf<KnownRadio>()
-//  public internal(set) var lowBandwidthConnect = false
+  public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var nthPingReceived = false
-  public var testMode = true
-  public internal(set) var uptime = 0
-
-  public internal(set) var smartSdrMB = ""
-  public internal(set) var fpgaMbVersion = ""
-  public internal(set) var picDecpuVersion = ""
-  public internal(set) var psocMbPa100Version = ""
-  public internal(set) var psocMbtrxVersion = ""
-
-  public internal(set) var antList = [String]()
-  public internal(set) var sliceList = [UInt32]()               // FIXME: may not belong here
-  public internal(set) var micList = [String]()
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -208,13 +193,6 @@ public final class ApiModel {
     // remove all of radio's objects
     Task { await MainActor.run { ObjectModel.shared.removeAllObjects() } }
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
-    
-    smartSdrMB = ""
-    psocMbtrxVersion = ""
-    psocMbPa100Version = ""
-    fpgaMbVersion = ""
-    antList.removeAll()
-    micList.removeAll()
   }
 
   func tcpInbound(_ message: String) {
@@ -228,7 +206,7 @@ public final class ApiModel {
     case "M", "m":  parseMessage( message.dropFirst() )
     case "R", "r":  parseReply( message )
     case "S", "s":  parseStatus( message.dropFirst() )
-    case "V", "v":  break /*Task { await MainActor.run { radio?.hardwareVersion = String(message.dropFirst()) }}*/
+    case "V", "v":  Task { await MainActor.run { ObjectModel.shared.radio?.hardwareVersion = String(message.dropFirst()) }}
     default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
     }
   }
@@ -268,6 +246,28 @@ public final class ApiModel {
                               packet.localInterfaceIP)
   }
 
+  private func initialCommandReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+     var keyValues: KeyValuesArray
+     let adjReply = reply.replacingOccurrences(of: "\"", with: "")
+     
+     // process replies to the internal "sendCommands"?
+     switch command {
+     case "radio uptime":  keyValues = "uptime=\(adjReply)".keyValuesArray()
+     case "version":       keyValues = adjReply.keyValuesArray(delimiter: "#")
+     case "ant list":      keyValues = "ant_list=\(adjReply)".keyValuesArray()
+     case "mic list":      keyValues = "mic_list=\(adjReply)".keyValuesArray()
+     default: return
+     }
+     
+     print("----->>>>> properties = \(keyValues)")
+     let properties = keyValues
+     Task {
+       await MainActor.run {
+         ObjectModel.shared.radio?.parse(properties)
+       }
+     }
+   }
+   
   /// Parse the Reply to an Info command
   /// - Parameters:
   ///   - suffix:          a reply string
@@ -279,59 +279,6 @@ public final class ApiModel {
         ObjectModel.shared.radio?.parse(properties)
       }
     }
-//
-//    
-//    enum Property: String {
-//        case atuPresent               = "atu_present"
-//        case callsign
-//        case chassisSerial            = "chassis_serial"
-//        case gateway
-//        case gps
-//        case ipAddress                = "ip"
-//        case location
-//        case macAddress               = "mac"
-//        case model
-//        case netmask
-//        case name
-//        case numberOfScus             = "num_scu"
-//        case numberOfSlices           = "num_slice"
-//        case numberOfTx               = "num_tx"
-//        case options
-//        case region
-//        case screensaver
-//        case softwareVersion          = "software_ver"
-//    }
-//      // process each key/value pair, <key=value>
-//    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
-//          // check for unknown Keys
-//          guard let token = Property(rawValue: property.key) else {
-//              // log it and ignore the Key
-//              log("ApiModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-//              continue
-//          }
-//          // Known keys, in alphabetical order
-//          switch token {
-//
-//          case .atuPresent:       atuPresent = property.value.bValue
-//          case .callsign:         callsign = property.value
-//          case .chassisSerial:    chassisSerial = property.value
-//          case .gateway:          gateway = property.value
-//          case .gps:              gpsPresent = (property.value != "Not Present")
-//          case .ipAddress:        ipAddress = property.value
-//          case .location:         location = property.value
-//          case .macAddress:       macAddress = property.value
-//          case .model:            radioModel = property.value
-//          case .netmask:          netmask = property.value
-//          case .name:             nickname = property.value
-//          case .numberOfScus:     numberOfScus = property.value.iValue
-//          case .numberOfSlices:   numberOfSlices = property.value.iValue
-//          case .numberOfTx:       numberOfTx = property.value.iValue
-//          case .options:          radioOptions = property.value
-//          case .region:           region = property.value
-//          case .screensaver:      radioScreenSaver = property.value
-//          case .softwareVersion:  softwareVersion = property.value
-//          }
-//      }
   }
   
   /// Parse a Message.
@@ -393,17 +340,17 @@ public final class ApiModel {
       }
       
       // process replies to the internal "sendCommands"?
-      switch command {
-
-      case "slice list":    sliceList = suffix.valuesArray().compactMap { UInt32($0, radix: 10) }
-      case "ant list":      antList = suffix.valuesArray( delimiter: "," )
-      case "info":          parseInfoReply(suffix)
-      case "mic list":      micList = suffix.valuesArray(  delimiter: "," )
-      case "radio uptime":  uptime = Int(suffix) ?? 0
-      case "version":       parseVersionReply(suffix)
-
-      default: break
-      }
+//      switch command {
+//
+//      case "slice list":    sliceList = suffix.valuesArray().compactMap { UInt32($0, radix: 10) }
+//      case "ant list":      antList = suffix.valuesArray( delimiter: "," )
+//      case "info":          parseInfoReply(suffix)
+//      case "mic list":      micList = suffix.valuesArray(  delimiter: "," )
+//      case "radio uptime":  uptime = Int(suffix) ?? 0
+//      case "version":       parseVersionReply(suffix)
+//
+//      default: break
+//      }
       
       // did the replyTuple include a callback?
       if let handler = replyTuple.replyTo {
@@ -445,7 +392,7 @@ public final class ApiModel {
     }
     Task {
       await MainActor.run {
-        ObjectModel.shared.parse(statusType, statusMessage, connectionHandle, testMode)
+        ObjectModel.shared.parse(statusType, statusMessage, connectionHandle)
       }
     }
   }
@@ -454,29 +401,11 @@ public final class ApiModel {
   /// - Parameters:
   ///   - suffix:          a reply string
   private func parseVersionReply(_ suffix: String) {
-    enum Property: String {
-      case fpgaMb                   = "fpga-mb"
-      case psocMbPa100              = "psoc-mbpa100"
-      case psocMbTrx                = "psoc-mbtrx"
-      case smartSdrMB               = "smartsdr-mb"
-      case picDecpu                 = "pic-decpu"
-    }
-    // process each key/value pair, <key=value>
-    for property in suffix.keyValuesArray(delimiter: "#") {
-      // check for unknown Keys
-      guard let token = Property(rawValue: property.key) else {
-        // log it and ignore the Key
-        log("ObjectModel: unknown version property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-        continue
-      }
-      // Known tokens, in alphabetical order
-      switch token {
 
-      case .smartSdrMB:   smartSdrMB = property.value
-      case .picDecpu:     picDecpuVersion = property.value
-      case .psocMbTrx:    psocMbtrxVersion = property.value
-      case .psocMbPa100:  psocMbPa100Version = property.value
-      case .fpgaMb:       fpgaMbVersion = property.value
+    let properties = suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",")
+    Task {
+      await MainActor.run {
+        ObjectModel.shared.radio?.parse(properties)
       }
     }
   }
@@ -493,10 +422,10 @@ public final class ApiModel {
     sendCommand("client program " + programName)
     if isGui { sendCommand("client station " + stationName) }
     if lowBandwidthConnect { requestLowBandwidthConnect() }
-    requestInfo()
-    requestVersion()
-    requestAntennaList()
-    requestMicList()
+    requestInfo(callback: initialCommandReplyHandler)
+    requestVersion(replyTo: initialCommandReplyHandler)
+    requestAntennaList(callback: initialCommandReplyHandler)
+    requestMicList(callback: initialCommandReplyHandler)
     requestGlobalProfile()
     requestTxProfile()
     requestMicProfile()
@@ -504,7 +433,7 @@ public final class ApiModel {
     sendSubAll()
     requestMtuLimit(mtuValue)
     requestLowBandwidthDax(lowBandwidthDax)
-    requestUptime()
+    requestUptime(replyTo: initialCommandReplyHandler)
   }
 
   private func sendSubAll(callback: ReplyHandler? = nil) {
@@ -540,10 +469,10 @@ public final class ApiModel {
   }
 
   /// Process the AsyncStream of inbound TCP messages
-  private func subscribeToMessages()  {
+  private func subscribeToTcpMessages()  {
     Task(priority: .high) {
       log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
-      for await tcpMessage in Tcp.shared.inboundMessagesStream {
+      for await tcpMessage in Tcp.shared.messageStream {
         tcpInbound(tcpMessage.text)
       }
       log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)

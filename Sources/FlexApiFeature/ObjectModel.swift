@@ -20,13 +20,12 @@ final public class ObjectModel {
   // MARK: - Singleton
   
   public static var shared = ObjectModel()
-  private init() {
-//    subscribeToTcpMessages()
-  }
+  private init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
+  public var testMode: Bool = false
   public var radio: Radio?
   
   // Dynamic Models
@@ -52,6 +51,7 @@ final public class ObjectModel {
   public var wan = Wan()
   public var waveform = Waveform()
   
+  public var activeSlice: Slice?
   public internal(set) var boundClientId: String?
 
   // ----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ final public class ObjectModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
 
-  public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool = false) {
+  public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?) {
     
     // Check for unknown Object Types
     guard let objectType = ObjectType(rawValue: statusType)  else {

@@ -49,7 +49,10 @@ private struct HeadingView: View {
           .multilineTextAlignment(.trailing)
           .frame(width: 100)
         Toggle("RemoteRxAudio Compressed", isOn: $store.remoteRxAudioCompressed)
-        Toggle("Reduced DAX BW", isOn: $store.daxReducedBandwidth)
+      }
+      GridRow {
+        Toggle("Low Bandwidth Connect", isOn: $store.lowBandwidthConnect)
+        Toggle("Low Bandwidth DAX", isOn: $store.lowBandwidthDax)
       }
     }
   }

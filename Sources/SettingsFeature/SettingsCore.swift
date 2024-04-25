@@ -76,6 +76,7 @@ public struct SettingsCore {
     //    @Shared(.appStorage("isGui")) var isGui: Bool
     //    @Shared(.appStorage("localEnabled")) var localEnabled: Bool
     @Shared(.appStorage("loginRequired")) var loginRequired: Bool = false
+    @Shared(.appStorage("lowBandwidthConnect")) var lowBandwidthConnect: Bool = false
     @Shared(.appStorage("mtuValue")) var mtuValue: Int = 1_500
     //    @Shared(.appStorage("nonGuiDefault")) var nonGuiDefault: DefaultConnection?
     //    @Shared(.appStorage("refreshToken")) var refreshToken: String?
@@ -110,7 +111,7 @@ public struct SettingsCore {
     @Shared(.appStorage("waterfallClear")) var waterfallClear: Color = .black
     
     // --------- DAX Settings ----------
-    @Shared(.appStorage("daxReducedBandwidth")) var daxReducedBandwidth: Bool = false
+    @Shared(.appStorage("lowBandwidthDax")) var lowBandwidthDax: Bool = false
     //    @Shared(.appStorage("daxMicSetting")) var daxMicSetting: DaxSetting
     //    @Shared(.appStorage("daxRxSetting")) var daxRxSetting: DaxSetting
     //    @Shared(.appStorage("daxTxSetting")) var daxTxSetting: DaxSetting

@@ -54,7 +54,7 @@ public final class Tcp: NSObject {
 
   public var testerDelegate: TesterDelegate?
   
-  private var _inboundMessagesStream: (TcpMessage) -> Void = { _ in }
+  private var _messageStream: (TcpMessage) -> Void = { _ in }
   private var _testerStream: (TcpMessage) -> Void = { _ in }
   private var _statusStream: (TcpStatus) -> Void = { _ in }
 
@@ -168,7 +168,6 @@ public final class Tcp: NSObject {
     if _startTime != nil {
       let timeStamp = Date()
       let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-//      testerDelegate?.testerMessages( message )
       _testerStream(message)
     }
 
@@ -195,8 +194,7 @@ extension Tcp: GCDAsyncSocketDelegate {
       // stream it to the Api & tester (if any)
       let timeStamp = Date()
       let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      _inboundMessagesStream( message )
-//      testerDelegate?.testerMessages( message )
+      _messageStream( message )
       _testerStream(message)
     }
     // trigger the next read
@@ -262,9 +260,9 @@ extension Tcp: GCDAsyncSocketDelegate {
 extension Tcp {
   
   /// A stream of received TCP Messages
-  public var inboundMessagesStream: AsyncStream<TcpMessage> {
+  public var messageStream: AsyncStream<TcpMessage> {
     AsyncStream { continuation in
-      _inboundMessagesStream = { tcpMessage in
+      _messageStream = { tcpMessage in
         continuation.yield(tcpMessage)
       }
       continuation.onTermination = { @Sendable _ in
