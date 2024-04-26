@@ -15,57 +15,37 @@ import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
-public typealias Hz = Int
-public typealias MHz = Double
-
-public typealias ReplyHandler = (_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) -> Void
-public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
-
-//@MainActor
 @Observable
 public final class ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
   public static var shared = ApiModel()
-  private init() {
+  private init() { subscribeToTcpMessages() }
 
-    subscribeToTcpMessages()
-    
-    if UserDefaults.standard.string(forKey: "guiClientId") == nil {
-      UserDefaults.standard.set(UUID().uuidString, forKey: "guiClientId")
-    }
-  }
-
-  // Reply Handlers
-  public var replyHandlers : [UInt: ReplyTuple] {
-    get { ApiModel.replyQ.sync { _replyHandlers } }
-    set { ApiModel.replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
-    
-  public internal(set) var clientInitialized: Bool = false
+  // ----------------------------------------------------------------------------
+  // MARK: - Public properties
+  
   public internal(set) var connectionHandle: UInt32?
   public internal(set) var firstStatusMessageReceived: Bool = false
+  public internal(set) var hardwareVersion: String?
   public internal(set) var nthPingReceived = false
+  public internal(set) var replyHandlers : [UInt: ReplyTuple] {
+    get { _replyQ.sync { _replyHandlers } }
+    set { _replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
+  private var _awaitFirstStatusMessage: CheckedContinuation<(), Never>?
+  private var _awaitWanValidation: CheckedContinuation<String, Never>?
+  private var _awaitClientIpValidation: CheckedContinuation<String, Never>?
   private var _guiClientId: String?
   private var _pinger: Pinger?
   private var _replyHandlers = [UInt: ReplyTuple]()
   private var _wanHandle = ""
 
-  // ----------------------------------------------------------------------------
-  // MARK: - Static properties
-
-  static let replyQ = DispatchQueue(label: "replyQ", attributes: [.concurrent])
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Internal properties
-  
-  var _awaitFirstStatusMessage: CheckedContinuation<(), Never>?
-  var _awaitWanValidation: CheckedContinuation<String, Never>?
-  var _awaitClientIpValidation: CheckedContinuation<String, Never>?
+  private let _replyQ = DispatchQueue(label: "replyQ", attributes: [.concurrent])
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
@@ -76,10 +56,10 @@ public final class ApiModel {
   ///   - isGui: true = GUI
   ///   - disconnectHandle: handle to another connection to be disconnected (if any)
   ///   - programName: program name
-  ///   - mtuValue: max transort unit
-  ///   - lowBandwidthDax: true = use low bw
+  ///   - mtuValue: max transport unit
+  ///   - lowBandwidthDax: true = use low bw DAX
+  ///   - lowBandwidthConnect: true = minimize connection bandwidth
   public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
-//    self.isGui = isGui
     
     nthPingReceived = false
     
@@ -116,10 +96,10 @@ public final class ApiModel {
         
         // send Wan Validate & wait for the reply
         log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
-        sendCommand("wan validate handle=\(_wanHandle)", replyTo: wanValidationReply)
+        sendCommand("wan validate handle=\(_wanHandle)", replyTo: wanValidationReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           //          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
-          //          await sendCommand("wan validate handle=\(_wanHandle), callback: awaitWanValidation")
+          //          await sendCommand("wan validate handle=\(_wanHandle), replyTo callback: awaitWanValidation")
           
           await wanValidation()
         }
@@ -142,7 +122,7 @@ public final class ApiModel {
         log("ApiModel: UDP registration sent", .debug, #function, #file, #line)
         
         // send Client Ip & wait for the reply
-        sendCommand("client ip", replyTo: clientIpReply)
+        sendCommand("client ip", replyTo: ipReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           await clientIpValidation()
         }
@@ -169,7 +149,6 @@ public final class ApiModel {
   public func disconnect(_ reason: String? = nil) {
     log("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))", reason == nil ? .debug : .warning, #function, #file, #line)
     
-    clientInitialized = false
     firstStatusMessageReceived = false
     nthPingReceived = false
     
@@ -195,43 +174,8 @@ public final class ApiModel {
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
   }
 
-  func tcpInbound(_ message: String) {
-    // pass to the Tester (if any)
-    //    _testerDelegate?.tcpInbound(message)
-    
-    // switch on the first character of the text
-    switch message.prefix(1) {
-      
-    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
-    case "M", "m":  parseMessage( message.dropFirst() )
-    case "R", "r":  parseReply( message )
-    case "S", "s":  parseStatus( message.dropFirst() )
-    case "V", "v":  Task { await MainActor.run { ObjectModel.shared.radio?.hardwareVersion = String(message.dropFirst()) }}
-    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
-    }
-  }
-
   // ----------------------------------------------------------------------------
-  // MARK: - Private methods
-
-  private func awaitFirstStatusMessage() async {
-    return await withCheckedContinuation{ continuation in
-      _awaitFirstStatusMessage = continuation
-      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
-    }
-  }
-  
-  private func clientIpValidation() async -> (String) {
-    return await withCheckedContinuation{ continuation in
-      _awaitClientIpValidation = continuation
-      log("Api: Client ip request sent", .debug, #function, #file, #line)
-    }
-  }
-  
-  private func clientIpReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-    // YES, resume it
-    _awaitClientIpValidation?.resume(returning: reply)
-  }
+  // MARK: - Private connection methods
 
   /// Connect to a Radio
   /// - Parameter params:     a struct of parameters
@@ -246,194 +190,25 @@ public final class ApiModel {
                               packet.localInterfaceIP)
   }
 
-  private func initialCommandReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-     var keyValues: KeyValuesArray
-     let adjReply = reply.replacingOccurrences(of: "\"", with: "")
-     
-     // process replies to the internal "sendCommands"?
-     switch command {
-     case "radio uptime":  keyValues = "uptime=\(adjReply)".keyValuesArray()
-     case "version":       keyValues = adjReply.keyValuesArray(delimiter: "#")
-     case "ant list":      keyValues = "ant_list=\(adjReply)".keyValuesArray()
-     case "mic list":      keyValues = "mic_list=\(adjReply)".keyValuesArray()
-     default: return
-     }
-     
-     print("----->>>>> properties = \(keyValues)")
-     let properties = keyValues
-     Task {
-       await MainActor.run {
-         ObjectModel.shared.radio?.parse(properties)
-       }
-     }
-   }
-   
-  /// Parse the Reply to an Info command
-  /// - Parameters:
-  ///   - suffix:          a reply string
-  private func parseInfoReply(_ suffix: String) {
-    
-    let properties = suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",")
-    Task {
-      await MainActor.run {
-        ObjectModel.shared.radio?.parse(properties)
-      }
-    }
-  }
-  
-  /// Parse a Message.
-  /// - Parameters:
-  ///   - commandSuffix:      a Command Suffix
-  private func parseMessage(_ msg: Substring) {
-    // separate it into its components
-    let components = msg.components(separatedBy: "|")
-    
-    // ignore incorrectly formatted messages
-    if components.count < 2 {
-      log("ApiModel: incomplete message = c\(msg)", .warning, #function, #file, #line)
-      return
-    }
-    let msgText = components[1]
-    
-    // log it
-    log("ApiModel: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
-    
-    // FIXME: Take action on some/all errors?
-  }
-
-  /// Parse Replies
-  /// - Parameters:
-  ///   - commandSuffix:      a Reply Suffix
-  private func parseReply(_ message: String) {
-    
-    let replySuffix = message.dropFirst()
-    
-    // separate it into its components
-    let components = replySuffix.components(separatedBy: "|")
-    // ignore incorrectly formatted replies
-    if components.count < 2 {
-      log("ApiModel: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
-      return
-    }
-    
-    // get the sequence number, reply and any additional data
-    let seqNum = components[0].sequenceNumber
-    let reply = components[1]
-    let suffix = components.count < 3 ? "" : components[2]
-    
-    // is the sequence number in the reply handlers?
-    //    if let replyTuple = ObjectModel.shared.replyHandlers[ seqNum ] {
-    if let replyTuple = replyHandlers[ seqNum ] {
-      // YES
-      let command = replyTuple.command
-
-      // Remove the object from the notification list
-      removeReplyHandler(components[0].sequenceNumber)
-
-      // Anything other than kNoError is an error, log it and ignore the Reply
-      guard reply == kNoError else {
-        // ignore non-zero reply from "client program" command
-        if !command.hasPrefix("client program ") {
-          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
-        }
-        return
-      }
-      
-      // process replies to the internal "sendCommands"?
-//      switch command {
-//
-//      case "slice list":    sliceList = suffix.valuesArray().compactMap { UInt32($0, radix: 10) }
-//      case "ant list":      antList = suffix.valuesArray( delimiter: "," )
-//      case "info":          parseInfoReply(suffix)
-//      case "mic list":      micList = suffix.valuesArray(  delimiter: "," )
-//      case "radio uptime":  uptime = Int(suffix) ?? 0
-//      case "version":       parseVersionReply(suffix)
-//
-//      default: break
-//      }
-      
-      // did the replyTuple include a callback?
-      if let handler = replyTuple.replyTo {
-        // YES, call the sender's Handler
-        handler(command, seqNum, reply, suffix)
-      }
-    } else {
-      log("ApiModel: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
-    }
-  }
-  
-  /// Parse a Status
-  /// - Parameters:
-  ///   - commandSuffix:      a Command Suffix
-  private func parseStatus(_ commandSuffix: Substring) {
-    
-    // separate it into its components ( [0] = <apiHandle>, [1] = <remainder> )
-    let components = commandSuffix.components(separatedBy: "|")
-    
-    // ignore incorrectly formatted status
-    guard components.count > 1 else {
-      log("ApiModel: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
-      return
-    }
-    
-    // find the space & get the msgType
-    let spaceIndex = components[1].firstIndex(of: " ")!
-    let statusType = String(components[1][..<spaceIndex])
-    
-    // everything past the msgType is in the remainder
-    let messageIndex = components[1].index(after: spaceIndex)
-    let statusMessage = String(components[1][messageIndex...])
-    
-    // is this status message the first for our handle?
-    if firstStatusMessageReceived == false && components[0].handle == connectionHandle {
-      // YES, set the API state to finish the UDP initialization
-      firstStatusMessageReceived = true
-      _awaitFirstStatusMessage!.resume()
-    }
-    Task {
-      await MainActor.run {
-        ObjectModel.shared.parse(statusType, statusMessage, connectionHandle)
-      }
-    }
-  }
-  
-  /// Parse the Reply to a Version command, reply format: <key=value>#<key=value>#...<key=value>
-  /// - Parameters:
-  ///   - suffix:          a reply string
-  private func parseVersionReply(_ suffix: String) {
-
-    let properties = suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",")
-    Task {
-      await MainActor.run {
-        ObjectModel.shared.radio?.parse(properties)
-      }
-    }
-  }
-
   private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool, _ lowBandwidthConnect: Bool) {
-    let guiClientId = UserDefaults.standard.string(forKey: "guiClientId")
-    
-    if isGui && guiClientId == nil {
-      sendCommand("client gui")
-    }
-    if isGui && guiClientId != nil {
-      sendCommand("client gui \(guiClientId!)")
-    }
+    @Shared(.appStorage("guiClientId")) var guiClientId = UUID().uuidString
+
+    sendCommand("client gui \(guiClientId)")
     sendCommand("client program " + programName)
     if isGui { sendCommand("client station " + stationName) }
-    if lowBandwidthConnect { requestLowBandwidthConnect() }
-    requestInfo(callback: initialCommandReplyHandler)
-    requestVersion(replyTo: initialCommandReplyHandler)
-    requestAntennaList(callback: initialCommandReplyHandler)
-    requestMicList(callback: initialCommandReplyHandler)
+    if lowBandwidthConnect { setLowBandwidthConnect() }
+    requestInfo(replyTo: initialCommandsReplyHandler)
+    requestVersion(replyTo: initialCommandsReplyHandler)
+    requestAntennaList(replyTo: initialCommandsReplyHandler)
+    requestMicList(replyTo: initialCommandsReplyHandler)
     requestGlobalProfile()
     requestTxProfile()
     requestMicProfile()
     requestDisplayProfile()
     sendSubAll()
-    requestMtuLimit(mtuValue)
-    requestLowBandwidthDax(lowBandwidthDax)
-    requestUptime(replyTo: initialCommandReplyHandler)
+    setMtuLimit(mtuValue)
+    setLowBandwidthDax(lowBandwidthDax)
+    requestUptime(replyTo: initialCommandsReplyHandler)
   }
 
   private func sendSubAll(callback: ReplyHandler? = nil) {
@@ -468,17 +243,23 @@ public final class ApiModel {
     _pinger = nil
   }
 
-  /// Process the AsyncStream of inbound TCP messages
-  private func subscribeToTcpMessages()  {
-    Task(priority: .high) {
-      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
-      for await tcpMessage in Tcp.shared.messageStream {
-        tcpInbound(tcpMessage.text)
-      }
-      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
+  // ----------------------------------------------------------------------------
+  // MARK: - Private continuation methods
+
+  private func awaitFirstStatusMessage() async {
+    return await withCheckedContinuation{ continuation in
+      _awaitFirstStatusMessage = continuation
+      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
     }
   }
   
+  private func clientIpValidation() async -> (String) {
+    return await withCheckedContinuation{ continuation in
+      _awaitClientIpValidation = continuation
+      log("Api: Client ip request sent", .debug, #function, #file, #line)
+    }
+  }
+
   private func wanValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitWanValidation = continuation
@@ -486,8 +267,174 @@ public final class ApiModel {
     }
   }
 
-  private func wanValidationReply(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  // ----------------------------------------------------------------------------
+  // MARK: - Private reply handler methods
+
+  /// Parse Replies
+  /// - Parameters:
+  ///   - commandSuffix:      a Reply Suffix
+  private func defaultReplyProcessor(_ message: String) {
+    
+    let replySuffix = message.dropFirst()
+    
+    // separate it into its components
+    let components = replySuffix.components(separatedBy: "|")
+    // ignore incorrectly formatted replies
+    if components.count < 2 {
+      log("ApiModel: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
+      return
+    }
+    
+    // get the sequence number, reply and any additional data
+    let seqNum = components[0].sequenceNumber
+    let reply = components[1]
+    let suffix = components.count < 3 ? "" : components[2]
+    
+    // is the sequence number in the reply handlers?
+    //    if let replyTuple = ObjectModel.shared.replyHandlers[ seqNum ] {
+    if let replyTuple = replyHandlers[ seqNum ] {
+      // YES
+      let command = replyTuple.command
+
+      // Remove the object from the notification list
+      removeReplyHandler(components[0].sequenceNumber)
+
+      // Anything other than kNoError is an error, log it and ignore the Reply
+      guard reply == kNoError else {
+        // ignore non-zero reply from "client program" command
+        if !command.hasPrefix("client program ") {
+          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+        }
+        return
+      }
+      // did the replyTuple include a callback?
+      if let handler = replyTuple.replyTo {
+        // YES, call the sender's Handler
+        handler(command, seqNum, reply, suffix)
+      }
+    } else {
+      log("ApiModel: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+    }
+  }
+
+  private func initialCommandsReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+     var keyValues: KeyValuesArray
+     let adjReply = reply.replacingOccurrences(of: "\"", with: "")
+     
+     // process replies to the internal "sendCommands"?
+     switch command {
+     case "radio uptime":  keyValues = "uptime=\(adjReply)".keyValuesArray()
+     case "version":       keyValues = adjReply.keyValuesArray(delimiter: "#")
+     case "ant list":      keyValues = "ant_list=\(adjReply)".keyValuesArray()
+     case "mic list":      keyValues = "mic_list=\(adjReply)".keyValuesArray()
+     case "info":          keyValues = adjReply.keyValuesArray(delimiter: ",")
+     default: return
+     }
+     
+     print("----->>>>> properties = \(keyValues)")
+     let properties = keyValues
+     Task {
+       await MainActor.run {
+         ObjectModel.shared.radio?.parse(properties)
+       }
+     }
+   }
+
+  private func ipReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+    // YES, resume it
+    _awaitClientIpValidation?.resume(returning: reply)
+  }
+
+  private func wanValidationReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
     // YES, resume it
     _awaitWanValidation?.resume(returning: reply)
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private Tcp parse methods
+
+  private func parseInboundTcp(_ message: String) {
+    // pass to the Tester (if any)
+    //    _testerDelegate?.tcpInbound(message)
+    
+    // switch on the first character of the text
+    switch message.prefix(1) {
+      
+    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
+    case "M", "m":  parseMessage( message.dropFirst() )
+    case "R", "r":  defaultReplyProcessor( message )
+    case "S", "s":  parseStatus( message.dropFirst() )
+    case "V", "v":  hardwareVersion = String(message.dropFirst())
+    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
+    }
+  }
+
+  /// Parse a Message.
+  /// - Parameters:
+  ///   - commandSuffix:      a Command Suffix
+  private func parseMessage(_ msg: Substring) {
+    // separate it into its components
+    let components = msg.components(separatedBy: "|")
+    
+    // ignore incorrectly formatted messages
+    if components.count < 2 {
+      log("ApiModel: incomplete message = c\(msg)", .warning, #function, #file, #line)
+      return
+    }
+    let msgText = components[1]
+    
+    // log it
+    log("ApiModel: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
+    
+    // FIXME: Take action on some/all errors?
+  }
+
+  /// Parse a Status
+  /// - Parameters:
+  ///   - commandSuffix:      a Command Suffix
+  private func parseStatus(_ commandSuffix: Substring) {
+    
+    // separate it into its components ( [0] = <apiHandle>, [1] = <remainder> )
+    let components = commandSuffix.components(separatedBy: "|")
+    
+    // ignore incorrectly formatted status
+    guard components.count > 1 else {
+      log("ApiModel: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
+      return
+    }
+    
+    // find the space & get the msgType
+    let spaceIndex = components[1].firstIndex(of: " ")!
+    let statusType = String(components[1][..<spaceIndex])
+    
+    // everything past the msgType is in the remainder
+    let messageIndex = components[1].index(after: spaceIndex)
+    let statusMessage = String(components[1][messageIndex...])
+    
+    // is this status message the first for our handle?
+    if firstStatusMessageReceived == false && components[0].handle == connectionHandle {
+      // YES, set the API state to finish the UDP initialization
+      firstStatusMessageReceived = true
+      _awaitFirstStatusMessage!.resume()
+    }
+    Task {
+      await MainActor.run {
+        ObjectModel.shared.parse(statusType, statusMessage, connectionHandle)
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private subscription methods
+
+  /// Process the AsyncStream of inbound TCP messages
+  private func subscribeToTcpMessages()  {
+    Task(priority: .high) {
+      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
+      for await tcpMessage in Tcp.shared.messageStream {
+        parseInboundTcp(tcpMessage.text)
+      }
+      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
+    }
   }
 }

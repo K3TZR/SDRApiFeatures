@@ -25,7 +25,6 @@ public final class Waterfall: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
 
   public var autoBlackEnabled = false
   public var autoBlackLevel: UInt32 = 0
@@ -46,6 +45,11 @@ public final class Waterfall: Identifiable {
     "Purple",
     "Tritanopia"
   ]
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -111,9 +115,9 @@ public final class Waterfall: Identifiable {
       }
     }
     // is it initialized?
-    if initialized == false && panadapterId != 0 {
+    if _initialized == false && panadapterId != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Waterfall \(id.hex): ADDED handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }

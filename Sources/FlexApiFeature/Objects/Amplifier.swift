@@ -25,7 +25,6 @@ public final class Amplifier: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
   
   public var ant: String = ""
   public var antennaDict = [String:String]()
@@ -48,6 +47,11 @@ public final class Amplifier: Identifiable {
     case serialNumber  = "serial_num"
     case state
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -75,9 +79,9 @@ public final class Amplifier: Identifiable {
       case .state:        state = property.value
       }
       // is it initialized?
-      if initialized == false {
+      if _initialized == false {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Amplifier \(id.hex): ADDED, model = \(model)", .debug, #function, #file, #line)
       }
     }

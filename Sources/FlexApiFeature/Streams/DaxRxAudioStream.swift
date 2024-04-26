@@ -1,6 +1,6 @@
 //
 //  DaxRxAudioStream.swift
-//  FlexApiFeature/Objects
+//  FlexApiFeature/Streams
 //
 //  Created by Douglas Adams on 2/24/17.
 //  Copyright © 2017 Douglas Adams & Mario Illgen. All rights reserved.

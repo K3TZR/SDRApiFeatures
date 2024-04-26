@@ -26,7 +26,6 @@ public final class Profile: Identifiable {
   // MARK: - Public properties
   
   public let id: String
-  public var initialized = false
   
   public var current: String = ""
   public var list = [String]()
@@ -38,6 +37,11 @@ public final class Profile: Identifiable {
     case list = "list"
     case current = "current"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -76,9 +80,9 @@ public final class Profile: Identifiable {
       
     }
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Profile \(id): ADDED", .debug, #function, #file, #line)
     }
   }

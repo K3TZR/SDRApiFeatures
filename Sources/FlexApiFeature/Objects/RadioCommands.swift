@@ -7,24 +7,25 @@
 
 import Foundation
 
+import SharedFeature
 
 
 extension Radio {    
   // ----------------------------------------------------------------------------
   // MARK: - Amplifier methods
   
-  public func requestAmplifier(ip: String, port: Int, model: String, serialNumber: String, antennaPairs: String, callback: ReplyHandler? = nil) {
+  public func requestAmplifier(ip: String, port: Int, model: String, serialNumber: String, antennaPairs: String, replyTo callback: ReplyHandler? = nil) {
     // TODO: add code
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - BandSetting methods
   
-  public func requestBandSetting(_ channel: String, callback: ReplyHandler? = nil) {
+  public func requestBandSetting(_ channel: String, replyTo callback: ReplyHandler? = nil) {
     // FIXME: need information
   }
   
-  public func remove(_ id: UInt32, callback: ReplyHandler? = nil) {
+  public func remove(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
     // TODO: test this
     
     // tell the Radio to remove a Stream
@@ -71,7 +72,7 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - DaxIqStream methods
   
-  //    public func requestDaxIqStream(_ channel: String, callback: ReplyHandler? = nil) {
+  //    public func requestDaxIqStream(_ channel: String, replyTo callback: ReplyHandler? = nil) {
   //        // tell the Radio to create the Stream
   //        _api.send("stream create type=dax_iq daxiq_channel=\(channel)", replyTo: callback)
   //    }
@@ -96,7 +97,7 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - DaxRxAudioStream methods
   
-  //    public func requestDaxRxAudioStream(_ channel: String, callback: ReplyHandler? = nil) {
+  //    public func requestDaxRxAudioStream(_ channel: String, replyTo callback: ReplyHandler? = nil) {
   //        // tell the Radio to create a Stream
   //        _api.send("stream create type=dax_rx dax_channel=\(channel)", replyTo: callback)
   //    }
@@ -121,7 +122,7 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Equalizer methods
   
-  public func requestEqualizerInfo(_ eqType: String, callback:  ReplyHandler? = nil) {
+  public func requestEqualizerInfo(_ eqType: String, replyTo callback:  ReplyHandler? = nil) {
     // ask the Radio for an Equalizer's settings
     ApiModel.shared.sendCommand("eq " + eqType + " info", replyTo: callback)
   }
@@ -145,7 +146,7 @@ extension Radio {
 //    return nil
 //  }
   
-//  public func bindToGuiClient(_ clientId: String?, callback:  ReplyHandler? = nil) {
+//  public func bindToGuiClient(_ clientId: String?, replyTo callback:  ReplyHandler? = nil) {
 //    if let clientId = clientId, _connectionType == .nonGui, boundClientId == nil {
 //      apiModel.sendTcp("client bind client_id=" + clientId, replyTo: callback)
 //    }
@@ -216,11 +217,11 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Panadapter methods
   
-  public func requestRfGainList(_ streamId: UInt32, callback: ReplyHandler? = nil) {
+  public func requestRfGainList(_ streamId: UInt32, replyTo callback: ReplyHandler? = nil) {
     ApiModel.shared.sendCommand("display pan rfgain_info \(streamId.hex)", replyTo: callback)
   }
 
-  //    public func requestPanadapter(_ dimensions: CGSize = CGSize(width: 100, height: 100), callback: ReplyHandler? = nil) {
+  //    public func requestPanadapter(_ dimensions: CGSize = CGSize(width: 100, height: 100), replyTo callback: ReplyHandler? = nil) {
   //        // tell the Radio to create a Panafall (if any available)
   //        if availablePanadapters > 0 {
   //            _api.send("display panafall create x=\(dimensions.width) y=\(dimensions.height)", replyTo: callback)
@@ -269,11 +270,11 @@ extension Radio {
 //    //      send("sub spot all")    // TODO:
 //  }
 //
-//  public func requestMtuLimit(_ size: Int, callback: ReplyHandler? = nil) {
+//  public func requestMtuLimit(_ size: Int, replyTo callback: ReplyHandler? = nil) {
 //    apiModel.sendTcp("client set enforce_network_mtu=1 network_mtu=\(size)")
 //  }
 //
-//  public func requestLowBandwidthDax(_ enable: Bool, callback: ReplyHandler? = nil) {
+//  public func requestLowBandwidthDax(_ enable: Bool, replyTo callback: ReplyHandler? = nil) {
 //    apiModel.sendTcp("client set send_reduced_bw_dax=\(enable.as1or0)")
 //  }
 //
@@ -281,7 +282,7 @@ extension Radio {
 //    apiModel.sendTcp("ant list", replyTo: callback)
 //  }
 //
-//  public func requestCwKeyImmediate(state: Bool, callback: ReplyHandler? = nil) {
+//  public func requestCwKeyImmediate(state: Bool, replyTo callback: ReplyHandler? = nil) {
 //    apiModel.sendTcp("cw key immediate" + " \(state.as1or0)", replyTo: callback)
 //  }
 //
@@ -349,7 +350,7 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: -  RemoteRxAudioStream methods
   
-//  public func requestRemoteRxAudioStream(compression: String = RemoteRxAudioStream.Compression.opus.rawValue, callback: ReplyHandler? = nil) async throws -> String {
+//  public func requestRemoteRxAudioStream(compression: String = RemoteRxAudioStream.Compression.opus.rawValue, replyTo callback: ReplyHandler? = nil) async throws -> String {
 //    try await sendAwaitReply("stream create type=remote_audio_rx compression=\(compression)", replyTo: callback)
 //  }
   
@@ -375,7 +376,7 @@ extension Radio {
 //        apiModel.sendTcp("slice create", replyTo: callback)
 //      }
   
-//      public func requestSlice(id: UInt32 = 0, mode: String = "", frequency: Hz = 0,  rxAntenna: String = "", usePersistence: Bool = false, callback: ReplyHandler? = nil) {
+//      public func requestSlice(id: UInt32 = 0, mode: String = "", frequency: Hz = 0,  rxAntenna: String = "", usePersistence: Bool = false, replyTo callback: ReplyHandler? = nil) {
 //          if availableSlices > 0 {
 //  
 //              var cmd = "slice create"
@@ -390,7 +391,7 @@ extension Radio {
 //          }
 //      }
 //  
-//      public func requestSlice(panadapter: Panadapter, frequency: Hz = 0, callback: ReplyHandler? = nil) {
+//      public func requestSlice(panadapter: Panadapter, frequency: Hz = 0, replyTo callback: ReplyHandler? = nil) {
 //          if availableSlices > 0 {
 //            apiModel.sendTcp("slice create " + "pan" + "=\(panadapter.id.hex) \(frequency == 0 ? "" : "freq" + "=\(frequency.hzToMhz)")", replyTo: callback)
 //          }
@@ -500,7 +501,7 @@ extension Radio {
   /// - Parameters:
   ///   _ id:                            a TnfId
   ///   - callback:     ReplyHandler (optional)
-//  public func removeTnf(_ id: TnfId, callback: ReplyHandler? = nil) {
+//  public func removeTnf(_ id: TnfId, replyTo callback: ReplyHandler? = nil) {
 //    send("tnf remove " + " \(id)", replyTo: callback)
 //    
 //    // remove it immediately (Tnf does not send status on removal)
@@ -508,7 +509,7 @@ extension Radio {
 //    
 //    log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
 //  }
-//  public func requestTnf(at frequency: Hz, callback: ReplyHandler? = nil) {
+//  public func requestTnf(at frequency: Hz, replyTo callback: ReplyHandler? = nil) {
 //    send("tnf create " + "freq" + "=\(frequency.hzToMhz)", replyTo: callback)
 //  }
   
@@ -524,7 +525,7 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - WanServer methods
   
-  //    public func smartlinkConfigure(tcpPort: Int, udpPort: Int, callback: ReplyHandler? = nil) {
+  //    public func smartlinkConfigure(tcpPort: Int, udpPort: Int, replyTo callback: ReplyHandler? = nil) {
   //        send("wan set " + "public_tls_port" + "=\(tcpPort)" + " public_udp_port" + "=\(udpPort)", replyTo: callback)
   //    }
   

@@ -25,7 +25,6 @@ public final class Memory: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
   
   public var digitalLowerOffset = 0
   public var digitalUpperOffset = 0
@@ -78,6 +77,11 @@ public final class Memory: Identifiable {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse key/value pairs
@@ -119,9 +123,9 @@ public final class Memory: Identifiable {
       case .apply, .create, .remove:  break   // ignored here
       }
       // is it initialized?
-      if initialized == false {
+      if _initialized == false {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Memory \(id): ADDED", .debug, #function, #file, #line)
       }
     }

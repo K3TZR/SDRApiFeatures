@@ -57,7 +57,7 @@ extension ApiModel {
   //    self.replyHandlers[seqNumber] = nil
   //  }
   
-  public func bindToGuiClient(_ clientId: UUID?, callback:  ReplyHandler? = nil) {
+  public func bindToGuiClient(_ clientId: UUID?, replyTo callback:  ReplyHandler? = nil) {
 //    if let clientId = clientId, ApiModel.shared.isGui == false, boundClientId == nil {
 //      sendCommand("client bind client_id=" + clientId.uuidString, replyTo: callback)
 //    }
@@ -66,66 +66,66 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public Request methods
   
-  public func requestMtuLimit(_ size: Int, callback: ReplyHandler? = nil) {
+  public func setMtuLimit(_ size: Int, replyTo callback: ReplyHandler? = nil) {
     sendCommand("client set enforce_network_mtu=1 network_mtu=\(size)")
   }
   
-  public func requestLowBandwidthDax(_ enable: Bool, callback: ReplyHandler? = nil) {
+  public func setLowBandwidthDax(_ enable: Bool, replyTo callback: ReplyHandler? = nil) {
     sendCommand("client set send_reduced_bw_dax=\(enable.as1or0)")
   }
   
-  public func requestAntennaList(callback: ReplyHandler? = nil) {
+  public func requestAntennaList(replyTo callback: ReplyHandler? = nil) {
     sendCommand("ant list", replyTo: callback)
   }
   
-  public func requestCwKeyImmediate(state: Bool, callback: ReplyHandler? = nil) {
+  public func requestCwKeyImmediate(state: Bool, replyTo callback: ReplyHandler? = nil) {
     sendCommand("cw key immediate" + " \(state.as1or0)", replyTo: callback)
   }
   
-  public func requestInfo(callback: ReplyHandler? = nil) {
+  public func requestInfo(replyTo callback: ReplyHandler? = nil) {
     sendCommand("info", replyTo: callback )
   }
   
-  public func requestLicense(callback: ReplyHandler? = nil) {
+  public func requestLicense(replyTo callback: ReplyHandler? = nil) {
     sendCommand("license refresh", replyTo: callback)
   }
   
-  public func requestLowBandwidthConnect(callback: ReplyHandler? = nil) {
+  public func setLowBandwidthConnect(replyTo callback: ReplyHandler? = nil) {
     sendCommand("client low_bw_connect", replyTo: callback)
   }
   
-  public func requestMicList(callback: ReplyHandler? = nil) {
+  public func requestMicList(replyTo callback: ReplyHandler? = nil) {
     sendCommand("mic list", replyTo: callback)
   }
   
-  public func requestPersistenceOff(callback: ReplyHandler? = nil) {
+  public func requestPersistenceOff(replyTo callback: ReplyHandler? = nil) {
     sendCommand("client program start_persistence off", replyTo: callback)
   }
   
-  public func requestDisplayProfile(callback: ReplyHandler? = nil) {
+  public func requestDisplayProfile(replyTo callback: ReplyHandler? = nil) {
     sendCommand("profile display info", replyTo: callback)
   }
   
-  public func requestGlobalProfile(callback: ReplyHandler? = nil) {
+  public func requestGlobalProfile(replyTo callback: ReplyHandler? = nil) {
     sendCommand("profile global info", replyTo: callback)
   }
   
-  public func requestMicProfile(callback: ReplyHandler? = nil) {
+  public func requestMicProfile(replyTo callback: ReplyHandler? = nil) {
     sendCommand("profile mic info", replyTo: callback)
   }
   
-  public func requestTxProfile(callback: ReplyHandler? = nil) {
+  public func requestTxProfile(replyTo callback: ReplyHandler? = nil) {
     sendCommand("profile tx info", replyTo: callback)
   }
   
-  public func requestReboot(callback: ReplyHandler? = nil) {
+  public func requestReboot(replyTo callback: ReplyHandler? = nil) {
     sendCommand("radio reboot", replyTo: callback)
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Panadapter methods
   
-  public func removePanadapter(_ id: UInt32, callback: ReplyHandler? = nil) {
+  public func removePanadapter(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
     sendCommand("display panafall remove \(id)", replyTo: callback)
   }
   
@@ -137,7 +137,7 @@ extension ApiModel {
   // MARK: - Slice methods
   
 
-  public func removeSlice(_ id: UInt32, callback: ReplyHandler? = nil) {
+  public func removeSlice(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
     sendCommand("slice remove \(id)", replyTo: callback)
   }
   
@@ -145,7 +145,7 @@ extension ApiModel {
     sendCommand("slice create", replyTo: callback)
   }
   
-  public func requestSlice(panadapter: Panadapter?, mode: String = "", frequency: Hz = 0,  rxAntenna: String = "", usePersistence: Bool = false, callback: ReplyHandler? = nil) {
+  public func requestSlice(panadapter: Panadapter?, mode: String = "", frequency: Hz = 0,  rxAntenna: String = "", usePersistence: Bool = false, replyTo callback: ReplyHandler? = nil) {
     //          if availableSlices > 0 {
     
     var cmd = "slice create"
@@ -160,7 +160,7 @@ extension ApiModel {
     //          }
   }
   
-  public func requestSlice(on panadapter: Panadapter, at frequency: Hz = 0, callback: ReplyHandler? = nil) {
+  public func requestSlice(on panadapter: Panadapter, at frequency: Hz = 0, replyTo callback: ReplyHandler? = nil) {
     //          if availableSlices > 0 {
     sendCommand("slice create " + "pan" + "=\(panadapter.id.hex) \(frequency == 0 ? "" : "freq" + "=\(frequency.hzToMhz)")", replyTo: callback)
     //          }
@@ -175,7 +175,7 @@ extension ApiModel {
   //  }
   
   
-  public func requestTnf(at frequency: Hz, callback: ReplyHandler? = nil) {
+  public func requestTnf(at frequency: Hz, replyTo callback: ReplyHandler? = nil) {
     sendCommand("tnf create " + "freq" + "=\(frequency.hzToMhz)", replyTo: callback)
   }
   

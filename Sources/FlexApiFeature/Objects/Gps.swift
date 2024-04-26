@@ -22,8 +22,6 @@ public final class Gps {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized = false
-  
   public var altitude = ""
   public var frequencyError: Double = 0
   public var grid = ""
@@ -52,6 +50,11 @@ public final class Gps {
     case tracked
     case visible
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -83,9 +86,9 @@ public final class Gps {
       }
     }
     // is it initialized?
-    if initialized == false{
+    if _initialized == false{
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Gps: initialized", .debug, #function, #file, #line)
     }
   }

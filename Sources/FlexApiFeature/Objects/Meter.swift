@@ -25,7 +25,6 @@ public final class Meter: ObservableObject, Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized: Bool = false
   
   @Published public var value: Float = 0    // uses ObservableObject to facilitate throttling
 
@@ -91,6 +90,11 @@ public final class Meter: ObservableObject, Identifiable {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse Meter key/value pairs
@@ -124,9 +128,9 @@ public final class Meter: ObservableObject, Identifiable {
       }
     }
     // is it initialized?
-    if initialized == false && group != "" && units != "" {
+    if _initialized == false && group != "" && units != "" {
       //NO, it is now
-      initialized = true
+      _initialized = true
       log("Meter \(id): ADDED, name = \(name), source = \(source), group = \(group)", .debug, #function, #file, #line)
     }
   }

@@ -22,8 +22,6 @@ public final class Atu {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized  = false
-  
   public var enabled: Bool = false
   public var memoriesEnabled: Bool = false
   public var status: Status = .none
@@ -53,6 +51,11 @@ public final class Atu {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse status message
@@ -76,9 +79,9 @@ public final class Atu {
       }
     }
     // is it initialized?
-    if initialized == false{
+    if _initialized == false{
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Atu: initialized", .debug, #function, #file, #line)
     }
   }

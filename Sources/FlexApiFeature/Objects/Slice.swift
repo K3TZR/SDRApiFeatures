@@ -27,7 +27,6 @@ public final class Slice: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized: Bool = false
   
   public var autoPan: Bool = false
   public var clientHandle: UInt32 = 0
@@ -124,6 +123,11 @@ public final class Slice: Identifiable {
     "DIGL": [(-1500,-300), (-1700,-300), (-1900,-300), (-2100,-300), (-2400,-300), (-2700,-300), (-3000,-300), (-3200,-300), (-3600,-300), (-4300,-300)],
     "RTTY": [(-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115), (-285, 115)]
   ]
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -228,9 +232,9 @@ public final class Slice: Identifiable {
       }
     }
     // is it initialized?
-    if initialized == false && panadapterId != 0 && frequency != 0 && mode != "" {
+    if _initialized == false && panadapterId != 0 && frequency != 0 && mode != "" {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Slice \(id): ADDED, frequency = \(frequency.hzToMhz), panadapter = \(panadapterId.hex)", .debug, #function, #file, #line)
     }
   }

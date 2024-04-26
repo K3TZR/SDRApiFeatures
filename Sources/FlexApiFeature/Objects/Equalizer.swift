@@ -25,7 +25,6 @@ public final class Equalizer: Identifiable {
   // MARK: - Public properties
   
   public let id: String
-  public var initialized = false
   
   public var eqEnabled = false
   public var hz63: Int = 0
@@ -71,6 +70,11 @@ public final class Equalizer: Identifiable {
   ]
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse key/value pairs
@@ -99,9 +103,9 @@ public final class Equalizer: Identifiable {
       case .eqEnabled:        eqEnabled = property.value.bValue
       }
       // is it initialized?
-      if initialized == false {
+      if _initialized == false {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Equalizer \(id): ADDED", .debug, #function, #file, #line)
       }
     }

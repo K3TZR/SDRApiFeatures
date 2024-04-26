@@ -22,8 +22,6 @@ public final class Interlock {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized  = false
-  
   public var accTxEnabled = false
   public var accTxDelay = 0
   public var accTxReqEnabled = false
@@ -99,6 +97,11 @@ public final class Interlock {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse status message
@@ -138,9 +141,9 @@ public final class Interlock {
       }
     }
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Interlock: initialized", .debug, #function, #file, #line)
     }
   }

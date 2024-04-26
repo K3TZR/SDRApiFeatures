@@ -29,8 +29,6 @@ public final class Cwx {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized = false
-
   public internal(set) var breakInDelay = 0
   public internal(set) var qskEnabled = false
   public internal(set) var wpm = 0
@@ -55,6 +53,11 @@ public final class Cwx {
     case sent
     case wpm            = "wpm"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -108,9 +111,9 @@ public final class Cwx {
         }
       }
       // is it initialized?
-      if initialized == false{
+      if _initialized == false{
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Cwx: initialized", .debug, #function, #file, #line)
       }
     }

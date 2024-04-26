@@ -21,11 +21,12 @@ final public class ObjectModel {
   
   public static var shared = ObjectModel()
   private init() {}
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var testMode: Bool = false
+  public var clientInitialized = false
+  public var testMode = false
   public var radio: Radio?
   
   // Dynamic Models
@@ -53,7 +54,7 @@ final public class ObjectModel {
   
   public var activeSlice: Slice?
   public internal(set) var boundClientId: String?
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -63,10 +64,10 @@ final public class ObjectModel {
     case bandSetting = "band"
     case client
     case cwx
-//    case daxIqStream = "dax_iq"
-//    case daxMicAudioStream = "dax_mic"
-//    case daxRxAudioStream = "dax_rx"
-//    case daxTxAudioStream = "dax_tx"
+    //    case daxIqStream = "dax_iq"
+    //    case daxMicAudioStream = "dax_mic"
+    //    case daxRxAudioStream = "dax_rx"
+    //    case daxTxAudioStream = "dax_tx"
     case display
     case equalizer = "eq"
     case gps
@@ -76,8 +77,8 @@ final public class ObjectModel {
     case panadapter = "pan"
     case profile
     case radio
-//    case remoteRxAudioStream = "remote_audio_rx"
-//    case remoteTxAudioStream = "remote_audio_tx"
+    //    case remoteRxAudioStream = "remote_audio_rx"
+    //    case remoteTxAudioStream = "remote_audio_tx"
     case slice
     case stream
     case tnf
@@ -88,10 +89,10 @@ final public class ObjectModel {
     case waveform
     case xvtr
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
-
+  
   public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?) {
     
     // Check for unknown Object Types
@@ -101,7 +102,7 @@ final public class ObjectModel {
       return
     }
     
-
+    
     switch objectType {
     case .amplifier:            amplifierStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
     case .atu:                  atu.parse( Array(statusMessage.keyValuesArray() ))
@@ -128,7 +129,7 @@ final public class ObjectModel {
     case .panadapter, .waterfall: break                                                   // handled by "display"
     }
   }
-
+  
   // ----- Meter methods -----
   
   public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
@@ -144,7 +145,7 @@ final public class ObjectModel {
     }
     return nil
   }
-
+  
   // ----- Slice methods -----
   
   /// Find a Slice by DAX Channel
@@ -153,14 +154,14 @@ final public class ObjectModel {
   /// - Returns:              a Slice (if any)
   ///
   public func findSlice(using channel: Int) -> Slice? {
-      // find the Slices with the specified Channel (if any)
-      let filteredSlices = slices.filter { $0.daxChannel == channel }
-      guard filteredSlices.count >= 1 else { return nil }
-      
-      // return the first one
-      return filteredSlices[0]
+    // find the Slices with the specified Channel (if any)
+    let filteredSlices = slices.filter { $0.daxChannel == channel }
+    guard filteredSlices.count >= 1 else { return nil }
+    
+    // return the first one
+    return filteredSlices[0]
   }
-
+  
   public func sliceMove(_ panadapter: Panadapter, _ clickFrequency: Int) {
     
     let slices = slices.filter{ $0.panadapterId == panadapter.id }
@@ -178,41 +179,41 @@ final public class ObjectModel {
       }
     }
   }
-
+  
   // ----- Tnf methods -----
   
   /// Remove a Tnf
   /// - Parameters:
   ///   _ id:                            a TnfId
   ///   - callback:     ReplyHandler (optional)
-  public func removeTnf(_ id: UInt32, callback: ReplyHandler? = nil) {
+  public func removeTnf(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
     ApiModel.shared.sendCommand("tnf remove \(id)", replyTo: callback)
     
     // remove it immediately (Tnf does not send status on removal)
     tnfs.remove(id: id)
     log("ObjectModel: Tnf removed, id = \(id)", .debug, #function, #file, #line)
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
-
-
+  
+  
   /// Remove all Radio objects
-  func removeAllObjects() {    
+  func removeAllObjects() {
     radio = nil
     removeAll(of: .amplifier)
     removeAll(of: .bandSetting)
-//    removeAll(of: .daxIqStream)
-//    removeAll(of: .daxMicAudioStream)
-//    removeAll(of: .daxRxAudioStream)
-//    removeAll(of: .daxTxAudioStream)
+    //    removeAll(of: .daxIqStream)
+    //    removeAll(of: .daxMicAudioStream)
+    //    removeAll(of: .daxRxAudioStream)
+    //    removeAll(of: .daxTxAudioStream)
     removeAll(of: .equalizer)
     removeAll(of: .memory)
     removeAll(of: .meter)
     removeAll(of: .panadapter)
     removeAll(of: .profile)
-//    removeAll(of: .remoteRxAudioStream)
-//    removeAll(of: .remoteTxAudioStream)
+    //    removeAll(of: .remoteRxAudioStream)
+    //    removeAll(of: .remoteTxAudioStream)
     removeAll(of: .slice)
     removeAll(of: .tnf)
     removeAll(of: .usbCable)
@@ -225,18 +226,18 @@ final public class ObjectModel {
     switch type {
     case .amplifier:            amplifiers.removeAll()
     case .bandSetting:          bandSettings.removeAll()
-//    case .daxIqStream:          daxIqStreams.removeAll()
-//    case .daxMicAudioStream:    daxMicAudioStreams.removeAll()
-//    case .daxRxAudioStream:     daxRxAudioStreams.removeAll()
-//    case .daxTxAudioStream:     daxTxAudioStreams.removeAll()
+      //    case .daxIqStream:          daxIqStreams.removeAll()
+      //    case .daxMicAudioStream:    daxMicAudioStreams.removeAll()
+      //    case .daxRxAudioStream:     daxRxAudioStreams.removeAll()
+      //    case .daxTxAudioStream:     daxTxAudioStreams.removeAll()
     case .equalizer:            equalizers.removeAll()
     case .memory:               memories.removeAll()
     case .meter:                meters.removeAll()
     case .panadapter:
       panadapters.removeAll()
     case .profile:              profiles.removeAll()
-//    case .remoteRxAudioStream:  remoteRxAudioStreams.removeAll()
-//    case .remoteTxAudioStream:  remoteTxAudioStreams.removeAll()
+      //    case .remoteRxAudioStream:  remoteRxAudioStreams.removeAll()
+      //    case .remoteTxAudioStream:  remoteTxAudioStreams.removeAll()
     case .slice:                slices.removeAll()
     case .tnf:                  tnfs.removeAll()
     case .usbCable:             usbCables.removeAll()
@@ -248,19 +249,19 @@ final public class ObjectModel {
     log("ObjectModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
   }
   
-//  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
-//    
-//    if slice == nil {
-//      for meter in meters where meter.name == shortName.rawValue {
-//        return meter
-//      }
-//    } else {
-//      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
-//        return meter
-//      }
-//    }
-//    return nil
-//  }
+  //  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
+  //
+  //    if slice == nil {
+  //      for meter in meters where meter.name == shortName.rawValue {
+  //        return meter
+  //      }
+  //    } else {
+  //      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
+  //        return meter
+  //      }
+  //    }
+  //    return nil
+  //  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private Object Status methods
@@ -406,7 +407,7 @@ final public class ObjectModel {
         if slices[id: id] == nil { slices.append(Slice(id)) }
         // parse the properties
         slices[id: id]!.parse(Array(properties.dropFirst(1)) )
-//        if slices[id: id]!.active { activeSlice = slices[id: id] }
+        //        if slices[id: id]!.active { activeSlice = slices[id: id] }
         
       } else {
         // NO, remove it
@@ -572,7 +573,7 @@ final public class ObjectModel {
     }
     
     // if handle is mine, this client is fully initialized
-//    if handle == connectionHandle { clientInitialized = true }
+    clientInitialized = ( handle == connectionHandle )
     
     // parse remaining properties
     for property in properties.dropFirst(2) {
@@ -597,26 +598,26 @@ final public class ObjectModel {
       // is this GuiClient already in GuiClients?
       if let guiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
-//        if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
-          // the fields are populated
-          
-          // update the packet's GuiClients collection
-          guiClient.clientId = clientId
-          guiClient.program = program
-          guiClient.station = station
-          guiClient.isLocalPtt = isLocalPtt
-          
-          packet.guiClients[id: handle] = guiClient
-          
-          // log the addition
-          log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
-
+        //        if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
+        // the fields are populated
+        
+        // update the packet's GuiClients collection
+        guiClient.clientId = clientId
+        guiClient.program = program
+        guiClient.station = station
+        guiClient.isLocalPtt = isLocalPtt
+        
+        packet.guiClients[id: handle] = guiClient
+        
+        // log the addition
+        log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+        
         if !radio!.isGui && station == ListenerModel.shared.activeStation {
-            boundClientId = clientId
-            ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
-            log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
-          }
-//        }
+          boundClientId = clientId
+          ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
+          log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
+        }
+        //        }
       } else {
         // NO
         let guiClient = GuiClient(handle: handle,
@@ -632,9 +633,9 @@ final public class ObjectModel {
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
-
+          
           packet.guiClients[id: handle] = guiClient
-
+          
           if !radio!.isGui && station == ListenerModel.shared.activeStation {
             boundClientId = clientId
             ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
@@ -678,76 +679,18 @@ final public class ObjectModel {
       }
       log("ObjectModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
       
-      //      apiModel.disconnect(reason)
+      clientInitialized = false
       
     } else {
-      // NO
-      //      print("-----> Client disconnected, properties = \(properties), handle = \(handle.hex)")
+      // NO, not me
+      print("----->>>>>> TODO: Client disconnected, properties = \(properties), handle = \(handle.hex)")
     }
   }
   
-  /// Parse the Reply to an Info command
-  /// - Parameters:
-  ///   - suffix:          a reply string
-  private func parseInfoReply(_ suffix: String) {
-//    enum Property: String {
-//        case atuPresent               = "atu_present"
-//        case callsign
-//        case chassisSerial            = "chassis_serial"
-//        case gateway
-//        case gps
-//        case ipAddress                = "ip"
-//        case location
-//        case macAddress               = "mac"
-//        case model
-//        case netmask
-//        case name
-//        case numberOfScus             = "num_scu"
-//        case numberOfSlices           = "num_slice"
-//        case numberOfTx               = "num_tx"
-//        case options
-//        case region
-//        case screensaver
-//        case softwareVersion          = "software_ver"
-//    }
-//      // process each key/value pair, <key=value>
-//    for property in suffix.replacingOccurrences(of: "\"", with: "").keyValuesArray(delimiter: ",") {
-//          // check for unknown Keys
-//          guard let token = Property(rawValue: property.key) else {
-//              // log it and ignore the Key
-//              log("ObjectModel: unknown info token, \(property.key) = \(property.value)", .warning, #function, #file, #line)
-//              continue
-//          }
-//          // Known keys, in alphabetical order
-//          switch token {
-//          
-//          case .atuPresent:       atuPresent = property.value.bValue
-//          case .callsign:         callsign = property.value
-//          case .chassisSerial:    chassisSerial = property.value
-//          case .gateway:          gateway = property.value
-//          case .gps:              gpsPresent = (property.value != "Not Present")
-//          case .ipAddress:        ipAddress = property.value
-//          case .location:         location = property.value
-//          case .macAddress:       macAddress = property.value
-//          case .model:            radioModel = property.value
-//          case .netmask:          netmask = property.value
-//          case .name:             nickname = property.value
-//          case .numberOfScus:     numberOfScus = property.value.iValue
-//          case .numberOfSlices:   numberOfSlices = property.value.iValue
-//          case .numberOfTx:       numberOfTx = property.value.iValue
-//          case .options:          radioOptions = property.value
-//          case .region:           region = property.value
-//          case .screensaver:      radioScreenSaver = property.value
-//          case .softwareVersion:  softwareVersion = property.value
-//          }
-//      }
+  public func clientInitialized(_ state: Bool) {
+    clientInitialized = state
   }
-
-  
-  
-  
-  
-
+}
 //  public func altAntennaName(for stdName: String) -> String {
 //    // return alternate name (if any)
 //    for antenna in settingsModel.altAntennaNames where antenna.stdName == stdName {
@@ -773,39 +716,3 @@ final public class ObjectModel {
 //      altAntennaList.remove(at: i)
 //    }
 //  }
-
-}
-
-  /// Process the AsyncStream of inbound TCP messages
-  //  private func subscribeToMessages()  {
-  //    Task(priority: .low) {
-  //      log("Api: TcpMessage subscription STARTED", .debug, #function, #file, #line)
-  //      for await tcpMessage in Tcp.shared.inboundMessagesStream {
-  //        radio?.tcpInbound(tcpMessage.text)
-  //      }
-  //      log("Api: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
-  //    }
-  //  }
-  //
-  //  /// Process the AsyncStream of TCP status changes
-  //  private func subscribeToTcpStatus() {
-  //    Task(priority: .low) {
-  //      log("Api: TcpStatus subscription STARTED", .debug, #function, #file, #line)
-  //      for await status in Tcp.shared.statusStream {
-  //        radio?.tcpStatus(status)
-  //      }
-  //      log("Api: TcpStatus subscription STOPPED", .debug, #function, #file, #line)
-  //    }
-  //  }
-  //
-  //  /// Process the AsyncStream of UDP status changes
-  //  private func subscribeToUdpStatus() {
-  //    Task(priority: .low) {
-  //      log("Api: UdpStatus subscription STARTED", .debug, #function, #file, #line)
-  //      for await status in Udp.shared.statusStream {
-  //        radio?.udpStatus(status)
-  //      }
-  //      log("Api: UdpStatus subscription STOPPED", .debug, #function, #file, #line)
-  //    }
-  //  }
-//}

@@ -25,7 +25,6 @@ public final class UsbCable: Identifiable {
   // MARK: - Public properties
   
   public let id: String
-  public var initialized = false
   
   public var autoReport = false
   public var band = ""
@@ -82,6 +81,11 @@ public final class UsbCable: Identifiable {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse key/value pairs
@@ -128,9 +132,9 @@ public final class UsbCable: Identifiable {
     }
     
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("USBCable \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
     }
   }

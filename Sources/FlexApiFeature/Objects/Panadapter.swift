@@ -71,7 +71,6 @@ public final class Panadapter: Identifiable {
   public var yPixels: CGFloat = 0
     
   public let daxIqChoices = Radio.kDaxIqChannels
-  public var initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -133,7 +132,9 @@ public final class Panadapter: Identifiable {
   }
 
   // ----------------------------------------------------------------------------
-  // MARK: - Private Static properties
+  // MARK: - Private properties
+  
+  public var _initialized = false
   
   private static let dbmMax: CGFloat = 20
   private static let dbmMin: CGFloat = -180
@@ -188,9 +189,9 @@ public final class Panadapter: Identifiable {
       }
     }
     // is it initialized?∫
-    if initialized == false && center != 0 && bandwidth != 0 && (minDbm != 0.0 || maxDbm != 0.0) {
+    if _initialized == false && center != 0 && bandwidth != 0 && (minDbm != 0.0 || maxDbm != 0.0) {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Panadapter \(id.hex): ADDED, center = \(center.hzToMhz), bandwidth = \(bandwidth.hzToMhz)", .debug, #function, #file, #line)
       
       // FIXME: ????

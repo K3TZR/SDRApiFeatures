@@ -1,6 +1,6 @@
 //
 //  RemoteTxAudioStream.swift
-//  FlexApiFeature/Objects
+//  FlexApiFeature/Streams
 //
 //  Created by Douglas Adams on 2/9/16.
 //  Copyright © 2016 Douglas Adams. All rights reserved.

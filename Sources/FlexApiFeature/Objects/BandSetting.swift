@@ -25,7 +25,6 @@ public final class BandSetting: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized: Bool = false
   
   public var accTxEnabled: Bool = false
   public var accTxReqEnabled: Bool = false
@@ -57,6 +56,11 @@ public final class BandSetting: Identifiable {
   }
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse BandSetting key/value pairs
@@ -86,9 +90,9 @@ public final class BandSetting: Identifiable {
       case .tx3Enabled:       tx3Enabled = property.value.bValue
       }
       // is it initialized?
-      if initialized == false {
+      if _initialized == false {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("BandSetting \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
       }
     }

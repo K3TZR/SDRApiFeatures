@@ -39,11 +39,8 @@ public final class Radio {
   public nonisolated static let kDaxChannels = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   public nonisolated static let kDaxIqChannels = [0, 1, 2, 3, 4]
   
-//  public var clientInitialized = false
-  
   // FIXME: needs to be dynamic
   public var pingerEnabled = true
-  public var hardwareVersion: String?
   
   public internal(set) var atuPresent = false
   public internal(set) var availablePanadapters = 0

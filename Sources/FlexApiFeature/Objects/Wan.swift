@@ -22,8 +22,6 @@ public final class Wan {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized  = false
-  
   public internal(set) var radioAuthenticated: Bool = false
   public internal(set) var serverConnected: Bool = false
   public internal(set) var publicTlsPort: Int = -1
@@ -44,6 +42,11 @@ public final class Wan {
     case serverConnected    = "server_connected"
     case upnpSupported      = "upnp_supported"
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -72,9 +75,9 @@ public final class Wan {
       }
     }
     // is it initialized?
-    if initialized == false {
+    if _initialized == false {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("Wan: initialized ServerConnected = \(serverConnected), RadioAuthenticated = \(radioAuthenticated)", .debug, #function, #file, #line)
     }
   }

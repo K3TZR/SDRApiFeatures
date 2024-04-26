@@ -22,8 +22,6 @@ public final class Transmit {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public internal(set) var initialized = false
-  
   public var carrierLevel = 0
   public var companderEnabled = false
   public var companderLevel = 0
@@ -143,6 +141,11 @@ public final class Transmit {
   ]
 
   // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  public var _initialized = false
+
+  // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
   /// Parse a Transmit status message
@@ -208,9 +211,9 @@ public final class Transmit {
       case .voxLevel:                 voxLevel = property.value.iValue
       }
       // is it initialized?
-      if initialized == false {
+      if _initialized == false {
         // NO, it is now
-        initialized = true
+        _initialized = true
         log("Transmit: initialized", .debug, #function, #file, #line)
       }
     }
