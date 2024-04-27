@@ -19,11 +19,7 @@ import XCGLogFeature
 //      instances periodically receive Mic Audio in a UDP stream. They are collected
 //      in the Model.daxMicAudioStreams collection.
 @Observable
-public final class DaxMicAudioStream: Identifiable, Equatable {
-  public static func == (lhs: DaxMicAudioStream, rhs: DaxMicAudioStream) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class DaxMicAudioStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -33,8 +29,7 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
-  public var isStreaming = false
+  public var delegate: DaxAudioOutputHandler?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -58,8 +53,8 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
     }}}
   public internal(set) var micGainScalar: Float = 0
   
-  public var delegate: DaxAudioOutputHandler?
-//  public var rxLostPacketCount = 0
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case clientHandle = "client_handle"
@@ -69,7 +64,8 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
   
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
-
+  
+  private var _initialized = false
   private var _rxLostPacketCount = 0
   private var _rxPacketCount = 0
   private var _rxSequenceNumber = -1
@@ -98,9 +94,9 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
       }
     }
     // is it initialized?
-    if initialized == false && clientHandle != 0 {
+    if _initialized == false && clientHandle != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("DaxMicAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
@@ -135,11 +131,6 @@ public final class DaxMicAudioStream: Identifiable, Equatable {
   /// - Parameters:
   ///   - vita:       a Vita struct
 //  public func vitaProcessor(_ vita: Vita) {
-//    if isStreaming == false {
-//      isStreaming = true
-//      // log the start of the stream
-//      log("DaxMicAudioStream \(id.hex) STARTED:", .info, #function, #file, #line)
-//    }
 //    delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw, channelNumber: nil)
 //  }
 

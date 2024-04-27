@@ -25,7 +25,9 @@ final public class ObjectModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var clientInitialized = false
+  public var activeSlice: Slice?
+  public internal(set) var boundClientId: String?
+  public internal(set) var clientInitialized = false
   public var testMode = false
   public var radio: Radio?
   
@@ -52,8 +54,6 @@ final public class ObjectModel {
   public var wan = Wan()
   public var waveform = Waveform()
   
-  public var activeSlice: Slice?
-  public internal(set) var boundClientId: String?
   
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -64,10 +64,6 @@ final public class ObjectModel {
     case bandSetting = "band"
     case client
     case cwx
-    //    case daxIqStream = "dax_iq"
-    //    case daxMicAudioStream = "dax_mic"
-    //    case daxRxAudioStream = "dax_rx"
-    //    case daxTxAudioStream = "dax_tx"
     case display
     case equalizer = "eq"
     case gps
@@ -77,8 +73,6 @@ final public class ObjectModel {
     case panadapter = "pan"
     case profile
     case radio
-    //    case remoteRxAudioStream = "remote_audio_rx"
-    //    case remoteTxAudioStream = "remote_audio_tx"
     case slice
     case stream
     case tnf
@@ -92,7 +86,11 @@ final public class ObjectModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
-  
+
+  public func clientInitialized(_ state: Bool) {
+    clientInitialized = state
+  }
+
   public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?) {
     
     // Check for unknown Object Types
@@ -101,7 +99,6 @@ final public class ObjectModel {
       log("ApiModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
       return
     }
-    
     
     switch objectType {
     case .amplifier:            amplifierStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
@@ -203,17 +200,11 @@ final public class ObjectModel {
     radio = nil
     removeAll(of: .amplifier)
     removeAll(of: .bandSetting)
-    //    removeAll(of: .daxIqStream)
-    //    removeAll(of: .daxMicAudioStream)
-    //    removeAll(of: .daxRxAudioStream)
-    //    removeAll(of: .daxTxAudioStream)
     removeAll(of: .equalizer)
     removeAll(of: .memory)
     removeAll(of: .meter)
     removeAll(of: .panadapter)
     removeAll(of: .profile)
-    //    removeAll(of: .remoteRxAudioStream)
-    //    removeAll(of: .remoteTxAudioStream)
     removeAll(of: .slice)
     removeAll(of: .tnf)
     removeAll(of: .usbCable)
@@ -226,42 +217,20 @@ final public class ObjectModel {
     switch type {
     case .amplifier:            amplifiers.removeAll()
     case .bandSetting:          bandSettings.removeAll()
-      //    case .daxIqStream:          daxIqStreams.removeAll()
-      //    case .daxMicAudioStream:    daxMicAudioStreams.removeAll()
-      //    case .daxRxAudioStream:     daxRxAudioStreams.removeAll()
-      //    case .daxTxAudioStream:     daxTxAudioStreams.removeAll()
     case .equalizer:            equalizers.removeAll()
     case .memory:               memories.removeAll()
     case .meter:                meters.removeAll()
-    case .panadapter:
-      panadapters.removeAll()
+    case .panadapter:           panadapters.removeAll()
     case .profile:              profiles.removeAll()
-      //    case .remoteRxAudioStream:  remoteRxAudioStreams.removeAll()
-      //    case .remoteTxAudioStream:  remoteTxAudioStreams.removeAll()
     case .slice:                slices.removeAll()
     case .tnf:                  tnfs.removeAll()
     case .usbCable:             usbCables.removeAll()
-    case .waterfall:
-      waterfalls.removeAll()
+    case .waterfall:            waterfalls.removeAll()
     case .xvtr:                 xvtrs.removeAll()
     default:            break
     }
     log("ObjectModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
   }
-  
-  //  public func meterBy(shortName: Meter.ShortName, slice: Slice? = nil) -> Meter? {
-  //
-  //    if slice == nil {
-  //      for meter in meters where meter.name == shortName.rawValue {
-  //        return meter
-  //      }
-  //    } else {
-  //      for meter in meters where slice!.id == UInt32(meter.group) && meter.name == shortName.rawValue {
-  //        return meter
-  //      }
-  //    }
-  //    return nil
-  //  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private Object Status methods
@@ -686,11 +655,8 @@ final public class ObjectModel {
       print("----->>>>>> TODO: Client disconnected, properties = \(properties), handle = \(handle.hex)")
     }
   }
-  
-  public func clientInitialized(_ state: Bool) {
-    clientInitialized = state
-  }
 }
+
 //  public func altAntennaName(for stdName: String) -> String {
 //    // return alternate name (if any)
 //    for antenna in settingsModel.altAntennaNames where antenna.stdName == stdName {

@@ -19,11 +19,7 @@ import XCGLogFeature
 //      instances periodically receive Audio in a UDP stream. They are collected
 //      in the Model.daxRxAudioStreams collection.
 @Observable
-public final class DaxRxAudioStream: Identifiable, Equatable {
-  public static func == (lhs: DaxRxAudioStream, rhs: DaxRxAudioStream) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class DaxRxAudioStream: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -33,18 +29,16 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
-  public var isStreaming = false
-  
+  public var delegate: DaxAudioOutputHandler?
+
   public var clientHandle: UInt32 = 0
   public var ip = ""
   public var sliceLetter = ""
   public var daxChannel = 0
   public var rxGain = 0
-  
-  public var delegate: DaxAudioOutputHandler?
-  //  public var delegate: StreamHandler?
-  //  public private(set) var rxLostPacketCount = 0
+    
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case clientHandle   = "client_handle"
@@ -57,13 +51,14 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private static let elementSizeStandard = MemoryLayout<Float>.size
-  private static let elementSizeReduced = MemoryLayout<Int16>.size
-  private static let channelCount = 2
-  
+  private var _initialized = false
   private var _rxPacketCount      = 0
   private var _rxLostPacketCount  = 0
   private var _rxSequenceNumber   = -1
+
+  private static let elementSizeStandard = MemoryLayout<Float>.size
+  private static let elementSizeReduced = MemoryLayout<Int16>.size
+  private static let channelCount = 2
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -102,9 +97,9 @@ public final class DaxRxAudioStream: Identifiable, Equatable {
       }
     }
     // is it initialized?
-    if initialized == false && clientHandle != 0 {
+    if _initialized == false && clientHandle != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("DaxRxAudioStream \(id.hex) ADDED: channel = \(daxChannel), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }

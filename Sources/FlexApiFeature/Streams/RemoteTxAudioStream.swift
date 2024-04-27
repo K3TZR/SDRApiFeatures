@@ -20,11 +20,7 @@ import XCGLogFeature
 //      periodically send Audio in a UDP stream. They are collected in the
 //      Model.RemoteTxAudioStreams collection.
 @Observable
-public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHandler {
-  public static func == (lhs: RemoteTxAudioStream, rhs: RemoteTxAudioStream) -> Bool {
-    lhs.id == rhs.id
-  }
-
+public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -34,12 +30,13 @@ public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHand
   // MARK: - Public properties
   
   public let id : UInt32
-  public var initialized = false
-  public var isStreaming = false
 
   public var clientHandle: UInt32 = 0
   public var compression = ""
   public var ip = ""
+  
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case clientHandle = "client_handle"
@@ -47,6 +44,11 @@ public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHand
     case ip
   }
   
+  // ------------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private var _initialized = false
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Instance methods
 
@@ -72,9 +74,9 @@ public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHand
       }
     }
     // is it initialized?
-    if initialized == false && clientHandle != 0 {
+    if _initialized == false && clientHandle != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("RemoteTxAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
@@ -90,12 +92,6 @@ public final class RemoteTxAudioStream: Identifiable, Equatable, AudioStreamHand
   ///   - buffer:             array of encoded audio samples
   /// - Returns:              success / failure
   public func sendAudio(buffer: [UInt8], samples: Int) {
-    
-    if isStreaming == false {
-      isStreaming = true
-      // log the start of the stream
-      log("RemoteTxAudioStream \(id.hex): STARTED", .info, #function, #file, #line)
-    }
 
     // FIXME: This assumes Opus encoded audio
     if compression == "opus" {

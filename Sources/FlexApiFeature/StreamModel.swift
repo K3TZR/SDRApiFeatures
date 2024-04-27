@@ -73,8 +73,8 @@ final public class StreamModel {
   private var _streamSubscription: Task<(), Never>? = nil
   
   // ----------------------------------------------------------------------------
-  // MARK: - Initialization
-  
+  // MARK: - Singleton
+
   public static var shared = StreamModel()
   private init() {
     
@@ -131,17 +131,8 @@ final public class StreamModel {
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Public methods
-  
-  /// Unsubscribe from UDP streams
-  public func unSubscribeToStreams() {
-    log("StreamModel: stream subscription CANCELLED", .debug, #function, #file, #line)
-    _streamSubscription?.cancel()
-  }
-  
-  // ----------------------------------------------------------------------------
   // MARK: - Public Stream methods
-  
+
   public func parse(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
     enum Property: String {
       case daxIq            = "dax_iq"
@@ -167,12 +158,12 @@ final public class StreamModel {
         if isForThisClient(properties, connectionHandle, testMode) {
           // YES
           guard properties.count > 1 else {
-            log("ApiModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+            log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
             return
           }
           guard let token = Property(rawValue: properties[1].value) else {
             // log it and ignore the Key
-            log("ApiModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
+            log("StreamModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
             return
           }
           switch token {
@@ -191,14 +182,12 @@ final public class StreamModel {
     }
   }
 
-  /// Send a Remove Stream command to the radio
-  /// - Parameter having: a StreamId
-  @MainActor public func sendRemoveStreams(_ ids: [UInt32?]) {
-    for id in ids where id != nil {
-      ApiModel.shared.sendCommand("stream remove \(id!.hex)")
-    }
+  /// Unsubscribe from UDP streams
+  public func unSubscribeFromStreams() {
+    log("StreamModel: stream subscription CANCELLED", .debug, #function, #file, #line)
+    _streamSubscription?.cancel()
   }
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods
 
@@ -271,27 +260,27 @@ final public class StreamModel {
   private func removeStream(having id: UInt32) {
     if daxIqStreams[id: id] != nil {
       daxIqStreams.remove(id: id)
-      log("ApiModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if daxMicAudioStreams[id: id] != nil {
       daxMicAudioStreams.remove(id: id)
-      log("ApiModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if daxRxAudioStreams[id: id] != nil {
       daxRxAudioStreams.remove(id: id)
-      log("ApiModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
 
     } else if daxTxAudioStreams[id: id] != nil {
       daxTxAudioStreams.remove(id: id)
-      log("ApiModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if remoteRxAudioStreams[id: id] != nil {
       remoteRxAudioStreams.remove(id: id)
-      log("ApiModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
     else if remoteTxAudioStreams[id: id] != nil {
       remoteTxAudioStreams.remove(id: id)
-      log("ApiModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+      log("StreamModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
   }
 
@@ -318,29 +307,32 @@ final public class StreamModel {
     return false
   }
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private Udp subscription methods
+
+  // Process the AsyncStream of UDP status changes
+  private func subscribeToUdpStatus() {
+    Task(priority: .high) {
+      log("StreamModel: UdpStatus subscription STARTED", .debug, #function, #file, #line)
+      for await status in Udp.shared.statusStream {
+        udpStatus(status)
+      }
+      log("StreamModel: UdpStatus subscription STOPPED", .debug, #function, #file, #line)
+    }
+  }
+
   private func udpStatus(_ status: UdpStatus) {
     switch status.statusType {
       
     case .didUnBind:
-      log("ApiModel: Udp unbound from port, \(status.receivePort)", .debug, #function, #file, #line)
+      log("StreamModel: Udp unbound from port, \(status.receivePort)", .debug, #function, #file, #line)
     case .failedToBind:
-      log("ApiModel: Udp failed to bind, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
+      log("StreamModel: Udp failed to bind, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
     case .readError:
-      log("ApiModel: Udp read error, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
+      log("StreamModel: Udp read error, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
     }
   }
-  
-  // Process the AsyncStream of UDP status changes
-  private func subscribeToUdpStatus() {
-    Task(priority: .high) {
-      log("ApiModel: UdpStatus subscription STARTED", .debug, #function, #file, #line)
-      for await status in Udp.shared.statusStream {
-        udpStatus(status)
-      }
-      log("ApiModel: UdpStatus subscription STOPPED", .debug, #function, #file, #line)
-    }
-  }
-  
+
   /*
    "stream set 0x" + _streamId.ToString("X") + " daxiq_rate=" + _sampleRate
    "stream remove 0x" + _streamId.ToString("X")

@@ -16,11 +16,7 @@ import XCGLogFeature
 //      processing of a stream of Meter data from the Radio to the client. A MeterStream
 //      is added by the first incoming TCP Meter message.
 @Observable
-public final class MeterStream: Identifiable, Equatable {
-  public static func == (lhs: MeterStream, rhs: MeterStream) -> Bool {
-    lhs.id == rhs.id
-  }
-
+public final class MeterStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -33,8 +29,7 @@ public final class MeterStream: Identifiable, Equatable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var isStreaming = false
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   

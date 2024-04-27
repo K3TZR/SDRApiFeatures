@@ -19,11 +19,7 @@ import XCGLogFeature
 //      objects periodically receive IQ data in a UDP stream. They are collected
 //      in the Model.daxIqStreams collection.
 @Observable
-public final class DaxIqStream: Identifiable, Equatable {
-  public static func == (lhs: DaxIqStream, rhs: DaxIqStream) -> Bool {
-    lhs.id == rhs.id
-  }
-
+public final class DaxIqStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -33,8 +29,7 @@ public final class DaxIqStream: Identifiable, Equatable {
   // MARK: - Public properties
   
   public let id: UInt32
-//  public var initialized = false
-  public var isStreaming = false
+  public var delegate: StreamHandler?
 
   public var channel = 0
   public var clientHandle: UInt32 = 0
@@ -43,8 +38,9 @@ public final class DaxIqStream: Identifiable, Equatable {
   public var pan: UInt32 = 0
   public var rate = 0
 
-  public var delegate: StreamHandler?
-//  public var rxLostPacketCount = 0
+  
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
   
   public enum Property: String {
     case channel        = "daxiq_channel"
@@ -134,11 +130,6 @@ public final class DaxIqStream: Identifiable, Equatable {
   /// - Parameters:
   ///   - vita:       a Vita struct
   public func vitaProcessor(_ vita: Vita) {
-    if isStreaming == false {
-      isStreaming = true
-      // log the start of the stream
-      log("DaxIq: stream \(id.hex) STARTED:", .info, #function, #file, #line)
-    }
     // is this the first packet?
     if _rxSequenceNumber == -1 {
       _rxSequenceNumber = vita.sequence

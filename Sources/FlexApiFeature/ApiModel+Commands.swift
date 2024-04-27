@@ -208,8 +208,14 @@ extension ApiModel {
     case .daxMicAudioStream:    sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
     case .daxRxAudioStream:     sendCommand("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
     case .daxTxAudioStream:     sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxIqStream:          sendCommand("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxIqStream:          sendCommand("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
     default: return
+    }
+  }
+
+  public func removeStream(_ streamId: UInt32?)  {
+    if let streamId {
+      sendCommand("stream remove \(streamId.hex)")
     }
   }
 

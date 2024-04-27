@@ -18,7 +18,6 @@ import XCGLogFeature
 //      They are collected in the StreamModel.WaterfallStreams collection.
 @Observable
 public final class WaterfallStream: Identifiable {
-  
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -31,7 +30,6 @@ public final class WaterfallStream: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var isStreaming = false
   public var waterfallFrame: WaterfallFrame?
 
   // ------------------------------------------------------------------------------
@@ -67,15 +65,6 @@ public final class WaterfallStream: Identifiable {
   /// - Parameters:
   ///   - vita:       a Vita struct
   public func vitaProcessor(_ vita: Vita) {
-    if isStreaming == false {
-      isStreaming = true
-      
-      // log the start of the stream
-      log("Waterfall \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
-
-//      Task { await MainActor.run { waterfalls[id: vita.streamId]?.setIsStreaming() }}
-    }
-    
     // Bins are just beyond the payload
     let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
     

@@ -12,11 +12,7 @@ import VitaFeature
 import XCGLogFeature
 
 @Observable
-public final class RemoteRxAudioStream: Identifiable, Equatable {
-  public static func == (lhs: RemoteRxAudioStream, rhs: RemoteRxAudioStream) -> Bool {
-    lhs.id == rhs.id
-  }
-  
+public final class RemoteRxAudioStream: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -25,28 +21,23 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
   }
 
   // ----------------------------------------------------------------------------
-  // MARK: - Published properties
+  // MARK: - Public properties
   
-  public var isStreaming = false
-  
+  public let id: UInt32
+  public weak var delegate: RxAudioHandler?
+
   public var clientHandle: UInt32 = 0
   public var compression = ""
   public var ip = ""
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Public properties
-  
-//  public weak var delegate: RawStreamHandler?
-  public weak var delegate: RxAudioHandler?
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Public types
+  
   public enum Compression : String {
     case opus
     case none
   }
-  
-  public let id: UInt32
-  public var initialized = false
- 
+
   public enum Property: String {
     case clientHandle = "client_handle"
     case compression
@@ -56,19 +47,14 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-//  private var _apiModel: ApiModel
+  private var _initialized = false
   private var _rxLostPacketCount = 0
   private var _rxPacketCount = 0
   private var _rxSequenceNumber = -1
-  private var _streamStarted = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func setIsStreaming() {
-    isStreaming = true
-  }
-
   ///  Parse RemoteRxAudioStream key/value pairs
   /// - Parameter properties: a KeyValuesArray
   public func parse(_ properties: KeyValuesArray) {
@@ -89,9 +75,9 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
       }
     }
     // is it initialized?
-    if initialized == false && clientHandle != 0 {
+    if _initialized == false && clientHandle != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("RemoteRxAudioStream \(id.hex) ADDED: compression = \(compression), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
@@ -103,15 +89,6 @@ public final class RemoteRxAudioStream: Identifiable, Equatable {
   /// - Parameters:
   ///   - vita:               an Opus Vita struct
   public func vitaProcessor(_ vita: Vita) {
-    
-    if _streamStarted == false {
-      _streamStarted = true
-      
-      // log the start of the stream
-      log("RemoteRxAudioStream \(vita.streamId.hex) STARTED: compression = \(vita.classCode == .opus ? "opus" : "none")", .info, #function, #file, #line)
-      
-//      remoteRxAudioStreams[id: vita.streamId]?.isStreaming = true
-    }
     // is this the first packet?
     if _rxSequenceNumber == -1 {
       _rxSequenceNumber = vita.sequence

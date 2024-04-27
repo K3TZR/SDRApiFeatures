@@ -21,11 +21,7 @@ import XCGLogFeature
 //      instances periodically send Tx Audio in a UDP stream. They are collected in
 //      the Model.daxTxAudioStreams collection.
 @Observable
-public final class DaxTxAudioStream: Identifiable, Equatable {
-  public static func == (lhs: DaxTxAudioStream, rhs: DaxTxAudioStream) -> Bool {
-    lhs.id == rhs.id
-  }
-
+public final class DaxTxAudioStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -35,9 +31,6 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var initialized = false
-  public var isStreaming = false
-
   public var delegate: DaxAudioInputHandler?
 
   public var clientHandle: UInt32 = 0
@@ -56,6 +49,9 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
     }}}
   public var txGainScalar: Float = 0
   
+  // ------------------------------------------------------------------------------
+  // MARK: - Public types
+  
  public enum Property: String {
     case clientHandle      = "client_handle"
     case ip
@@ -66,6 +62,7 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
   
+  private var _initialized = false
   private var _txSequenceNumber: UInt8 = 0
   private var _vita: Vita?
 
@@ -93,9 +90,9 @@ public final class DaxTxAudioStream: Identifiable, Equatable {
       }
     }
     // is it initialized?
-    if initialized == false && clientHandle != 0 {
+    if _initialized == false && clientHandle != 0 {
       // NO, it is now
-      initialized = true
+      _initialized = true
       log("DaxTxAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
