@@ -107,12 +107,12 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
   }
   
   public func setGain(_ gain: Double) {
-    self.gain = gain
+//    self.gain = gain
     if let streamId = streamId {
       Task {
         if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
-          for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
-            if await StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
+          for slice in await ObjectModel.shared.slices where await slice.sliceLetter == sliceLetter {
+            if StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
             }
           }

@@ -581,7 +581,7 @@ final public class ObjectModel {
         // log the addition
         log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
         
-        if !radio!.isGui && station == ListenerModel.shared.activeStation {
+        if radio!.isGui == false && station == ListenerModel.shared.activeStation {
           boundClientId = clientId
           ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
           log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
@@ -605,7 +605,7 @@ final public class ObjectModel {
           
           packet.guiClients[id: handle] = guiClient
           
-          if !radio!.isGui && station == ListenerModel.shared.activeStation {
+          if radio!.isGui == false && station == ListenerModel.shared.activeStation {
             boundClientId = clientId
             ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
             log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)

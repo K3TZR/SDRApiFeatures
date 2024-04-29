@@ -48,14 +48,14 @@ private struct PowerView: View {
         Text("Rf Power").frame(width: 75, alignment: .leading)
         HStack(spacing: 20) {
           Text("\(transmit.rfPower)").frame(width: 25, alignment: .trailing)
-          Slider(value: Binding(get: { Double(transmit.rfPower) }, set: { transmit.setProperty(.rfPower, String(Int($0))) }), in: 0...100)
+          Slider(value: Binding(get: { Double(transmit.rfPower) }, set: { transmit.setProperty(.rfPower, String(Int($0))) }), in: 0...100, step: 1)
         }
       }
       HStack(spacing: 10) {
         Text("Tune Power").frame(width: 75, alignment: .leading)
         HStack(spacing: 20) {
           Text("\(transmit.tunePower)").frame(width: 25, alignment: .trailing)
-          Slider(value: Binding(get: { Double(transmit.tunePower) }, set: { transmit.setProperty(.tunePower, String(Int($0))) }), in: 0...100)
+          Slider(value: Binding(get: { Double(transmit.tunePower) }, set: { transmit.setProperty(.tunePower, String(Int($0))) }), in: 0...100, step: 1)
         }
       }
     }

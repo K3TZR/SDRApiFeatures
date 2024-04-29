@@ -24,8 +24,8 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   
   public var active = false
   public var streamId: UInt32?
-  public var deviceId: AudioDeviceID
-  public var gain: Double
+//  public var deviceId: AudioDeviceID
+//  public var gain: Double
   public var sampleRate: Double
   //  public var sliceLetter: String?
   
@@ -57,9 +57,10 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Int = 24_000) {
-    self.deviceId = deviceId
-    self.gain = gain
+//  public init(deviceId: AudioDeviceID, gain: Double, sampleRate: Int = 24_000) {
+  public init(sampleRate: Int = 24_000) {
+//    self.deviceId = deviceId
+//    self.gain = gain
     self.sampleRate = Double(sampleRate)
     
     // PCM, Float32, Host, 2 channel, non-interleaved
@@ -101,8 +102,6 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // MARK: - Public methods
   
   public func start() {
-    active = true
-    
     _interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &_interleavedBigEndianASBD)!, frameCapacity: UInt32(_frameCount))!
     _interleavedBuffer.frameLength = _interleavedBuffer.frameCapacity
     
@@ -126,8 +125,14 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
     _engine.attach(_srcNode)
     _engine.connect(_srcNode, to: _engine.mainMixerNode, format: AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: _sampleRate, channels: AVAudioChannelCount(_channelCount), interleaved: false)!)
     
-    setDevice(deviceId)
-    setGain(gain)
+    active = true
+    
+    // empty the ring buffer
+    TPCircularBufferClear(&_ringBuffer)
+    
+////    setDevice(deviceId)
+//    print("Device Id = \(deviceId)")
+//    setGain(gain)
     
     do {
       try _engine.start()
@@ -178,29 +183,29 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Private methods
   
-  public func setDevice(_ deviceId: AudioDeviceID) {
-    self.deviceId = deviceId
-    //      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
-    
-    // get the audio unit from the output node
-    let outputUnit = _engine.outputNode.audioUnit!
-    // use core audio to set the output device:
-    var outputDevice: AudioDeviceID = deviceId
-    AudioUnitSetProperty(outputUnit,
-                         kAudioOutputUnitProperty_CurrentDevice,
-                         kAudioUnitScope_Global,
-                         0,
-                         &outputDevice,
-                         UInt32(MemoryLayout<AudioDeviceID>.size))
-  }
+//  public func setDevice(_ deviceId: AudioDeviceID) {
+//    self.deviceId = deviceId
+//    //      print("--->>> DaxAudioPlayer: DeviceId = \(deviceId)")
+//    
+//    // get the audio unit from the output node
+//    let outputUnit = _engine.outputNode.audioUnit!
+//    // use core audio to set the output device:
+//    var outputDevice: AudioDeviceID = deviceId
+//    AudioUnitSetProperty(outputUnit,
+//                         kAudioOutputUnitProperty_CurrentDevice,
+//                         kAudioUnitScope_Global,
+//                         0,
+//                         &outputDevice,
+//                         UInt32(MemoryLayout<AudioDeviceID>.size))
+//  }
   
   public func setGain(_ gain: Double) {
-    self.gain = gain
+//    self.gain = gain
     if let streamId = streamId {
       Task {
         if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
-          for slice in await ApiModel.shared.slices where await slice.sliceLetter == sliceLetter {
-            if await StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
+          for slice in await ObjectModel.shared.slices where await slice.sliceLetter == sliceLetter {
+            if StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
               await ApiModel.shared.sendCommand("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
             }
           }
@@ -268,7 +273,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // MARK: - Stream reply handler
   
   public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-    if reply != kNoError {
+    if responseValue == kNoError {
       if let streamId = reply.streamId {
         self.streamId = streamId
         

@@ -165,7 +165,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
     }
     // create the Float32, Host, non-interleaved Ring buffer (actual size will be adjusted to fit virtual memory page size)
     let ringBufferSize = (_frameCountOpus * _elementSize * _channelCount * _ringBufferCapacity) + _ringBufferOverage
-    guard _TPCircularBufferInit( &_ringBuffer, UInt32(ringBufferSize), MemoryLayout<TPCircularBuffer>.stride ) else { fatalError("Ring Buffer not created") }
+    guard _TPCircularBufferInit( &_ringBuffer, UInt32(ringBufferSize), MemoryLayout<TPCircularBuffer>.stride ) else { fatalError("RxAudioPlayer: Ring Buffer not created") }
     
     _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
       // retrieve the requested number of frames
@@ -179,7 +179,6 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
                                                                                sampleRate: _sampleRate,
                                                                                channels: AVAudioChannelCount(_channelCount),
                                                                                interleaved: false)!)
-    
     active = true
     
     // empty the ring buffer
@@ -189,7 +188,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
     do {
       try _engine.start()
     } catch {
-      fatalError("RxAVAudioPlayer: Failed to start, error = \(error)")
+      fatalError("RxAudioPlayer: Failed to start, error = \(error)")
     }
   }
   
@@ -265,7 +264,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
   // MARK: - Stream reply handler
   
   public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
-    if reply != kNoError {
+    if responseValue == kNoError  {
       if let streamId = reply.streamId {
         self.streamId = streamId
         

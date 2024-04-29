@@ -88,7 +88,7 @@ private struct MicSelectionView: View {
       
       HStack(spacing: 20) {
         Text("\(transmit.micLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.micLevel) }, set: { transmit.setProperty(.micLevel, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.micLevel) }, set: { transmit.setProperty(.micLevel, String(Int($0))) }), in: 0...100, step: 1)
       }
     }
   }
@@ -116,7 +116,7 @@ private struct ProcView: View {
         
         HStack(spacing: 20) {
           Text("\(transmit.speechProcessorLevel)").frame(width: 25, alignment: .trailing)
-          Slider(value: Binding(get: { Double(transmit.speechProcessorLevel) }, set: { transmit.setProperty(.speechProcessorLevel, String(Int($0))) }), in: 0...100)
+          Slider(value: Binding(get: { Double(transmit.speechProcessorLevel) }, set: { transmit.setProperty(.speechProcessorLevel, String(Int($0))) }), in: 0...100, step: 1)
         }
       }
     }
@@ -136,7 +136,7 @@ private struct MonView: View {
       
       HStack(spacing: 20) {
         Text("\(transmit.ssbMonitorGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.ssbMonitorGain) }, set: { transmit.setProperty(.ssbMonitorGain, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.ssbMonitorGain) }, set: { transmit.setProperty(.ssbMonitorGain, String(Int($0))) }), in: 0...100, step: 1)
       }
     }
   }

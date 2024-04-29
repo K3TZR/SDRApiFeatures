@@ -21,7 +21,7 @@ struct DspView: View {
           .toggleStyle(.button)
         Slider(value: Binding(
           get: { Double(slice.wnbLevel)},
-          set: { slice.setProperty(.wnbLevel, String(Int($0))) } ), in: 0...100)
+          set: { slice.setProperty(.wnbLevel, String(Int($0))) } ), in: 0...100, step: 1)
         Text(String(format: "%d",slice.wnbLevel))
           .frame(width: 30)
           .font(.title3)
@@ -34,7 +34,7 @@ struct DspView: View {
           .toggleStyle(.button)
         Slider(value: Binding(
           get: { Double(slice.nbLevel)},
-          set: { slice.setProperty(.nbLevel, String(Int($0))) } ), in: 0...100)
+          set: { slice.setProperty(.nbLevel, String(Int($0))) } ), in: 0...100, step: 1)
         Text(String(format: "%d",slice.nbLevel))
           .frame(width: 30)
           .font(.title3)
@@ -48,7 +48,7 @@ struct DspView: View {
           .toggleStyle(.button)
         Slider(value: Binding(
           get: { Double(slice.nrLevel)},
-          set: { slice.setProperty(.nrLevel, String(Int($0))) } ), in: 0...100)
+          set: { slice.setProperty(.nrLevel, String(Int($0))) } ), in: 0...100, step: 1)
         Text(String(format: "%d",slice.nrLevel))
           .frame(width: 30)
           .font(.title3)
@@ -62,7 +62,7 @@ struct DspView: View {
           .toggleStyle(.button)
         Slider(value: Binding(
           get: { Double(slice.anfLevel)},
-          set: { slice.setProperty(.anfLevel, String(Int($0))) } ), in: 0...100)
+          set: { slice.setProperty(.anfLevel, String(Int($0))) } ), in: 0...100, step: 1)
         Text(String(format: "%d", slice.anfLevel))
           .frame(width: 30)
           .font(.title3)

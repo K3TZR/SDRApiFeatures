@@ -25,7 +25,7 @@ struct AudView: View {
             }
           Slider(value: Binding(
             get: { Double(slice.audioGain) },
-            set: { slice.setProperty(.audioGain, String(Int($0))) } ), in: 0...100)
+            set: { slice.setProperty(.audioGain, String(Int($0))) } ), in: 0...100, step: 1)
           .frame(width: 160)
           Text(String(format: "%d",slice.audioGain))
             .frame(width: 40)
@@ -38,7 +38,7 @@ struct AudView: View {
             .font(.title3)
           Slider(value: Binding(
             get: { Double(slice.audioPan) },
-            set: { slice.setProperty(.audioPan, String(Int($0))) } ), in: 0...100).frame(width: 160)
+            set: { slice.setProperty(.audioPan, String(Int($0))) } ), in: 0...100, step: 1).frame(width: 160)
           Text("R")
             .font(.title3)
         }
@@ -54,7 +54,7 @@ struct AudView: View {
           }.frame(width: 100)
         Slider(value: Binding(
           get: { Double(slice.agcThreshold) },
-          set: { slice.setProperty(.agcThreshold, String(Int($0))) } ), in: 0...100).frame(width: 100)
+          set: { slice.setProperty(.agcThreshold, String(Int($0))) } ), in: 0...100, step: 1).frame(width: 100)
         Text(String(format: "%d", slice.agcThreshold))
           .frame(width: 40)
           .font(.title3)

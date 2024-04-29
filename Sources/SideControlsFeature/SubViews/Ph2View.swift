@@ -62,19 +62,19 @@ private struct SlidersView: View {
     VStack(spacing: 8) {
       HStack(spacing: 20) {
         Text("\(transmit.carrierLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.carrierLevel) }, set: { transmit.setProperty(.amCarrierLevel, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.carrierLevel) }, set: { transmit.setProperty(.amCarrierLevel, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 20) {
         Text("\(transmit.voxLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.voxLevel) }, set: { transmit.setProperty(.voxLevel, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.voxLevel) }, set: { transmit.setProperty(.voxLevel, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 20) {
         Text("\(transmit.voxDelay)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.voxDelay) }, set: { transmit.setProperty(.voxDelay, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.voxDelay) }, set: { transmit.setProperty(.voxDelay, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 20) {
         Text("\(transmit.companderLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.companderLevel) }, set: { transmit.setProperty(.companderLevel, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.companderLevel) }, set: { transmit.setProperty(.companderLevel, String(Int($0))) }), in: 0...100, step: 1)
       }
     }
 //    .frame(width: 180)

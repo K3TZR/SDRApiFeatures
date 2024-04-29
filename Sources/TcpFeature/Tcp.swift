@@ -149,6 +149,22 @@ public final class Tcp: NSObject {
     _startTime = nil
   }
 
+  
+  
+  public func performSend(_ cmd: String, diagnostic: Bool = false) async -> UInt  {
+    await withCheckedContinuation { continuation in
+      continuation.resume(returning: send(cmd, diagnostic: diagnostic) )
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
   /// Send a Command to the connected Radio
   /// - Parameters:
   ///   - cmd:            a Command string

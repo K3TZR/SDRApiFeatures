@@ -163,7 +163,7 @@ private struct TxGridView: View {
           Text("\(String(format: "%3d", transmit.maxPowerLevel))")
           Slider(value: Binding(
             get: { Double(transmit.maxPowerLevel) },
-            set: { transmit.setProperty(.maxPowerLevel, String(Int($0))) } ), in: 0...100).frame(width: 150)
+            set: { transmit.setProperty(.maxPowerLevel, String(Int($0))) } ), in: 0...100, step: 1).frame(width: 150)
         }.gridCellColumns(2)
         Toggle("Hardware ALC", isOn: Binding(
           get: { transmit.hwAlcEnabled},

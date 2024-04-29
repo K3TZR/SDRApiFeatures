@@ -14,14 +14,6 @@ import XCGLogFeature
 
 extension ApiModel {
   
-  public func addReplyHandler(_ sequenceNumber: UInt, _ replyTuple: ReplyTuple) {
-    replyHandlers[sequenceNumber] = replyTuple
-  }
-  
-  public func removeReplyHandler(_ sequenceNumber: UInt) {
-    replyHandlers[sequenceNumber] = nil
-  }
-  
   // ----------------------------------------------------------------------------
   // MARK: - Public Command methods
   
@@ -31,10 +23,13 @@ extension ApiModel {
   ///   - flag:           use "D"iagnostic form
   ///   - callback:       a callback function (if any)
   public func sendCommand(_ command: String, diagnostic flag: Bool = false, replyTo callback: ReplyHandler? = nil) {
-    let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
-    
-    // register to be notified when reply received
-    addReplyHandler(sequenceNumber, (replyTo: callback, command: command))
+    Task {
+      await MainActor.run {
+        let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
+        // register to be notified when reply received
+        replyHandlers[sequenceNumber] = (replyTo: callback, command: command)
+      }
+    }
   }
   
   /// Send data to the Radio (hardware) via UDP
@@ -53,16 +48,6 @@ extension ApiModel {
     Udp.shared.send(string)
   }
   
-  //  public func removeReplyHandler(_ seqNumber: UInt) {
-  //    self.replyHandlers[seqNumber] = nil
-  //  }
-  
-  public func bindToGuiClient(_ clientId: UUID?, replyTo callback:  ReplyHandler? = nil) {
-//    if let clientId = clientId, ApiModel.shared.isGui == false, boundClientId == nil {
-//      sendCommand("client bind client_id=" + clientId.uuidString, replyTo: callback)
-//    }
-//    Task { await MainActor.run { boundClientId = clientId?.uuidString }}
-  }
   // ----------------------------------------------------------------------------
   // MARK: - Public Request methods
   

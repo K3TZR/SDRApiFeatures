@@ -131,7 +131,7 @@ public final class ApiModel {
       
       // send the initial commands
       sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax, lowBandwidthConnect)
-      log("ApiModel: initial commands sent", .info, #function, #file, #line)
+      log("ApiModel: initial commands sent (isGui = \(isGui))", .info, #function, #file, #line)
       
       startPinging()
       log("ApiModel: pinging \(packet.publicIp)", .info, #function, #file, #line)
@@ -193,7 +193,7 @@ public final class ApiModel {
   private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool, _ lowBandwidthConnect: Bool) {
     @Shared(.appStorage("guiClientId")) var guiClientId = UUID().uuidString
 
-    sendCommand("client gui \(guiClientId)")
+    if isGui { sendCommand("client gui \(guiClientId)") }
     sendCommand("client program " + programName)
     if isGui { sendCommand("client station " + stationName) }
     if lowBandwidthConnect { setLowBandwidthConnect() }
@@ -297,15 +297,14 @@ public final class ApiModel {
       let command = replyTuple.command
 
       // Remove the object from the notification list
-      removeReplyHandler(components[0].sequenceNumber)
+      replyHandlers[components[0].sequenceNumber] = nil
 
-      // Anything other than kNoError is an error, log it and ignore the Reply
-      guard reply == kNoError else {
-        // ignore non-zero reply from "client program" command
-        if !command.hasPrefix("client program ") {
-          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
-        }
-        return
+//      removeReplyHandler(components[0].sequenceNumber)
+
+      // Anything other than kNoError is an error, log it
+      // ignore non-zero reply from "client program" command
+      if reply != kNoError && !command.hasPrefix("client program ") {
+        log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
       }
       // did the replyTuple include a callback?
       if let handler = replyTuple.replyTo {
@@ -313,7 +312,7 @@ public final class ApiModel {
         handler(command, seqNum, reply, suffix)
       }
     } else {
-      log("ApiModel: reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+      log("ApiModel: \(message) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
     }
   }
 

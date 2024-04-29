@@ -68,19 +68,19 @@ private struct SlidersView: View {
     VStack(spacing: 8) {
       HStack(spacing: 10) {
         Text("\(transmit.cwBreakInDelay)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwBreakInDelay) }, set: { transmit.setProperty(.cwBreakInDelay, String(Int($0))) }), in: 30...2_000)
+        Slider(value: Binding(get: { Double(transmit.cwBreakInDelay) }, set: { transmit.setProperty(.cwBreakInDelay, String(Int($0))) }), in: 30...2_000, step: 5)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwSpeed)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwSpeed) }, set: { transmit.setProperty(.cwSpeed, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.cwSpeed) }, set: { transmit.setProperty(.cwSpeed, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwMonitorGain)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwMonitorGain) }, set: { transmit.setProperty(.cwMonitorGain, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.cwMonitorGain) }, set: { transmit.setProperty(.cwMonitorGain, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwMonitorPan)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwMonitorPan) }, set: { transmit.setProperty(.cwMonitorPan, String(Int($0))) }), in: 0...100)
+        Slider(value: Binding(get: { Double(transmit.cwMonitorPan) }, set: { transmit.setProperty(.cwMonitorPan, String(Int($0))) }), in: 0...100, step: 1)
       }
     }
   }
