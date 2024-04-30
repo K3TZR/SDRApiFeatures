@@ -108,7 +108,7 @@ struct FrequencyLegendView: View {
 //    return p
 //  }
   
-  FrequencyLegendView( panadapter: Panadapter(0x49999999, ApiModel.shared),
+  FrequencyLegendView( panadapter: Panadapter(0x49999999),
                       size: CGSize(width: 900, height: 450),
                       spacings: [
                         (10_000_000, 1_000_000),

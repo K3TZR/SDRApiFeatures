@@ -22,6 +22,7 @@ struct FrequencyLinesView: View {
   @Shared(.appStorage("gridLines")) var gridLines: Color = .white.opacity(0.3)
 
   @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
 
   @State var startCenter: CGFloat?
   @State var rightMouseDownLocation: NSPoint = .zero
@@ -81,7 +82,7 @@ struct FrequencyLinesView: View {
       .gesture(
         TapGesture(count: 2).onEnded {
           let clickFrequency: Int = Int((leftMouseDownLocation.x / pixelPerHz(g.size.width)) + start)
-          apiModel.sliceMove(panadapter, clickFrequency)
+          objectModel.sliceMove(panadapter, clickFrequency)
         }
       )
 
@@ -123,7 +124,7 @@ struct FrequencyLinesView: View {
 //    return p
 //  }
   
-  return FrequencyLinesView(panadapter: Panadapter(0x49999999, ApiModel.shared),
+  return FrequencyLinesView(panadapter: Panadapter(0x49999999),
                             spacings: [
                               (10_000_000, 1_000_000),
                               (5_000_000, 500_000),

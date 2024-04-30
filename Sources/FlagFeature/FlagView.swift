@@ -8,8 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-import ApiIntView
-import LevelIndicatorView
+import CustomControlFeature
 import FlexApiFeature
 import FlagAntennaFeature
 import SharedFeature
@@ -37,7 +36,7 @@ public struct FlagView: View {
     self.smallFlag = smallFlag
   }
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   @Shared(.appStorage("sliceBackground")) var sliceBackground: Color = .black
 
@@ -59,7 +58,7 @@ public struct FlagView: View {
           Line1View(slice: slice, smallFlag: smallFlag)
           Line2View(slice: slice)
           
-          if let meter = apiModel.meterBy(shortName: .signal24Khz, slice: slice) {
+          if let meter = objectModel.meterBy(shortName: .signal24Khz, slice: slice) {
             SMeterView(meter: meter)
           }
           ButtonView(slice: slice)
@@ -70,11 +69,11 @@ public struct FlagView: View {
 
     } else {
       // Flag in Side Controls
-      if let activeSlice = apiModel.activeSlice {
+      if let activeSlice = objectModel.activeSlice {
         VStack(spacing: 10) {
           Line1View(slice: activeSlice, smallFlag: smallFlag)
           Line2View(slice: activeSlice)
-          if let meter = apiModel.meterBy(shortName: .signal24Khz, slice: activeSlice) {
+          if let meter = objectModel.meterBy(shortName: .signal24Khz, slice: activeSlice) {
             SMeterView(meter: meter)
           }
           ButtonView(slice: activeSlice)
@@ -328,7 +327,7 @@ private struct Line2SmallView: View {
 // MARK: - Preview(s)
 
 #Preview {
-  FlagView(slice: Slice(1, ApiModel.shared), isSliceFlag: false, smallFlag: .constant(false))
+  FlagView(slice: Slice(1), isSliceFlag: false, smallFlag: .constant(false))
     .environment(ApiModel.shared)
   
     .frame(width: 275)

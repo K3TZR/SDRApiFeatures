@@ -13,24 +13,24 @@ import FlexApiFeature
 struct RadioView: View {
   @Bindable var store: StoreOf<SettingsCore>
 
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
   
   var body: some View {
 
-    if apiModel.clientInitialized {
+    if objectModel.clientInitialized {
       VStack {
         Group {
-          RadioGridView(radio: apiModel.radio!)
+          RadioGridView(radio: objectModel.radio!)
           Spacer()
           Divider().foregroundColor(.blue)
           Spacer()
-          ButtonsGridView(store: store, radio: apiModel.radio!)
+          ButtonsGridView(store: store, radio: objectModel.radio!)
           Spacer()
           Divider().foregroundColor(.blue)
         }
         Group {
           Spacer()
-          CalibrationGridView(radio: apiModel.radio!)
+          CalibrationGridView(radio: objectModel.radio!)
           Spacer()
         }
       }
@@ -46,6 +46,8 @@ struct RadioView: View {
 private struct RadioGridView: View {
   var radio: Radio
 
+  @Environment(ApiModel.self) var apiModel
+
   private let width: CGFloat = 150
 
   var body: some View {
@@ -56,7 +58,7 @@ private struct RadioGridView: View {
       }
       GridRow() {
         Text("Hardware Version")
-        Text("v" + (radio.hardwareVersion ?? ""))
+        Text("v" + (apiModel.hardwareVersion ?? ""))
         Text("Firmware Version")
         Text("v" + (radio.softwareVersion))
       }

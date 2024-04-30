@@ -16,9 +16,9 @@ public struct FlagAntennaView: View {
     self.slice = slice
   }
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
 
-  @MainActor var panadapter: Panadapter { apiModel.panadapters[id: slice.panadapterId]! }
+  @MainActor var panadapter: Panadapter { objectModel.panadapters[id: slice.panadapterId]! }
   
   public var body: some View {
     
@@ -65,7 +65,7 @@ public struct FlagAntennaView: View {
 }
 
 #Preview {
-  FlagAntennaView(slice: Slice(1, ApiModel.shared))
+  FlagAntennaView(slice: Slice(1))
     .environment(ApiModel.shared)
   
     .frame(width: 200)

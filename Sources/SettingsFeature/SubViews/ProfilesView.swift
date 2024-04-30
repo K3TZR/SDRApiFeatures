@@ -13,12 +13,12 @@ import FlexApiFeature
 struct ProfilesView: View {
   var store: StoreOf<SettingsCore>
 
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
   
   var body: some View {
 
-    if apiModel.profiles.count > 0 {
-      ForEach(apiModel.profiles) { profile in
+    if objectModel.profiles.count > 0 {
+      ForEach(objectModel.profiles) { profile in
         if store.profileSelection == profile.id {
           ProfileView(profile: profile)
         }

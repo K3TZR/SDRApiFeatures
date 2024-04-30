@@ -13,19 +13,19 @@ import FlexApiFeature
 struct NetworkView: View {
   @Bindable var store: StoreOf<SettingsCore>
   
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
 
   var body: some View {
 
-    if apiModel.clientInitialized {
+    if objectModel.clientInitialized {
       VStack {
         Spacer()
         Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 20) {
-          CurrentAddressView(radio: apiModel.radio!, apiModel: apiModel)
+          CurrentAddressView(radio: objectModel.radio!, objectModel: objectModel)
           Spacer()
           Divider().background(Color(.blue))
           Spacer()
-          StaticAddressView(radio: apiModel.radio!)
+          StaticAddressView(radio: objectModel.radio!)
           Spacer()
         }
       }
@@ -40,11 +40,11 @@ struct NetworkView: View {
 
 private struct CurrentAddressView: View {
   var radio: Radio
-  var apiModel: ApiModel
+  var objectModel: ObjectModel
 
-  init(radio: Radio, apiModel: ApiModel) {
+  init(radio: Radio, objectModel: ObjectModel) {
     self.radio = radio
-    self.apiModel = apiModel
+    self.objectModel = objectModel
   }
   
   private var addressTypes = ["Static", "DHCP"]
@@ -54,14 +54,14 @@ private struct CurrentAddressView: View {
       Text("Serial number")
       Text(radio.packet.serial).foregroundColor(.secondary)
       Text("MAC Address")
-      Text(apiModel.macAddress).foregroundColor(.secondary)
+      Text(radio.macAddress).foregroundColor(.secondary)
     }
     
     GridRow {
       Text("IP Address")
       Text(radio.packet.publicIp).foregroundColor(.secondary)
       Text("Mask")
-      Text(apiModel.netmask).foregroundColor(.secondary)
+      Text(radio.netmask).foregroundColor(.secondary)
     }
     
     GridRow {

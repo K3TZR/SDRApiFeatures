@@ -52,7 +52,7 @@ struct DbmLinesView: View {
 //    return p
 //  }
   
-  return DbmLinesView(panadapter: Panadapter(0x49999999, ApiModel.shared), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
+  return DbmLinesView(panadapter: Panadapter(0x49999999), size: CGSize(width: 900, height: 450), frequencyLegendHeight: 20)
   
     .frame(width: 900, height: 450)
 }

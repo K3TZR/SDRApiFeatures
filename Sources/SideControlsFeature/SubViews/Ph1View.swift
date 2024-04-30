@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import LevelIndicatorView
+import CustomControlFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -18,26 +18,26 @@ public struct Ph1View: View {
 
   public init() {}
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   public var body: some View {
     
     VStack {
       VStack(alignment: .leading, spacing: 10) {
-        if let micMeter = apiModel.meterBy(shortName: .microphoneAverage) , let compressionMeter = apiModel.meterBy(shortName: .postClipper) {
+        if let micMeter = objectModel.meterBy(shortName: .microphoneAverage) , let compressionMeter = objectModel.meterBy(shortName: .postClipper) {
           LevelIndicatorView(levels: SignalLevel(rms: micMeter.value, peak: 0), type: .micLevel)
           LevelIndicatorView(levels: SignalLevel(rms: compressionMeter.value, peak: 0), type: .compression)
         } else {
           LevelIndicatorView(levels: SignalLevel(rms: 0, peak: 0), type: .micLevel)
           LevelIndicatorView(levels: SignalLevel(rms: 1.0, peak: 0.0), type: .compression)
         }
-        ProfileView(micProfile: apiModel.profiles[id: "mic"] ?? Profile("empty", apiModel))
-        MicSelectionView(transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet(), apiModel))
-        ProcView(transmit: apiModel.transmit)
-        MonView(transmit: apiModel.transmit)
+        ProfileView(micProfile: objectModel.profiles[id: "mic"] ?? Profile("empty"))
+        MicSelectionView(transmit: objectModel.transmit, radio: objectModel.radio ?? Radio(Packet()))
+        ProcView(transmit: objectModel.transmit)
+        MonView(transmit: objectModel.transmit)
       }
       VStack(alignment: .center, spacing: 10) {
-        AccView(transmit: apiModel.transmit)
+        AccView(transmit: objectModel.transmit)
         Divider().background(.blue)
       }
     }

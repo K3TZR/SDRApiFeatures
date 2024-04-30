@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import ApiIntView
+import CustomControlFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -18,17 +18,17 @@ public struct Ph2View: View {
   
   public init() {}
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   public var body: some View {
     
     VStack(alignment: .leading, spacing: 10) {
       HStack {
-        ButtonsView(transmit: apiModel.transmit)
-        SlidersView(transmit: apiModel.transmit)
+        ButtonsView(transmit: objectModel.transmit)
+        SlidersView(transmit: objectModel.transmit)
       }
-      TxFilterView(transmit: apiModel.transmit)
-      MicButtonsView(transmit: apiModel.transmit)
+      TxFilterView(transmit: objectModel.transmit)
+      MicButtonsView(transmit: objectModel.transmit)
       Divider().background(.blue)
     }
   }

@@ -13,22 +13,22 @@ import FlexApiFeature
 struct TxView: View {
   @Bindable var store: StoreOf<SettingsCore>
   
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
 
   var body: some View {
 
-    if apiModel.clientInitialized {
+    if objectModel.clientInitialized {
       VStack {
 //        Group {
-          InterlocksGridView(interlock: apiModel.interlock)
+          InterlocksGridView(interlock: objectModel.interlock)
           Spacer()
           Divider().foregroundColor(.blue)
 //        }
 //        Group {
 //          Spacer()
-          TxGridView(interlock: apiModel.interlock,
-                     txProfile: apiModel.profiles[id: "tx"] ?? Profile("tx", apiModel),
-                     transmit: apiModel.transmit
+          TxGridView(interlock: objectModel.interlock,
+                     txProfile: objectModel.profiles[id: "tx"] ?? Profile("tx"),
+                     transmit: objectModel.transmit
           )
 //          Spacer()
 //        }

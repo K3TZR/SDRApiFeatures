@@ -23,7 +23,7 @@ struct TnfView: View {
   @Shared(.appStorage("tnfPermanent")) var tnfPermanent: Color = .white
   @Shared(.appStorage("tnfVeryDeep")) var tnfVeryDeep: Color = .red.opacity(0.2)
 
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   static let minWidth: CGFloat = 1000
   
@@ -111,18 +111,18 @@ struct TnfView: View {
       }
       Divider()
       if radio.tnfsEnabled {
-        Button("Disable Tnfs")  { apiModel.radio?.setProperty(.tnfsEnabled , "0") }
+        Button("Disable Tnfs")  { objectModel.radio?.setProperty(.tnfsEnabled , "0") }
       } else {
-        Button("Enable Tnfs")  { apiModel.radio?.setProperty(.tnfsEnabled , "1")  }
+        Button("Enable Tnfs")  { objectModel.radio?.setProperty(.tnfsEnabled , "1")  }
       }
     }
   }
 }
 
 #Preview {
-  TnfView(panadapter: Panadapter(0x49999999, ApiModel.shared),
-          tnf: Tnf(1, ApiModel.shared),
-          radio: Radio(Packet(), ApiModel.shared),
+  TnfView(panadapter: Panadapter(0x49999999),
+          tnf: Tnf(1),
+          radio: Radio(Packet()),
           size: CGSize(width: 800, height: 800)
   )
 }

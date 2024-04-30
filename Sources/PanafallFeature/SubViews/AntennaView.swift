@@ -50,7 +50,7 @@ public struct AntennaView: View {
 }
 
 #Preview {
-  AntennaView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1, ApiModel.shared), waterfall: Waterfall(1, ApiModel.shared))) {
+  AntennaView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1), waterfall: Waterfall(1))) {
     PanafallCore()
   })
     

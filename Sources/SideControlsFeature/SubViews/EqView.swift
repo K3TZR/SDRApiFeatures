@@ -15,15 +15,15 @@ import SharedFeature
 // MARK: - View
 
 public struct EqView: View {
-  @Bindable var store: StoreOf<ControlsFeature>
+  @Bindable var store: StoreOf<SideControlsFeature>
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   @MainActor private var equalizer: Equalizer? {
-    ApiModel.shared.equalizers[id: store.rxEqualizerIsDisplayed ? "rxsc" : "txsc"]
+    objectModel.equalizers[id: store.rxEqualizerIsDisplayed ? "rxsc" : "txsc"]
   }
   
-  public init(store: StoreOf<ControlsFeature>) {
+  public init(store: StoreOf<SideControlsFeature>) {
     self.store = store
   }
   
@@ -92,7 +92,7 @@ private struct SliderView: View {
 
 private struct FooterView: View {
   var eq: Equalizer
-  @Bindable var store: StoreOf<ControlsFeature>
+  @Bindable var store: StoreOf<SideControlsFeature>
   
   var body: some View {
     
@@ -173,8 +173,8 @@ private struct DisabledFooterView: View {
 // MARK: - Preview
 
 #Preview {
-  EqView(store: Store(initialState: ControlsFeature.State()) {
-    ControlsFeature()
+  EqView(store: Store(initialState: SideControlsFeature.State()) {
+    SideControlsFeature()
   })
   .environment(ApiModel.shared)
   

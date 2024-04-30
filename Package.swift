@@ -37,7 +37,7 @@ let package = Package(
     // ----- OTHER -----
     .package(url: "https://github.com/robbiehanson/CocoaAsyncSocket", from: "7.6.5"),
     .package(url: "https://github.com/auth0/JWTDecode.swift", from: "2.6.0"),
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", branch: "shared-state-beta"),
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.10.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
   ],
   

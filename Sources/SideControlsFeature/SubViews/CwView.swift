@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-import ApiIntView
-import LevelIndicatorView
+import CustomControlFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -19,23 +18,23 @@ public struct CwView: View {
   
   public init() {}
 
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
 
   public var body: some View {
     VStack(alignment: .leading, spacing: 10)  {
       
-      if let alcMeter = apiModel.meterBy(shortName: .hwAlc) {
+      if let alcMeter = objectModel.meterBy(shortName: .hwAlc) {
         LevelIndicatorView(levels: SignalLevel(rms: alcMeter.value, peak: 0), type: .alc)
       } else {
         LevelIndicatorView(levels: SignalLevel(rms: 0.0, peak: 0.0), type: .alc)
       }
       
       HStack {
-        ButtonsView(transmit: apiModel.transmit)
-        SlidersView(transmit: apiModel.transmit)
+        ButtonsView(transmit: objectModel.transmit)
+        SlidersView(transmit: objectModel.transmit)
       }
       
-      BottomButtonsView(transmit: apiModel.transmit)
+      BottomButtonsView(transmit: objectModel.transmit)
       Divider().background(.blue)
     }
   }

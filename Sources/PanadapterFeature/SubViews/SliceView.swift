@@ -105,8 +105,8 @@ struct SliceView: View {
 }
   
 #Preview {
-  SliceView(panadapter: Panadapter(0x49999999, ApiModel.shared),
-            slice: Slice(1, ApiModel.shared),
+  SliceView(panadapter: Panadapter(0x49999999),
+            slice: Slice(1),
             isSliceFlag: true,
             width: 800)
 }

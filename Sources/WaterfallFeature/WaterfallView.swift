@@ -20,12 +20,12 @@ public struct WaterfallView: View {
     self.leftWidth = leftWidth
   }
 
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
 
   public var body: some View {
     VStack {
       GeometryReader { g in
-        if let waterfall = apiModel.waterfalls[id: panadapter.waterfallId] {
+        if let waterfall = objectModel.waterfalls[id: panadapter.waterfallId] {
           MetalView(panadapter: panadapter, waterfall: waterfall)
         } else {
           EmptyView()
@@ -74,7 +74,7 @@ private struct MetalView: NSViewRepresentable {
 }
 
 #Preview {
-  WaterfallView(panadapter: Panadapter(0x49999990, ApiModel.shared), leftWidth: 0)
+  WaterfallView(panadapter: Panadapter(0x49999990), leftWidth: 0)
     .environment(ApiModel.shared)
   
     .frame(width:800, height: 600)

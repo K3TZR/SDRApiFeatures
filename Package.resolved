@@ -1,4 +1,5 @@
 {
+  "originHash" : "62fce13b759e1226a8a4e9e2c01f08afb486255b7691673ce246b36581a41d71",
   "pins" : [
     {
       "identity" : "cocoaasyncsocket",
@@ -68,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-composable-architecture",
       "state" : {
-        "branch" : "shared-state-beta",
-        "revision" : "172e3028205f2878032940de31beb8db9451ce1d"
+        "revision" : "8624a8e2c35f78e5e61d5f12c69110e9020e80c8",
+        "version" : "1.10.0"
       }
     },
     {
@@ -154,5 +155,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

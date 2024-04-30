@@ -49,7 +49,7 @@ struct SpectrumView: View {
     ]), startPoint: .bottom, endPoint: .top)
 
     ZStack {
-      if let frame = panadapter.panadapterFrame {
+      if let frame = StreamModel.shared.panadapterStreams[id: panadapter.id]?.panadapterFrame {
         switch spectrumType {
         case SpectrumType.gradient.rawValue:
           SpectrumShape(frame: frame, closed: true)

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import ApiIntView
+import CustomControlFeature
 import FlexApiFeature
 
 struct XritView: View {

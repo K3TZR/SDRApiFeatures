@@ -13,11 +13,11 @@ import FlexApiFeature
 struct PhoneCwView: View {
   var store: StoreOf<SettingsCore>
   
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
 
   var body: some View {
 
-    if apiModel.radio == nil {
+    if objectModel.radio == nil {
       VStack {
         Text("Radio must be connected").font(.title).foregroundColor(.red)
         Text("to use PhoneCw Settings").font(.title).foregroundColor(.red)
@@ -26,25 +26,25 @@ struct PhoneCwView: View {
     } else {
       VStack(spacing: 10) {
         Group {
-          MicGridView(transmit: apiModel.transmit)
+          MicGridView(transmit: objectModel.transmit)
           Spacer()
           Divider().foregroundColor(.blue)
         }
         Group {
           Spacer()
-          CwGridView(transmit: apiModel.transmit)
+          CwGridView(transmit: objectModel.transmit)
           Spacer()
           Divider().foregroundColor(.blue)
         }
         Group {
           Spacer()
-          RttyGridView(radio: apiModel.radio!)
+          RttyGridView(radio: objectModel.radio!)
           Spacer()
           Divider().foregroundColor(.blue)
         }
         Group {
           Spacer()
-          FiltersGridView(radio: apiModel.radio!)
+          FiltersGridView(radio: objectModel.radio!)
           Spacer()
         }
       }

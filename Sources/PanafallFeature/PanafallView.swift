@@ -161,7 +161,7 @@ private struct BottomButtonsView: View {
 }
 
 #Preview {
-  PanafallView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1, ApiModel.shared), waterfall: Waterfall(1, ApiModel.shared))) {
+  PanafallView(store: Store(initialState: PanafallCore.State(panadapter: Panadapter(1), waterfall: Waterfall(1))) {
     PanafallCore()
   })
 }

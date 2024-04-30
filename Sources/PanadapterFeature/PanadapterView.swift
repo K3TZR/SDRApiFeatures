@@ -25,7 +25,7 @@ public struct PanadapterView: View {
   
   @Shared(.appStorage("background")) var background: Color = .black
 
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   let frequencyLegendHeight: CGFloat = 20
   let spacings = [
@@ -71,7 +71,7 @@ public struct PanadapterView: View {
           
           ZStack(alignment: .leading) {
             // Spectrum
-            if let stream = apiModel.panadapters[id: panadapter.id] {
+            if let stream = objectModel.panadapters[id: panadapter.id] {
               SpectrumView(panadapter: stream)
                 .background(background)
             }
@@ -86,7 +86,7 @@ public struct PanadapterView: View {
             DbmLegendView(panadapter: panadapter, size: g.size, frequencyLegendHeight: frequencyLegendHeight)
             
             // Slice(s)
-            ForEach(apiModel.slices) { slice in
+            ForEach(objectModel.slices) { slice in
               if slice.panadapterId == panadapter.id {
                 // Slice is on this Panadapter
                 if slice.frequency >= panadapter.center - panadapter.bandwidth/2 &&
@@ -105,13 +105,13 @@ public struct PanadapterView: View {
             RightView(panadapter: panadapter, width: g.size.width)
             
             // Tnf(s)
-            ForEach(apiModel.tnfs) { tnf in
+            ForEach(objectModel.tnfs) { tnf in
               if tnf.frequency >= panadapter.center - panadapter.bandwidth/2 &&
                   tnf.frequency <= panadapter.center + panadapter.bandwidth/2 {
                 // Tnf within the panadapter frequency range
                 TnfView(panadapter: panadapter,
                         tnf: tnf,
-                        radio: apiModel.radio!,
+                        radio: objectModel.radio!,
                         size: CGSize(width: g.size.width, height: g.size.height - frequencyLegendHeight))
               }
             }
@@ -137,11 +137,11 @@ public struct PanadapterView: View {
 private struct LeftView: View {
   var panadapter: Panadapter
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   @MainActor var leftString: [String] {
     var letters = [String]()
-    for slice in apiModel.slices {
+    for slice in objectModel.slices {
       if slice.frequency < panadapter.center - panadapter.bandwidth/2 {
         letters.append(slice.sliceLetter ?? "??")
       }
@@ -172,11 +172,11 @@ private struct RightView: View {
   var panadapter: Panadapter
   var width: CGFloat
   
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
   
   @MainActor var rightString: [String] {
     var letters = [String]()
-    for slice in apiModel.slices {
+    for slice in objectModel.slices {
       if slice.frequency > panadapter.center + panadapter.bandwidth/2 {
         letters.append(slice.sliceLetter ?? "??")
       }
@@ -207,6 +207,6 @@ private struct RightView: View {
 // MARK: - Preview
 
 #Preview {
-  PanadapterView(panadapter: Panadapter(0x49999990, ApiModel.shared), leftWidth: 0)
+  PanadapterView(panadapter: Panadapter(0x49999990), leftWidth: 0)
   .frame(width:800, height: 600)
 }

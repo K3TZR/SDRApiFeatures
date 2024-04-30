@@ -234,7 +234,7 @@ extension WaterfallRenderer: MTKViewDelegate {
   ///
   public func draw(in view: MTKView) {
     
-    if var frame = _waterfall.waterfallFrame {
+    if var frame = StreamModel.shared.waterfallStreams[id: _waterfall.id]?.waterfallFrame {
       
       if frame.frameNumber > _previousFrameNumber {
         _previousFrameNumber = frame.frameNumber

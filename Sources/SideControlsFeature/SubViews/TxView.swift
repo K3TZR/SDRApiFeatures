@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import LevelIndicatorView
+import CustomControlFeature
 import FlexApiFeature
 import SharedFeature
 
@@ -15,24 +15,24 @@ public struct TxView: View {
   
   public init() {}
 
-  @Environment(ApiModel.self) private var apiModel
+  @Environment(ObjectModel.self) private var objectModel
 
   public var body: some View {
     VStack(spacing: 10) {
       VStack(alignment: .leading, spacing: 10)  {
-        if let powerMeter = apiModel.meterBy(shortName: .powerForward), let swrMeter = apiModel.meterBy(shortName: .swr) {
+        if let powerMeter = objectModel.meterBy(shortName: .powerForward), let swrMeter = objectModel.meterBy(shortName: .swr) {
           LevelIndicatorView(levels: SignalLevel(rms: powerMeter.value.powerFromDbm, peak: 0), type: .power)
           LevelIndicatorView(levels: SignalLevel(rms: swrMeter.value, peak: 0), type: .swr)
         } else {
           LevelIndicatorView(levels: SignalLevel(rms: 0.0, peak: 0.0), type: .power)
           LevelIndicatorView(levels: SignalLevel(rms: 1.0, peak: 0.0), type: .swr)
         }
-        PowerView(transmit: apiModel.transmit)
-        ProfileView(txProfile: apiModel.profiles[id: "tx"] ?? Profile("empty", apiModel))
-        AtuStatusView(atu: apiModel.atu)
+        PowerView(transmit: objectModel.transmit)
+        ProfileView(txProfile: objectModel.profiles[id: "tx"] ?? Profile("empty"))
+        AtuStatusView(atu: objectModel.atu)
       }
       VStack(alignment: .center, spacing: 10) {
-        ButtonsView(transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet(), apiModel), atu: apiModel.atu)
+        ButtonsView(transmit: objectModel.transmit, radio: objectModel.radio ?? Radio(Packet()), atu: objectModel.atu)
         Divider().background(.blue)
       }
     }
