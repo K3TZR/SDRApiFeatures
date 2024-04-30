@@ -28,6 +28,7 @@ public final class UsbCable: Identifiable {
   
   public var autoReport = false
   public var band = ""
+  public var cableType = "bcd"
   public var dataBits = 0
   public var enable = false
   public var flowControl = ""
@@ -44,19 +45,18 @@ public final class UsbCable: Identifiable {
   public var stopBits = 0
   public var usbLog = false
   
-  public private(set) var cableType: UsbCableType = .bcd
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
-  public enum UsbCableType: String {
-    case bcd
-    case bit
-    case cat
-    case dstar
-    case invalid
-    case ldpa
-  }
+//  public enum UsbCableType: String {
+//    case bcd
+//    case bit
+//    case cat
+//    case dstar
+//    case invalid
+//    case ldpa
+//  }
   
   public enum Property: String {
     case autoReport  = "auto_report"
@@ -92,7 +92,7 @@ public final class UsbCable: Identifiable {
   /// - Parameter properties:       a KeyValuesArray
   public func parse(_ properties: KeyValuesArray) {
     // is the Status for a cable of this type?
-    if cableType.rawValue == properties[0].value {
+//    if cableType.rawValue == properties[0].value {
       // YES,
       // process each key/value pair, <key=value>
       for property in properties {
@@ -107,7 +107,7 @@ public final class UsbCable: Identifiable {
           
         case .autoReport:   autoReport = property.value.bValue
         case .band:         band = property.value
-        case .cableType:    break   // FIXME:
+        case .cableType:    cableType = properties[0].value
         case .dataBits:     dataBits = property.value.iValue
         case .enable:       enable = property.value.bValue
         case .flowControl:  flowControl = property.value
@@ -126,10 +126,10 @@ public final class UsbCable: Identifiable {
         }
       }
       
-    } else {
-      // NO, log the error
-      log("USBCable, status type: \(properties[0].key) != Cable type: \(cableType.rawValue)", .warning, #function, #file, #line)
-    }
+//    } else {
+//      // NO, log the error
+//      log("USBCable, status type: \(properties[0].key) != Cable type: \(cableType.rawValue)", .warning, #function, #file, #line)
+//    }
     
     // is it initialized?
     if _initialized == false {

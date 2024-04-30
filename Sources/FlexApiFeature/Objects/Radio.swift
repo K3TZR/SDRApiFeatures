@@ -76,6 +76,7 @@ public final class Radio {
   public internal(set) var locked = false
   public internal(set) var lowLatencyDigital = false
   public internal(set) var macAddress = ""
+  public internal(set) var multiflexEnabled = false
   public internal(set) var muteLocalAudio = false
   public internal(set) var netmask = ""
   public internal(set) var name = ""
@@ -151,6 +152,7 @@ public final class Radio {
     case macAddress               = "mac"
     case micList                  = "mic_list"
     case model
+    case multiflexEnabled         = "mf_enable"
     case muteLocalAudio           = "mute_local_audio_when_remote"
     case name
     case netmask
@@ -263,6 +265,7 @@ public final class Radio {
         case .macAddress:               macAddress = property.value
         case .micList:                  micList = property.value.valuesArray()
         case .model:                    radioModel = property.value
+        case .multiflexEnabled:         multiflexEnabled = property.value.bValue
         case .muteLocalAudio:           muteLocalAudio = property.value.bValue                      //
         case .name:                     name = property.value
         case .nickname:                 name = property.value                                       //
@@ -365,7 +368,7 @@ public final class Radio {
   private func send(_ property: Property, _ value: String) {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
-        .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
+        .multiflexEnabled, .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
       ApiModel.shared.sendCommand("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
       ApiModel.shared.sendCommand("radio \(property.rawValue) \(value)")

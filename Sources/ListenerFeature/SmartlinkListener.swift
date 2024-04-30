@@ -18,10 +18,10 @@ public enum ListenerError: String, Error {
 }
 
 public struct Tokens {
-  public var idToken: String?
-  public var refreshToken: String?
+  public var idToken: String
+  public var refreshToken: String
   
-  public init(_ idToken: String?, _ refreshToken: String?) {
+  public init(_ idToken: String, _ refreshToken: String) {
     self.idToken = idToken
     self.refreshToken = refreshToken
   }
@@ -55,7 +55,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   private var _appName: String?
   private var _authentication = Authentication()
   private var _cancellables = Set<AnyCancellable>()
-  private var _currentTokens = Tokens(nil, nil)
+  private var _currentTokens = Tokens("", "")
   private var _domain: String?
   private let _pingQ = DispatchQueue(label: "WanListener.pingQ")
   private var _platform: String?
@@ -102,14 +102,14 @@ public final class SmartlinkListener: NSObject, ObservableObject {
 //      
 //    } else 
     let validatedTokens = await _authentication.authenticate(currentTokens)
-    if validatedTokens.idToken != nil {
+    if !validatedTokens.idToken.isEmpty {
       log("Smartlink Listener: idToken found using authenticate", .debug, #function, #file, #line)
       return connect(using: validatedTokens)
       
     } else {
       log("Smartlink Listener: idToken NOT found", .debug, #function, #file, #line)
     }
-    return Tokens(nil, nil)
+    return Tokens("", "")
   }
   
   /// Start listening given a User / Pwd
@@ -118,12 +118,12 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   ///   - pwd:            user password
   func start(user: String, pwd: String) async -> Tokens {
     let tokens = await _authentication.requestTokens(user: user, pwd: pwd)
-    if tokens.idToken != nil {
+    if !tokens.idToken.isEmpty {
       //      _previousIdToken = idToken
       log("Smartlink Listener: IdToken obtained from login credentials", .debug, #function, #file, #line)
       return connect(using: tokens)
     }
-    return Tokens(nil, nil)
+    return Tokens("", "")
   }
   
   /// stop the listener
@@ -168,7 +168,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
 
     } catch {
       log("Smartlink Listener: TCP Socket connection FAILED", .debug, #function, #file, #line)
-      return Tokens(nil, nil)
+      return Tokens("", "")
     }
   }
 
@@ -236,7 +236,7 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
     startPinging()
     
     // register the Application / token pair with the SmartLink server
-    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken!)", timeout: _timeout, tag: 0)
+    sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken)", timeout: _timeout, tag: 0)
     log("Smartlink Listener: Application registered, name=\(_appName!) platform=\(kPlatform)", .debug, #function, #file, #line)
 
     // start reading

@@ -64,7 +64,11 @@ public struct PacketEvent {
 //}
 
 @Observable
-final public class Station: Identifiable, Equatable, Hashable {
+final public class Station: Identifiable, Equatable, Hashable, Comparable {
+  public static func < (lhs: Station, rhs: Station) -> Bool {
+    lhs.station < rhs.station
+  }
+  
 //public struct Station: Identifiable, Equatable, Hashable {
   
   public func hash(into hasher: inout Hasher) {
@@ -114,7 +118,11 @@ final public class Station: Identifiable, Equatable, Hashable {
 // MARK: - Packet struct
 
 @Observable
-final public class Packet: Identifiable, Equatable, Hashable {
+final public class Packet: Identifiable, Equatable, Hashable , Comparable {
+  public static func < (lhs: Packet, rhs: Packet) -> Bool {
+    lhs.nickname < rhs.nickname
+  }
+  
 //public struct Packet: Identifiable, Equatable, Hashable {
   
   public func hash(into hasher: inout Hasher) {

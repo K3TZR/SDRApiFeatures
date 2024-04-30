@@ -57,7 +57,7 @@ public struct PickerView: View {
       else {
         if store.isGui {
           // ----- List of Radios -----
-          List(listenerModel.packets, id: \.id, selection: $selection) { packet in
+          List(listenerModel.packets.sorted(by: <), id: \.id, selection: $selection) { packet in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {
@@ -77,7 +77,7 @@ public struct PickerView: View {
           
         } else {
           // ----- List of Stations -----
-          List(listenerModel.stations, id: \.id, selection: $selection) { station in
+          List(listenerModel.stations.sorted(by: <), id: \.id, selection: $selection) { station in
             //            VStack (alignment: .leading) {
             HStack(spacing: 0) {
               Group {

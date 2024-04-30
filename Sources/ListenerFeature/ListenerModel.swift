@@ -112,31 +112,31 @@ final public class ListenerModel: Equatable {
     }
   }
   
-  public func smartlinkMode(_ user: String = "", _ loginRequired: Bool = false, _ previousIdToken: String?, _ refreshToken: String?) async -> Tokens {
+  public func smartlinkMode(_ user: String = "", _ loginRequired: Bool = false, _ previousIdToken: String, _ refreshToken: String) async -> Tokens {
     _smartlinkListener?.stop()
     _smartlinkListener = nil
     
     _smartlinkListener = SmartlinkListener(self)
     let tokens = await _smartlinkListener!.start(Tokens(previousIdToken, refreshToken))
-    if tokens.idToken != nil {
+    if !tokens.idToken.isEmpty {
       log("Smartlink Listener: STARTED", .debug, #function, #file, #line)
       return tokens
     } else {
       _smartlinkListener = nil
-      return Tokens(nil, nil)
+      return Tokens("", "")
     }
   }
   
   public func smartlinkStart(_ user: String, _ pwd: String) async -> Tokens {
     _smartlinkListener = SmartlinkListener(self)
     let tokens = await _smartlinkListener!.start(user: user, pwd: pwd)
-    if tokens.idToken != nil {
+    if !tokens.idToken.isEmpty {
       log("Smartlink Listener: Login SUCCESS", .debug, #function, #file, #line)
       return tokens
     } else {
       log("Smartlink Listener: Login FAILURE", .debug, #function, #file, #line)
       _smartlinkListener = nil
-      return Tokens(nil, nil)
+      return Tokens("", "")
     }
   }
   

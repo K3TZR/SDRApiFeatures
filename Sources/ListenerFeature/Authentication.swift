@@ -67,12 +67,12 @@ public final class Authentication {
   
   func authenticate(_ currentTokens: Tokens) async -> Tokens {
     // is there a previous idToken
-    if currentTokens.idToken != nil {
+    if currentTokens.idToken.isEmpty {
       // has it expired?
-      if isValid(currentTokens.idToken!) {
+      if isValid(currentTokens.idToken) {
         // NO, use it
         log("Authentication: Unexpired previous token", .debug, #function, #file, #line)
-        updateClaims(from: currentTokens.idToken!)
+        updateClaims(from: currentTokens.idToken)
         return currentTokens
         
       } else {
@@ -82,10 +82,10 @@ public final class Authentication {
     }
     
     // is there a refresh token?
-    if currentTokens.refreshToken != nil {
+    if !currentTokens.refreshToken.isEmpty {
       // YES, can we get an Id Token from the Refresh Token?
       log("Authentication: Refresh token found", .debug, #function, #file, #line)
-      if let idToken = await requestIdToken(from: currentTokens.refreshToken!) {
+      if let idToken = await requestIdToken(from: currentTokens.refreshToken) {
         // YES, is it valid?
         if isValid(idToken) {
           // YES, update the claims and use the Id Token
@@ -100,7 +100,7 @@ public final class Authentication {
       }
     }
     // No token available, requires a login
-    return Tokens(nil, nil)
+    return Tokens("", "")
   }
 
   /// Given a UserId / Password, request an ID Token & Refresh Token
@@ -124,12 +124,12 @@ public final class Authentication {
       if result.count == 2 && isValid(result[0]) {
         // save the email & picture
         updateClaims(from: result[0])
-        return Tokens(result[0], result[1])
+        return Tokens(result[0] ?? "", result[1] ?? "")
       }
-      return Tokens(nil, nil)
+      return Tokens("", "")
     }
     // invalid Id Token or request failure
-    return Tokens(nil, nil)
+    return Tokens("", "")
   }
   
   // ----------------------------------------------------------------------------
