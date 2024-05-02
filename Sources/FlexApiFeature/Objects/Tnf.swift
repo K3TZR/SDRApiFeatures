@@ -13,7 +13,15 @@ import XCGLogFeature
 
 @MainActor
 @Observable
-public final class Tnf: Identifiable {
+public final class Tnf: Identifiable, Equatable, Comparable {
+  public nonisolated static func < (lhs: Tnf, rhs: Tnf) -> Bool {
+    lhs.id < rhs.id
+  }
+  
+  public nonisolated static func == (lhs: Tnf, rhs: Tnf) -> Bool {
+    lhs.id == rhs.id
+  }
+  
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 

@@ -441,7 +441,6 @@ public enum ObjectFilter: String, CaseIterable {
   case amplifiers
   case bandSettings = "band settings"
   case cwx
-  case equalizers
   case interlock
   case memories
   case meters
