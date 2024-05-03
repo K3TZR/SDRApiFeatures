@@ -347,6 +347,10 @@ public extension String {
     return kvArray
   }
   
+  func padRight(_ length: Int, _ char: String = " ") -> String {
+    self.padding(toLength: length, withPad: char, startingAt: 0)
+  }
+  
   /// Parse a String of <value>'s separated by the given Delimiter
   /// - Parameters:
   ///   - delimiter:          the delimiter between values (defaults to space)

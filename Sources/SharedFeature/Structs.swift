@@ -435,11 +435,21 @@ public enum MessageFilter: String, CaseIterable {
   case S0
 }
 
-public enum ObjectFilter: String, CaseIterable {
-  case core
-  case coreNoMeters = "core w/o meters"
-  case amplifiers
+public enum RadioObjectFilter: String, CaseIterable {
+  case all
+  case atu
   case bandSettings = "band settings"
+  case equalizers
+  case gps
+  case lists
+  case tnf
+  case transmit
+}
+
+public enum StationObjectFilter: String, CaseIterable {
+  case all
+  case noMeters = "w/o meters"
+  case amplifiers
   case cwx
   case interlock
   case memories
