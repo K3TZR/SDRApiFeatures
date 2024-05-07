@@ -46,11 +46,15 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  private var _inBoundStreams: (Vita) -> Void = { _ in }
-  private var _statusStream: (UdpStatus) -> Void = { _ in }
-  
+  public weak var delegate: StreamDistributor?
   public var sendIp = ""
   public var sendPort: UInt16 = 4991 // default port number
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+
+  private var _inBoundStreams: (Vita) -> Void = { _ in }
+  private var _statusStream: (UdpStatus) -> Void = { _ in }
   
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
@@ -215,7 +219,8 @@ extension Udp: GCDAsyncUdpSocketDelegate {
         log("Udp: REGISTERED", .debug, #function, #file, #line)
       }
       // stream the received data
-      _inBoundStreams( vita )
+//      _inBoundStreams( vita )
+      delegate?.streamDistributor(vita)
     }
   }
   
@@ -235,15 +240,15 @@ extension Udp: GCDAsyncUdpSocketDelegate {
 extension Udp {
   
   /// A stream of received UDP streams
-  public var inboundStreams: AsyncStream<Vita> {
-    AsyncStream { continuation in
-      _inBoundStreams = { vita in
-        continuation.yield(vita)
-      }
-      continuation.onTermination = { @Sendable _ in
-      }
-    }
-  }
+//  public var inboundStreams: AsyncStream<Vita> {
+//    AsyncStream { continuation in
+//      _inBoundStreams = { vita in
+//        continuation.yield(vita)
+//      }
+//      continuation.onTermination = { @Sendable _ in
+//      }
+//    }
+//  }
   
   /// A stream of UDP status changes
   public var statusStream: AsyncStream<UdpStatus> {

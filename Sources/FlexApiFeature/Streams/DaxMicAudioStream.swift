@@ -19,7 +19,7 @@ import XCGLogFeature
 //      instances periodically receive Mic Audio in a UDP stream. They are collected
 //      in the Model.daxMicAudioStreams collection.
 @Observable
-public final class DaxMicAudioStream: Identifiable {
+public final class DaxMicAudioStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -29,7 +29,7 @@ public final class DaxMicAudioStream: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var delegate: DaxAudioOutputHandler?
+  public var delegate: AudioProcessor?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -127,6 +127,16 @@ public final class DaxMicAudioStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
 
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public methods
+  
+  /// Receive RxRemoteAudioStream audio
+  /// - Parameters:
+  ///   - vita:               an Opus Vita struct
+  public func streamProcessor(_ vita: Vita) {
+    delegate?.audioProcessor(vita)
+  }
   /// Process the DaxAudioStream Vita struct
   /// - Parameters:
   ///   - vita:       a Vita struct

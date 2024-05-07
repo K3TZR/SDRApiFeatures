@@ -23,14 +23,6 @@ public protocol AudioStreamHandler: AnyObject {
   func sendAudio(buffer: [UInt8], samples: Int)
 }
 
-/// UDP Stream handler protocol
-public protocol RxAudioHandler: AnyObject {
-  /// Process Stream data
-  /// - Parameters:
-  ///   - payload: array of bytes
-  ///   - compressed: is compressed
-  func rxAudioHandler(payload: [UInt8], compressed: Bool)
-}
 
 /// UDP Stream handler protocol
 public protocol DaxAudioOutputHandler: AnyObject {

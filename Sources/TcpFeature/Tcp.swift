@@ -69,7 +69,7 @@ public final class Tcp: NSObject {
   var _timeout = 0.0   // seconds
   var _startTime: Date?
 
-  var _sequenceNumber: Int = -1
+  @MainActor var sequenceNumber: Int = -1
 
   // ----------------------------------------------------------------------------
   // MARK: - Initialization (singleton)
@@ -137,7 +137,7 @@ public final class Tcp: NSObject {
     }
     //        if success { _isWan = packet.isWan ; _seqNum = 0 }
     if success {
-      _sequenceNumber = 0
+//      _sequenceNumber = 0
       log("Tcp: connection successful", .debug, #function, #file, #line)
     }
     return success
@@ -148,37 +148,21 @@ public final class Tcp: NSObject {
     _socket.disconnect()
     _startTime = nil
   }
-
-  
-  
-  public func performSend(_ cmd: String, diagnostic: Bool = false) async -> UInt  {
-    await withCheckedContinuation { continuation in
-      continuation.resume(returning: send(cmd, diagnostic: diagnostic) )
-    }
-  }
-  
-  
-  
-  
-  
-  
-  
-  
   
   /// Send a Command to the connected Radio
   /// - Parameters:
   ///   - cmd:            a Command string
   ///   - diagnostic:     whether to add "D" suffix
   /// - Returns:          the Sequence Number of the Command
-  public func send(_ cmd: String, diagnostic: Bool = false) -> UInt {
+  @MainActor public func send(_ cmd: String, diagnostic: Bool = false) -> Int {
     // increment the Sequence Number
-    _sequenceNumber += 1
+    sequenceNumber += 1
     
     // assemble the command
-    let command =  "C" + "\(diagnostic ? "D" : "")" + "\(_sequenceNumber)|" + cmd + "\n"
+    let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
     
     // send it, no timeout, tag = segNum
-    _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: _sequenceNumber)
+    _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: sequenceNumber)
     
     // stream it to the tester (if any)
     if _startTime != nil {
@@ -188,7 +172,7 @@ public final class Tcp: NSObject {
     }
 
     // return the Sequence Number used by this send
-    return UInt(_sequenceNumber)
+    return sequenceNumber
   }
 }
 

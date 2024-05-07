@@ -17,7 +17,7 @@ import XCGLogFeature
 //      They are added / removed by the incoming TCP messages.
 //      They are collected in the StreamModel.WaterfallStreams collection.
 @Observable
-public final class WaterfallStream: Identifiable {
+public final class WaterfallStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -64,7 +64,7 @@ public final class WaterfallStream: Identifiable {
   ///      passed to the Waterfall Stream Handler
   /// - Parameters:
   ///   - vita:       a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
+  public func streamProcessor(_ vita: Vita) {
     // Bins are just beyond the payload
     let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
     

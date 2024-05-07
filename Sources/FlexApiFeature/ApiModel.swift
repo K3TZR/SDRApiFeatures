@@ -30,7 +30,7 @@ public final class ApiModel {
   public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var hardwareVersion: String?
   public internal(set) var nthPingReceived = false
-  public internal(set) var replyHandlers : [UInt: ReplyTuple] {
+  public internal(set) var replyHandlers : [Int: ReplyTuple] {
     get { _replyQ.sync { _replyHandlers } }
     set { _replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
 
@@ -42,7 +42,7 @@ public final class ApiModel {
   private var _awaitClientIpValidation: CheckedContinuation<String, Never>?
   private var _guiClientId: String?
   private var _pinger: Pinger?
-  private var _replyHandlers = [UInt: ReplyTuple]()
+  private var _replyHandlers = [Int: ReplyTuple]()
   private var _wanHandle = ""
 
   private let _replyQ = DispatchQueue(label: "replyQ", attributes: [.concurrent])
@@ -176,6 +176,11 @@ public final class ApiModel {
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Command methods
+
+  public func sendPingCommand(_ command: String, _ pingCount: Int, replyTo callback: @escaping ReplyHandler) {
+    if pingCount > 2 { nthPingReceived = true }
+    sendCommand(command, replyTo: callback)
+  }
   
   /// Send a command to the Radio (hardware) via TCP
   /// - Parameters:
@@ -350,7 +355,7 @@ public final class ApiModel {
     }
   }
 
-  private func initialCommandsReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  private func initialCommandsReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
      var keyValues: KeyValuesArray
      let adjReply = reply.replacingOccurrences(of: "\"", with: "")
      
@@ -372,12 +377,12 @@ public final class ApiModel {
      }
    }
 
-  private func ipReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  private func ipReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     // YES, resume it
     _awaitClientIpValidation?.resume(returning: reply)
   }
 
-  private func wanValidationReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  private func wanValidationReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     // YES, resume it
     _awaitWanValidation?.resume(returning: reply)
   }

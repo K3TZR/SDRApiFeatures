@@ -135,7 +135,7 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Stream reply handler
   
-  public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     if reply != kNoError {
       if let streamId = reply.streamId {
         self.streamId = streamId
@@ -144,7 +144,7 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
         Task {
           await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
         }
-        log("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+        log.debug("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)")
       }
     }
   }

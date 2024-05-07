@@ -17,7 +17,7 @@ import XCGLogFeature
 //      They are added / removed by the incoming TCP messages.
 //      They are collected in the StreamModel.PanadapterStreams collection.
 @Observable
-public final class PanadapterStream: Identifiable {
+public final class PanadapterStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -65,7 +65,7 @@ public final class PanadapterStream: Identifiable {
   ///
   /// - Parameters:
   ///   - vita:        a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
+  public func streamProcessor(_ vita: Vita) {
     // Bins are just beyond the payload
     let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
     

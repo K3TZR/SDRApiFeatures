@@ -14,6 +14,7 @@ import Foundation
 import FlexApiFeature
 import RingBufferFeature
 import SharedFeature
+import VitaFeature
 import XCGLogFeature
 
 //  DATA FLOW (COMPRESSED)
@@ -39,7 +40,7 @@ import XCGLogFeature
 //                  interleaved        interleaved
 
 @Observable
-public final class RxAudioPlayer: Equatable, RxAudioHandler {
+public final class RxAudioPlayer: Equatable, AudioProcessor {
   public static func == (lhs: RxAudioPlayer, rhs: RxAudioPlayer) -> Bool {
     lhs === rhs
   }
@@ -201,10 +202,14 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Stream Handler protocol method
+  // MARK: - Audio Processor protocol method
   
   /// Process the UDP Stream Data for RemoteRxAudioStream streams
-  public func rxAudioHandler(payload: [UInt8], compressed: Bool) {
+//  public func rxAudioHandler(payload: [UInt8], compressed: Bool) {
+  public func audioProcessor(_ vita: Vita) {
+    let payload = vita.payloadData
+    let compressed = vita.classCode == .opus
+    
     let totalBytes = payload.count
     
     if compressed {
@@ -263,7 +268,7 @@ public final class RxAudioPlayer: Equatable, RxAudioHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Stream reply handler
   
-  public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     if responseValue == kNoError  {
       if let streamId = reply.streamId {
         self.streamId = streamId

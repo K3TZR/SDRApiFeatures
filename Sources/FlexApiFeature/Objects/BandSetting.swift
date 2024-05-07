@@ -110,7 +110,14 @@ public final class BandSetting: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ id: UInt32, _ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("eq \(id) \(property.rawValue)=\(value)")
+    switch property {
+    case .inhibit, .hwAlcEnabled, .rfPower, .tunePower:
+      ApiModel.shared.sendCommand("transmit bandset \(id) \(property.rawValue)=\(value)")
+    case .accTxEnabled, .accTxReqEnabled, .rcaTxReqEnabled, .tx1Enabled, .tx2Enabled, .tx3Enabled:
+      ApiModel.shared.sendCommand("interlock bandset \(id) \(property.rawValue)=\(value)")
+    case .name:
+      break
+    }
   }
   
   /* ----- from FlexApi -----

@@ -19,7 +19,7 @@ import XCGLogFeature
 //      instances periodically receive Audio in a UDP stream. They are collected
 //      in the Model.daxRxAudioStreams collection.
 @Observable
-public final class DaxRxAudioStream: Identifiable {
+public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -29,7 +29,7 @@ public final class DaxRxAudioStream: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var delegate: DaxAudioOutputHandler?
+  public var delegate: AudioProcessor?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -104,6 +104,12 @@ public final class DaxRxAudioStream: Identifiable {
     }
   }
   
+  
+  
+  public func streamProcessor(_ vita: Vita) {
+    delegate?.audioProcessor(vita)
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   

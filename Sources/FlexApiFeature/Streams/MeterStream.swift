@@ -16,7 +16,7 @@ import XCGLogFeature
 //      processing of a stream of Meter data from the Radio to the client. A MeterStream
 //      is added by the first incoming TCP Meter message.
 @Observable
-public final class MeterStream: Identifiable {
+public final class MeterStream: Identifiable, StreamProcessor{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -36,7 +36,7 @@ public final class MeterStream: Identifiable {
   /// Process the Vita struct containing Meter data
   /// - Parameters:
   ///   - vita:        a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
+  public func streamProcessor(_ vita: Vita) {
     let kDbDbmDbfsSwrDenom: Float = 128.0   // denominator for Db, Dbm, Dbfs, Swr
     let kDegDenom: Float = 64.0             // denominator for Degc, Degf
     

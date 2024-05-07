@@ -19,7 +19,7 @@ import XCGLogFeature
 //      objects periodically receive IQ data in a UDP stream. They are collected
 //      in the Model.daxIqStreams collection.
 @Observable
-public final class DaxIqStream: Identifiable {
+public final class DaxIqStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -129,7 +129,7 @@ public final class DaxIqStream: Identifiable {
   /// Process the IqStream Vita struct
   /// - Parameters:
   ///   - vita:       a Vita struct
-  public func vitaProcessor(_ vita: Vita) {
+  public func streamProcessor(_ vita: Vita) {
     // is this the first packet?
     if _rxSequenceNumber == -1 {
       _rxSequenceNumber = vita.sequence

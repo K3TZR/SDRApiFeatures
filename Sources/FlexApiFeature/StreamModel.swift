@@ -39,7 +39,7 @@ final public class StreamStatus: ObservableObject, Identifiable {
 }
 
 @Observable
-final public class StreamModel {
+final public class StreamModel: StreamDistributor {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -70,7 +70,7 @@ final public class StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private var _streamSubscription: Task<(), Never>? = nil
+//  private var _streamSubscription: Task<(), Never>? = nil
   
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
@@ -78,55 +78,50 @@ final public class StreamModel {
   public static var shared = StreamModel()
   private init() {
     
-    _streamSubscription = Task(priority: .high) {
+    Udp.shared.delegate = self
+  }
+  
+  public func streamDistributor(_ vita: Vita) {
+    
+    // update the statistics
+    Task {
+      await MainActor.run { streamStatistics[id: vita.classCode]?.packets += 1 }
+    }
+    
+    switch vita.classCode {
+    case .panadapter:
+      if let object = panadapterStreams[id: vita.streamId] { object.streamProcessor(vita) }
       
-      log("StreamModel: UDP stream subscription STARTED", .debug, #function, #file, #line)
-      for await vita in Udp.shared.inboundStreams {
-        // update the statistics
-        Task {
-          await MainActor.run { streamStatistics[id: vita.classCode]?.packets += 1 }
-        }
-                
-        switch vita.classCode {
-        case .panadapter:
-          if let object = panadapterStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .waterfall:
-          if let object = waterfallStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
-          if let object = daxIqStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        case .daxAudio, .daxAudioReducedBw:
-          if let stream = daxRxAudioStreams[id: vita.streamId] {
-            stream.delegate?.daxAudioOutputHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxAudioReducedBw)
-          }
-          if let stream = daxMicAudioStreams[id: vita.streamId] {
-            stream.delegate?.daxAudioOutputHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxAudioReducedBw)
-          }
-          if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-          //        case .daxReducedBw:
-          //          if let stream = await ApiModel.shared.daxRxAudioStreams[id: vita.streamId] {
-          //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-          //          }
-          //
-          //          if let stream = await ApiModel.shared.daxMicAudioStreams[id: vita.streamId] {
-          //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-          //          }
-          
-        case .meter:
-          if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-          meterStream?.vitaProcessor(vita)
-          
-        case .opus:
-          if let object = remoteRxAudioStreams[id: vita.streamId] { object.vitaProcessor(vita) }
-          
-        default:
-          // log the error
-          log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
-        }
-      }
+    case .waterfall:
+      if let object = waterfallStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      
+    case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
+      if let object = daxIqStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      
+    case .daxAudio, .daxAudioReducedBw:
+      if let object = daxRxAudioStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      if let object = daxMicAudioStreams[id: vita.streamId]  { object.streamProcessor(vita) }
+      if let object = remoteRxAudioStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      
+      //        case .daxReducedBw:
+      //          if let stream = await ApiModel.shared.daxRxAudioStreams[id: vita.streamId] {
+      //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
+      //          }
+      //
+      //          if let stream = await ApiModel.shared.daxMicAudioStreams[id: vita.streamId] {
+      //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
+      //          }
+      
+    case .meter:
+      if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+      meterStream?.streamProcessor(vita)
+      
+    case .opus:
+      if let object = remoteRxAudioStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      
+    default:
+      // log the error
+      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
     }
   }
   
@@ -183,10 +178,10 @@ final public class StreamModel {
   }
 
   /// Unsubscribe from UDP streams
-  public func unSubscribeFromStreams() {
-    log("StreamModel: stream subscription CANCELLED", .debug, #function, #file, #line)
-    _streamSubscription?.cancel()
-  }
+//  public func unSubscribeFromStreams() {
+//    log("StreamModel: stream subscription CANCELLED", .debug, #function, #file, #line)
+//    _streamSubscription?.cancel()
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods

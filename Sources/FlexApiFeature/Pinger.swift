@@ -9,8 +9,6 @@
 import Foundation
 import SwiftUI
 
-
-
 ///  Pinger  implementation
 ///
 ///      generates "ping" messages every pingInterval second(s)
@@ -19,9 +17,8 @@ public final class Pinger {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(pingInterval: Int = 1, pingTimeout: Double = 10, initializationCount: Int = 2, _ apiModel: ApiModel) {
+  public init(pingInterval: Int = 1, pingTimeout: Double = 10, _ apiModel: ApiModel) {
     _lastPingRxTime = Date(timeIntervalSinceNow: 0)
-    _initializationCount = initializationCount
     _apiModel = apiModel
     startPinging(interval: pingInterval, timeout: pingTimeout)
   }
@@ -44,7 +41,7 @@ public final class Pinger {
     _pingTimer?.cancel()
   }
   
-  public func pingReply(_ command: String, seqNum: UInt, responseValue: String, reply: String) {
+  public func pingReply(_ command: String, seqNum: Int, responseValue: String, reply: String) {
     _lastPingRxTime = Date()
   }
   
@@ -67,16 +64,9 @@ public final class Pinger {
         stopPinging()
         
       } else {
-        Task(priority: .low) {
-          await MainActor.run { _apiModel.sendCommand("ping", replyTo: self.pingReply) }
-          if _pingCount < _initializationCount {
-            _pingCount += 1
-          } else if _pingCount == _initializationCount {
-            await MainActor.run { _apiModel.nthPingReceived = true }
-          }
-        }
+        if _pingCount < _initializationCount { _pingCount += 1 }
+        _apiModel.sendPingCommand("ping", _pingCount, replyTo: self.pingReply) }
       }
-    }
     )
     // start the timer
     _pingTimer.resume()

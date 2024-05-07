@@ -6,6 +6,19 @@
 
 import Foundation
 
+public protocol StreamDistributor: AnyObject {
+  func streamDistributor(_ vita: Vita)
+}
+
+public protocol StreamProcessor: AnyObject {
+  func streamProcessor(_ vita: Vita)
+}
+
+public protocol AudioProcessor: AnyObject {
+  func audioProcessor(_ vita: Vita)
+}
+
+
 ///  VITA header struct implementation
 ///      provides decoding and encoding services for Vita encoding
 ///      see http://www.vita.com

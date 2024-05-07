@@ -11,10 +11,11 @@ import AVFoundation
 import FlexApiFeature
 import RingBufferFeature
 import SharedFeature
+import VitaFeature
 import XCGLogFeature
 
 @Observable
-final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
+final public class DaxAudioOutput: Equatable, AudioProcessor {
   public static func == (lhs: DaxAudioOutput, rhs: DaxAudioOutput) -> Bool {
     lhs === rhs
   }
@@ -223,7 +224,11 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Stream Handler protocol method
   
-  public func daxAudioOutputHandler(payload: [UInt8], reducedBW: Bool = false) {
+  public func audioProcessor(_ vita: Vita) {
+    let payload = vita.payloadData
+    let reducedBW = vita.classCode == .daxAudioReducedBw
+    
+    //  public func daxAudioOutputHandler(payload: [UInt8], reducedBW: Bool = false) {
     let oneOverMax: Float = 1.0 / Float(Int16.max)
     
     if reducedBW {
@@ -272,7 +277,7 @@ final public class DaxAudioOutput: Equatable, DaxAudioOutputHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Stream reply handler
   
-  public func streamReplyHandler(_ command: String, _ seqNumber: UInt, _ responseValue: String, _ reply: String) {
+  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     if responseValue == kNoError {
       if let streamId = reply.streamId {
         self.streamId = streamId

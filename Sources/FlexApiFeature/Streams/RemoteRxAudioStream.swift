@@ -12,24 +12,24 @@ import VitaFeature
 import XCGLogFeature
 
 @Observable
-public final class RemoteRxAudioStream: Identifiable {
+public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
   public init(_ id: UInt32) {
     self.id = id
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public let id: UInt32
-  public weak var delegate: RxAudioHandler?
-
+  public weak var delegate: AudioProcessor?
+  
   public var clientHandle: UInt32 = 0
   public var compression = ""
   public var ip = ""
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -37,7 +37,7 @@ public final class RemoteRxAudioStream: Identifiable {
     case opus
     case none
   }
-
+  
   public enum Property: String {
     case clientHandle = "client_handle"
     case compression
@@ -51,7 +51,7 @@ public final class RemoteRxAudioStream: Identifiable {
   private var _rxLostPacketCount = 0
   private var _rxPacketCount = 0
   private var _rxSequenceNumber = -1
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
@@ -81,35 +81,18 @@ public final class RemoteRxAudioStream: Identifiable {
       log("RemoteRxAudioStream \(id.hex) ADDED: compression = \(compression), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
   /// Receive RxRemoteAudioStream audio
   /// - Parameters:
   ///   - vita:               an Opus Vita struct
-  public func vitaProcessor(_ vita: Vita) {
-    // is this the first packet?
-    if _rxSequenceNumber == -1 {
-      _rxSequenceNumber = vita.sequence
-      _rxPacketCount = 1
-      _rxLostPacketCount = 0
-    } else {
-      _rxPacketCount += 1
-    }
-    
-    // Pass the data frame to the delegate
-//    delegate?.streamHandler( RemoteRxAudioFrame(payload: vita.payloadData, numberOfSamples: vita.payloadSize, isCompressed: vita.classCode == .opus) )
-    
-    delegate?.rxAudioHandler(payload: vita.payloadData,
-                             compressed: vita.classCode == .opus)
-
-    // calculate the next Sequence Number
-    _rxSequenceNumber = (_rxSequenceNumber + 1) % 16
+  public func streamProcessor(_ vita: Vita) {
+    delegate?.audioProcessor(vita)
   }
+  
 }
-
-
 // ----------------------------------------------------------------------------
 // MARK: - Stream definitions
 

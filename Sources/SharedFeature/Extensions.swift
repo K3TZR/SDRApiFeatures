@@ -280,7 +280,7 @@ public extension String {
   var list            : [String]        { self.components(separatedBy: ",") }
   var mhzToHz         : Int             { Int( (Double(self) ?? 0) * 1_000_000 ) }
   var objectId        : UInt32?         { UInt32(self, radix: 10) }
-  var sequenceNumber  : UInt            { UInt(self, radix: 10) ?? 0 }
+  var sequenceNumber  : Int             { Int(self, radix: 10) ?? 0 }
   var streamId        : UInt32?         { self.hasPrefix("0x") ? UInt32(String(self.dropFirst(2)), radix: 16) : UInt32(self, radix: 16) }
   var trimmed         : String          { self.trimmingCharacters(in: CharacterSet.whitespaces) }
   var tValue          : Bool            { self.lowercased() == "true" ? true : false }
