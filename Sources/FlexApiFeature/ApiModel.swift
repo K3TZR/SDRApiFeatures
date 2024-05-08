@@ -16,12 +16,14 @@ import VitaFeature
 import XCGLogFeature
 
 @Observable
-public final class ApiModel {
+public final class ApiModel: MessageProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
   public static var shared = ApiModel()
-  private init() { subscribeToTcpMessages() }
+  private init() {
+    Tcp.shared.apiDelegate = self
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -73,6 +75,9 @@ public final class ApiModel {
       
       guard connect(packet) else { throw ApiError.connection }
       log("ApiModel: Tcp connection established ", .debug, #function, #file, #line)
+      
+      
+      Tcp.shared.apiDelegate = self
       
       if disconnectHandle != nil {
         // pending disconnect
@@ -172,6 +177,24 @@ public final class ApiModel {
     // remove all of radio's objects
     Task { await MainActor.run { ObjectModel.shared.removeAllObjects() } }
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Public message processor methods
+
+  public func messageProcessor(_ msg: TcpMessage) {
+    let message = msg.text
+    
+    // switch on the first character of the text
+    switch message.prefix(1) {
+      
+    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
+    case "M", "m":  parseMessage( message.dropFirst() )
+    case "R", "r":  defaultReplyProcessor( message )
+    case "S", "s":  parseStatus( message.dropFirst() )
+    case "V", "v":  hardwareVersion = String(message.dropFirst())
+    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -390,22 +413,6 @@ public final class ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: - Private Tcp parse methods
 
-  private func parseInboundTcp(_ message: String) {
-    // pass to the Tester (if any)
-    //    _testerDelegate?.tcpInbound(message)
-    
-    // switch on the first character of the text
-    switch message.prefix(1) {
-      
-    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
-    case "M", "m":  parseMessage( message.dropFirst() )
-    case "R", "r":  defaultReplyProcessor( message )
-    case "S", "s":  parseStatus( message.dropFirst() )
-    case "V", "v":  hardwareVersion = String(message.dropFirst())
-    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
-    }
-  }
-
   /// Parse a Message.
   /// - Parameters:
   ///   - commandSuffix:      a Command Suffix
@@ -465,13 +472,13 @@ public final class ApiModel {
   // MARK: - Private subscription methods
 
   /// Process the AsyncStream of inbound TCP messages
-  private func subscribeToTcpMessages()  {
-    Task(priority: .high) {
-      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
-      for await tcpMessage in Tcp.shared.messageStream {
-        parseInboundTcp(tcpMessage.text)
-      }
-      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
-    }
-  }
+//  private func subscribeToTcpMessages()  {
+//    Task(priority: .high) {
+//      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
+//      for await tcpMessage in Tcp.shared.messageStream {
+//        parseInboundTcp(tcpMessage.text)
+//      }
+//      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
+//    }
+//  }
 }

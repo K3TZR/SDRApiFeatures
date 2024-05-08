@@ -144,7 +144,7 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
         Task {
           await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
         }
-        log.debug("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)")
+        log("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }
     }
   }

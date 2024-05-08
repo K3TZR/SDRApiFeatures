@@ -41,38 +41,15 @@ public struct TcpStatus: Identifiable, Equatable {
   public var reason: String?
 }
 
-public protocol TesterDelegate {
-//  @MainActor func testerMessages(_ message: TcpMessage )
-  func testerMessages(_ message: TcpMessage )
+public protocol MessageProcessor: AnyObject {
+  func messageProcessor(_ message: TcpMessage )
 }
 
 ///  Tcp Command Class implementation
 ///      manages all Tcp communication with a Radio
 public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
-  // MARK: - Public properties
-
-  public var testerDelegate: TesterDelegate?
-  
-  private var _messageStream: (TcpMessage) -> Void = { _ in }
-  private var _testerStream: (TcpMessage) -> Void = { _ in }
-  private var _statusStream: (TcpStatus) -> Void = { _ in }
-
-  public private(set) var interfaceIpAddress = "0.0.0.0"
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Internal properties
-
-  var _isWan: Bool = false
-  let _receiveQ = DispatchQueue(label: "TcpCommand.receiveQ")
-  var _socket: GCDAsyncSocket!
-  var _timeout = 0.0   // seconds
-  var _startTime: Date?
-
-  @MainActor var sequenceNumber: Int = -1
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Initialization (singleton)
+  // MARK: - Singleton
   
   public static var shared = Tcp()
   
@@ -90,6 +67,28 @@ public final class Tcp: NSObject {
     
     log("Tcp: socket initialized", .debug, #function, #file, #line)
   }
+  // ----------------------------------------------------------------------------
+  // MARK: - Public properties
+
+  public weak var apiDelegate: MessageProcessor?
+  public weak var testerDelegate: MessageProcessor?
+  
+//  private var _messageStream: (TcpMessage) -> Void = { _ in }
+//  private var _testerStream: (TcpMessage) -> Void = { _ in }
+//  private var _statusStream: (TcpStatus) -> Void = { _ in }
+
+  public private(set) var interfaceIpAddress = "0.0.0.0"
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Internal properties
+
+  var _isWan: Bool = false
+  let _receiveQ = DispatchQueue(label: "TcpCommand.receiveQ")
+  var _socket: GCDAsyncSocket!
+  var _timeout = 0.0   // seconds
+  var _startTime: Date?
+
+  @MainActor var sequenceNumber: Int = -1
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -168,7 +167,7 @@ public final class Tcp: NSObject {
     if _startTime != nil {
       let timeStamp = Date()
       let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      _testerStream(message)
+      testerDelegate?.messageProcessor(message)
     }
 
     // return the Sequence Number used by this send
@@ -194,8 +193,8 @@ extension Tcp: GCDAsyncSocketDelegate {
       // stream it to the Api & tester (if any)
       let timeStamp = Date()
       let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      _messageStream( message )
-      _testerStream(message)
+      apiDelegate?.messageProcessor( message )
+      testerDelegate?.messageProcessor(message)
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)
@@ -206,10 +205,10 @@ extension Tcp: GCDAsyncSocketDelegate {
   public func socketDidSecure(_ sock: GCDAsyncSocket) {
     // TLS connection complete
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)
-    _statusStream( TcpStatus(.didSecure,
-                            host: sock.connectedHost ?? "",
-                            port: sock.connectedPort,
-                            error: nil))
+//    _statusStream( TcpStatus(.didSecure,
+//                            host: sock.connectedHost ?? "",
+//                            port: sock.connectedPort,
+//                            error: nil))
   }
   
   /// TLS did receive trust
@@ -228,7 +227,7 @@ extension Tcp: GCDAsyncSocketDelegate {
   ///   - sock: the connected socket
   ///   - err: an error (if any)
   public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
-    _statusStream( TcpStatus(.didDisconnect, host: "", port: 0, error: err) )
+//    _statusStream( TcpStatus(.didDisconnect, host: "", port: 0, error: err) )
   }
   
   /// TCP did connect
@@ -247,48 +246,9 @@ extension Tcp: GCDAsyncSocketDelegate {
 
     } else {
       // NO, we're connected
-      _statusStream( TcpStatus(.didConnect, host: host, port: port, error: nil) )
+//      _statusStream( TcpStatus(.didConnect, host: host, port: port, error: nil) )
       // trigger the next read
       _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)
-    }
-  }
-}
-
-// ----------------------------------------------------------------------------
-// MARK: - Stream definitions
-
-extension Tcp {
-  
-  /// A stream of received TCP Messages
-  public var messageStream: AsyncStream<TcpMessage> {
-    AsyncStream { continuation in
-      _messageStream = { tcpMessage in
-        continuation.yield(tcpMessage)
-      }
-      continuation.onTermination = { @Sendable _ in
-      }
-    }
-  }
-  
-  /// A stream of received & sent TCP Messages
-  public var testerStream: AsyncStream<TcpMessage> {
-    AsyncStream { continuation in
-      _testerStream = { tcpMessage in
-        continuation.yield(tcpMessage)
-      }
-      continuation.onTermination = { @Sendable _ in
-      }
-    }
-  }
-  
-  /// A stream of Tcp Status changes
-  public var statusStream: AsyncStream<TcpStatus> {
-    AsyncStream { continuation in
-      _statusStream = { status in
-        continuation.yield(status)
-      }
-      continuation.onTermination = { @Sendable _ in
-      }
     }
   }
 }

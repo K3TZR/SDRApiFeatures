@@ -44,6 +44,24 @@ public struct UdpStatus: Identifiable, Equatable {
 ///      manages all Udp communication with a Radio
 public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
+  // MARK: - Singleton
+  
+  public static var shared = Udp()
+  
+  /// Initialize a Stream Manager
+  /// - Parameters:
+  ///   - receivePort: a port number
+  private init(receivePort: UInt16 = 4991) {
+    self._receivePort = receivePort
+    
+    super.init()
+    
+    // get an IPV4 socket
+    _socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: _receiveQ)
+    _socket.setIPv4Enabled(true)
+    _socket.setIPv6Enabled(false)
+  }
+  // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public weak var delegate: StreamDistributor?
@@ -70,25 +88,6 @@ public final class Udp: NSObject {
   private let _receiveQ = DispatchQueue(label: "UdpStream.ReceiveQ", qos: .userInteractive)
   
   private let kMaxBindAttempts = 20
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Initialization (singleton)
-  
-  public static var shared = Udp()
-  
-  /// Initialize a Stream Manager
-  /// - Parameters:
-  ///   - receivePort: a port number
-  private init(receivePort: UInt16 = 4991) {
-    self._receivePort = receivePort
-    
-    super.init()
-    
-    // get an IPV4 socket
-    _socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: _receiveQ)
-    _socket.setIPv4Enabled(true)
-    _socket.setIPv6Enabled(false)
-  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods

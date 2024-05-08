@@ -49,6 +49,55 @@ public struct VitaHeader {
 ///     Vita Data packet into a Vita struct.
 public class Vita {
   // ----------------------------------------------------------------------------
+  // MARK: - Initialization
+  
+  /// Initialize Vita struct with the defaults above
+  public init() {
+    // nothing needed, all values are defaulted
+  }
+  
+  /// Initialize Vita with specific settings
+  /// - Parameters:
+  ///   - type:           the type of Vita
+  ///   - streamId:       a StreamId
+  ///   - reducedBW:      is for reduced bandwidth
+  ///
+  public convenience init(type: VitaTypes, streamId: UInt32, reducedBW: Bool = false) {
+    switch type {
+      
+    case .discovery:    self.init(packetType: .extDataWithStream, classCode: .discovery, streamId: streamId, tsi: .utc, tsf: .sampleCount)
+    case .netCW:        self.init(packetType: .extDataWithStream, classCode: .daxAudio, streamId: streamId, tsi: .other, tsf: .sampleCount)
+    case .opusTxV2:     self.init(packetType: .extDataWithStream, classCode: .daxAudio, streamId: streamId, tsi: .other, tsf: .sampleCount)
+    case .opusTx:       self.init(packetType: .extDataWithStream, classCode: .opus, streamId: streamId, tsi: .other, tsf: .sampleCount)
+    case .txAudio:
+      var classCode = ClassCode.daxAudio
+      if reducedBW { classCode = ClassCode.daxAudioReducedBw }
+      self.init(packetType: .ifDataWithStream, classCode: classCode, streamId: streamId, tsi: .other, tsf: .sampleCount)
+    }
+  }
+  
+  /// Initialize a Vita struct as a dataWithStream (Ext or If)
+  /// - Parameters:
+  ///   - packetType:     a Vita Packet Type (.extDataWithStream || .ifDataWithStream)
+  ///   - classCode:      a Vita Class Code
+  ///   - streamId:       a Stream ID (as a String, no "0x")
+  ///   - tsi:            the type of Integer Time Stamp
+  ///   - tsf:            the type of Fractional Time Stamp
+  /// - Returns:          a partially populated Vita struct
+  init(packetType: PacketTypes, classCode: ClassCode, streamId: UInt32, tsi: TsiTypes, tsf: TsfTypes) {
+    assert(packetType == .extDataWithStream || packetType == .ifDataWithStream)
+    
+    self.packetType = packetType
+    self.classCode = classCode
+    self.streamId = streamId
+    self.tsiType = tsi
+    self.tsfType = tsf
+    if tsi == .utc {
+      self.integerTimestamp = CFSwapInt32HostToBig(UInt32(Date().timeIntervalSince1970))
+    }
+  }
+  
+  // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public static let DiscoveryStreamId              : UInt32 = 0x00000800
@@ -88,7 +137,7 @@ public class Vita {
   var informationClassCode                  : UInt32 = kFlexInformationClassCode  // Flex Radio classCode
   var trailer                               : UInt32 = 0                          // Trailer, 4 bytes (if used)
   var headerSize                            : Int = MemoryLayout<VitaHeader>.size // Header size (bytes)
-   
+  
   /// Decode a Data type into a Vita class
   /// - Parameter data:         a Data type containing a Vita stream
   /// - Returns:                a Vita class
@@ -118,7 +167,7 @@ public class Vita {
     
     // ensure the packet has our OUI
     guard CFSwapInt32BigToHost(vitaHeader.pointee.oui) == Vita.kFlexOui else { return nil }
-
+    
     // capture Packet Type
     guard let pt = PacketTypes(rawValue: (vitaHeader.pointee.packetDesc & kPacketTypeMask) >> 4) else {return nil}
     vita.packetType = pt
@@ -259,15 +308,15 @@ public class Vita {
       // YES, append the trailer bytes
       data.append( Data(bytes: &vita.trailer, count: MemoryLayout<UInt32>.size) )
     }
-
+    
     // pad to 32 bit boundary with nulls
     let null: [UInt8] = [0]
     if vita.packetSize % 4 != 0 {
       data.append(null, count: 4 - (vita.packetSize % 4))
     }
-
     
-
+    
+    
     // return the Data type
     return data
   }
@@ -276,84 +325,35 @@ public class Vita {
   /// - Parameter payload:        the Discovery payload (as an array of String)
   /// - Returns:                  a Data type containing a Vita Discovery packet
   public class func discovery(payload: [String], sequenceNumber: UInt8) -> Data? {
-      // create a new Vita class (w/defaults & extDataWithStream / Discovery)
-      let vita = Vita(type: .discovery, streamId: Vita.DiscoveryStreamId)
-  
-      // concatenate the strings, separated by space
-      let payloadString = payload.joined(separator: " ")
-  
-      // calculate the actual length of the payload (in bytes)
-      vita.payloadSize = payloadString.lengthOfBytes(using: .ascii)
-  
-      //        // calculate the number of UInt32 that can contain the payload bytes
-      //        let payloadWords = Int((Float(vita.payloadSize) / Float(MemoryLayout<UInt32>.size)).rounded(.awayFromZero))
-      //        let payloadBytes = payloadWords * MemoryLayout<UInt32>.size
-  
-      // create the payload array at the appropriate size (always a multiple of UInt32 size)
-      var payloadArray = [UInt8](repeating: 0x20, count: vita.payloadSize)
-  
-      // packet size is Header + Payload (no Trailer)
-      vita.packetSize = vita.payloadSize + MemoryLayout<VitaHeader>.size
-  
-     // convert the payload to an array of UInt8
-      let cString = payloadString.cString(using: .ascii)!
-      for i in 0..<cString.count - 1 {
-        payloadArray[i] = UInt8(cString[i])
-      }
-      // give the Vita struct a pointer to the payload
-      vita.payloadData = payloadArray
-
-      // return the encoded Vita class as Data
-    return Vita.encodeAsData(vita, sequenceNumber: sequenceNumber)
-    }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Initialization
-  
-  /// Initialize Vita struct with the defaults above
-  public init() {
-    // nothing needed, all values are defaulted
-  }
-  
-  /// Initialize Vita with specific settings
-  /// - Parameters:
-  ///   - type:           the type of Vita
-  ///   - streamId:       a StreamId
-  ///   - reducedBW:      is for reduced bandwidth
-  ///
-  public convenience init(type: VitaTypes, streamId: UInt32, reducedBW: Bool = false) {
-    switch type {
-      
-    case .discovery:    self.init(packetType: .extDataWithStream, classCode: .discovery, streamId: streamId, tsi: .utc, tsf: .sampleCount)
-    case .netCW:        self.init(packetType: .extDataWithStream, classCode: .daxAudio, streamId: streamId, tsi: .other, tsf: .sampleCount)
-    case .opusTxV2:     self.init(packetType: .extDataWithStream, classCode: .daxAudio, streamId: streamId, tsi: .other, tsf: .sampleCount)
-    case .opusTx:       self.init(packetType: .extDataWithStream, classCode: .opus, streamId: streamId, tsi: .other, tsf: .sampleCount)
-    case .txAudio:
-      var classCode = ClassCode.daxAudio
-      if reducedBW { classCode = ClassCode.daxAudioReducedBw }
-      self.init(packetType: .ifDataWithStream, classCode: classCode, streamId: streamId, tsi: .other, tsf: .sampleCount)
-    }
-  }
-  
-  /// Initialize a Vita struct as a dataWithStream (Ext or If)
-  /// - Parameters:
-  ///   - packetType:     a Vita Packet Type (.extDataWithStream || .ifDataWithStream)
-  ///   - classCode:      a Vita Class Code
-  ///   - streamId:       a Stream ID (as a String, no "0x")
-  ///   - tsi:            the type of Integer Time Stamp
-  ///   - tsf:            the type of Fractional Time Stamp
-  /// - Returns:          a partially populated Vita struct
-  init(packetType: PacketTypes, classCode: ClassCode, streamId: UInt32, tsi: TsiTypes, tsf: TsfTypes) {
-    assert(packetType == .extDataWithStream || packetType == .ifDataWithStream)
+    // create a new Vita class (w/defaults & extDataWithStream / Discovery)
+    let vita = Vita(type: .discovery, streamId: Vita.DiscoveryStreamId)
     
-    self.packetType = packetType
-    self.classCode = classCode
-    self.streamId = streamId
-    self.tsiType = tsi
-    self.tsfType = tsf
-    if tsi == .utc {
-      self.integerTimestamp = CFSwapInt32HostToBig(UInt32(Date().timeIntervalSince1970))
+    // concatenate the strings, separated by space
+    let payloadString = payload.joined(separator: " ")
+    
+    // calculate the actual length of the payload (in bytes)
+    vita.payloadSize = payloadString.lengthOfBytes(using: .ascii)
+    
+    //        // calculate the number of UInt32 that can contain the payload bytes
+    //        let payloadWords = Int((Float(vita.payloadSize) / Float(MemoryLayout<UInt32>.size)).rounded(.awayFromZero))
+    //        let payloadBytes = payloadWords * MemoryLayout<UInt32>.size
+    
+    // create the payload array at the appropriate size (always a multiple of UInt32 size)
+    var payloadArray = [UInt8](repeating: 0x20, count: vita.payloadSize)
+    
+    // packet size is Header + Payload (no Trailer)
+    vita.packetSize = vita.payloadSize + MemoryLayout<VitaHeader>.size
+    
+    // convert the payload to an array of UInt8
+    let cString = payloadString.cString(using: .ascii)!
+    for i in 0..<cString.count - 1 {
+      payloadArray[i] = UInt8(cString[i])
     }
+    // give the Vita struct a pointer to the payload
+    vita.payloadData = payloadArray
+    
+    // return the encoded Vita class as Data
+    return Vita.encodeAsData(vita, sequenceNumber: sequenceNumber)
   }
 }
 
