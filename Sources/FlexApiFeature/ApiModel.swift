@@ -139,7 +139,7 @@ public final class ApiModel: MessageProcessor {
       log("ApiModel: initial commands sent (isGui = \(isGui))", .info, #function, #file, #line)
       
       startPinging()
-      log("ApiModel: pinging \(packet.publicIp)", .info, #function, #file, #line)
+      log("ApiModel: pinging \(packet.publicIp)", .debug, #function, #file, #line)
       
       // set the UDP port for a Local connection
       if packet.source == .local {

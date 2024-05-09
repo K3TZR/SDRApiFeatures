@@ -9,7 +9,8 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+import XCGLogger
+
 
 /// Given an errorcode return an errorlevel
 ///      Flex 6000 error codes
@@ -18,19 +19,19 @@ import XCGLogFeature
 /// - Parameter errorCode:      error code from reply
 /// - Returns:                  error level
 ///
-public func flexErrorLevel(errorCode: String) -> LogLevel {
-  var errorLevel = LogLevel.info
+public func flexErrorLevel(errorCode: String) -> XCGLogger.Level {
+  var errorLevel = XCGLogger.Level.info
   
   let number = UInt32(errorCode, radix: 16) ?? 0
   
   switch number {
-  case 0x10000001...0x10000003: errorLevel = .info
-  case 0x31000001...0x31000009: errorLevel = .warning
-  case 0x50000001...0x500000A3: errorLevel = .error
-  case 0x50001000...0x50001017: errorLevel = .error
-  case 0xE2000000:              errorLevel = .error
-  case 0xF3000001...0xF3000004: errorLevel = .error
-  default:                      errorLevel = .info
+  case 0x10000001...0x10000003: errorLevel = XCGLogger.Level.info
+  case 0x31000001...0x31000009: errorLevel = XCGLogger.Level.warning
+  case 0x50000001...0x500000A3: errorLevel = XCGLogger.Level.error
+  case 0x50001000...0x50001017: errorLevel = XCGLogger.Level.error
+  case 0xE2000000:              errorLevel = XCGLogger.Level.error
+  case 0xF3000001...0xF3000004: errorLevel = XCGLogger.Level.error
+  default:                      errorLevel = XCGLogger.Level.info
   }
   return errorLevel
 }
