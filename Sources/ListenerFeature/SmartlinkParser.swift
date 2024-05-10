@@ -116,6 +116,8 @@ extension SmartlinkListener {
       }
       if _publicIp != nil {
         // stream it
+
+        // NOTE:
 //        Task {
         _listenerModel.statusUpdate(WanStatus(.publicIp, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //        }
@@ -158,6 +160,7 @@ extension SmartlinkListener {
     }
     
     if _firstName != nil && _lastName != nil && _callsign != nil {
+      // NOTE:
 //      Task {
       _listenerModel.statusUpdate(WanStatus(.settings, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //      }

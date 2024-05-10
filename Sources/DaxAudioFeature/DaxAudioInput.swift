@@ -83,11 +83,9 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
     active = false
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
-    Task {
-      await MainActor.run {
-        levels = SignalLevel(rms: -50,peak: -50)
-      }
-    }
+    Task { await MainActor.run {
+      levels = SignalLevel(rms: -50,peak: -50)
+    }}
   }
   
   public func setDevice(_ deviceId: AudioDeviceID) {
@@ -141,9 +139,10 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
         self.streamId = streamId
         
         start()
-        Task {
-          await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
-        }
+//        Task {
+//          await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
+//        }
+        StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self
         log("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }
     }

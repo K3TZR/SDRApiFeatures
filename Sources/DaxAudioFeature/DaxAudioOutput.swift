@@ -157,11 +157,10 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
         }
         let levels = SignalLevel(rms: rmsDb, peak: maxDb)
         
-        Task {
-          await MainActor.run {
-            self.levels = levels
-          }
-        }
+        // NOTE: levels is observed by a View therefore this requires async updating on the MainActor
+        Task { await MainActor.run {
+          self.levels = levels
+        }}
       }
       
     } catch {
@@ -174,11 +173,11 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
     active = false
-    Task {
-      await MainActor.run {
-        levels = SignalLevel(rms: -50,peak: -50)
-      }
-    }
+
+    // NOTE: levels is observed by a View therefore this requires async updating on the MainActor
+    Task { await MainActor.run {
+      levels = SignalLevel(rms: -50,peak: -50)
+    }}
   }
   
   // ----------------------------------------------------------------------------

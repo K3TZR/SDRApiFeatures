@@ -77,7 +77,7 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
   
-  var _isRegistered = false
+//  var _isRegistered = false
   var _socket: GCDAsyncUdpSocket!
   
   // ----------------------------------------------------------------------------
@@ -175,7 +175,7 @@ public final class Udp: NSObject {
     // tell the receive socket to close
     _socket.close()
     
-    _isRegistered = false
+//    _isRegistered = false
     
     _statusStream( UdpStatus(.didUnBind, receivePort: _receivePort, sendPort: sendPort, error: nil ))
   }
@@ -213,10 +213,10 @@ extension Udp: GCDAsyncUdpSocketDelegate {
       // TODO: Packet statistics - received, dropped
       
       // a VITA packet was received therefore registration was successful
-      if _isRegistered == false {
-        _isRegistered = true
-        log("Udp: REGISTERED", .debug, #function, #file, #line)
-      }
+//      if _isRegistered == false {
+//        _isRegistered = true
+//        log("Udp: REGISTERED", .debug, #function, #file, #line)
+//      }
       // stream the received data
 //      _inBoundStreams( vita )
       delegate?.streamDistributor(vita)

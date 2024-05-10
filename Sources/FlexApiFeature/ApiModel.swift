@@ -175,7 +175,10 @@ public final class ApiModel: MessageProcessor {
     ListenerModel.shared.activeStation = nil
     
     // remove all of radio's objects
+    
+    // NOTE: Objects on ObjectModel are observed by a View therefore this requires async updating on the MainActor
     Task { await MainActor.run { ObjectModel.shared.removeAllObjects() } }
+    
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
   }
 
@@ -211,6 +214,8 @@ public final class ApiModel: MessageProcessor {
   ///   - flag:           use "D"iagnostic form
   ///   - callback:       a callback function (if any)
   public func sendCommand(_ command: String, diagnostic flag: Bool = false, replyTo callback: ReplyHandler? = nil) {
+    
+    // NOTE: ????
     Task {
       await MainActor.run {
         let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
@@ -393,7 +398,9 @@ public final class ApiModel: MessageProcessor {
      }
      
      let properties = keyValues
-     Task {
+
+    // NOTE: ????
+    Task {
        await MainActor.run {
          ObjectModel.shared.radio?.parse(properties)
        }
@@ -461,6 +468,8 @@ public final class ApiModel: MessageProcessor {
       firstStatusMessageReceived = true
       _awaitFirstStatusMessage!.resume()
     }
+    
+    // NOTE: 
     Task {
       await MainActor.run {
         ObjectModel.shared.parse(statusType, statusMessage, connectionHandle)

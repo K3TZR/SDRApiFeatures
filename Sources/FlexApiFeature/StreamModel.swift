@@ -38,8 +38,17 @@ final public class StreamStatus: ObservableObject, Identifiable {
   }
 }
 
+
 @Observable
 final public class StreamModel: StreamDistributor {
+  // ----------------------------------------------------------------------------
+  // MARK: - Singleton
+
+  public static var shared = StreamModel()
+  private init() {
+    Udp.shared.delegate = self
+  }
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -68,26 +77,17 @@ final public class StreamModel: StreamDistributor {
   ]
   
   // ----------------------------------------------------------------------------
-  // MARK: - Private properties
-  
-//  private var _streamSubscription: Task<(), Never>? = nil
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Singleton
-
-  public static var shared = StreamModel()
-  private init() {
-    
-    Udp.shared.delegate = self
-  }
+  // MARK: - Public methods
   
   public func streamDistributor(_ vita: Vita) {
     
     // update the statistics
-    Task {
-      await MainActor.run { streamStatistics[id: vita.classCode]?.packets += 1 }
-    }
     
+    // NOTE: StreamStatistics is observed by a View therefore this requires async updating on the MainActor
+    Task {
+      await MainActor.run {streamStatistics[id: vita.classCode]?.packets += 1}
+    }
+        
     switch vita.classCode {
     case .panadapter:
       if let object = panadapterStreams[id: vita.streamId] { object.streamProcessor(vita) }
@@ -103,15 +103,6 @@ final public class StreamModel: StreamDistributor {
       if let object = daxMicAudioStreams[id: vita.streamId]  { object.streamProcessor(vita) }
       if let object = remoteRxAudioStreams[id: vita.streamId] { object.streamProcessor(vita) }
       
-      //        case .daxReducedBw:
-      //          if let stream = await ApiModel.shared.daxRxAudioStreams[id: vita.streamId] {
-      //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-      //          }
-      //
-      //          if let stream = await ApiModel.shared.daxMicAudioStreams[id: vita.streamId] {
-      //            stream.delegate?.daxAudioHandler( payload: vita.payloadData, reducedBW: vita.classCode == .daxReducedBw)
-      //          }
-      
     case .meter:
       if meterStream == nil { meterStream = MeterStream(vita.streamId) }
       meterStream?.streamProcessor(vita)
@@ -126,7 +117,7 @@ final public class StreamModel: StreamDistributor {
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Public Stream methods
+  // MARK: - Public Stream parse methods
 
   public func parse(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
     enum Property: String {

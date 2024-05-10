@@ -80,6 +80,8 @@ public final class LocalListener: NSObject, ObservableObject {
     Timer.publish(every: checkInterval, on: .main, in: .default)
       .autoconnect()
       .sink { now in
+
+        // NOTE:
         Task {
           await MainActor.run {
             self._listenerModel.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
@@ -140,6 +142,8 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
     guard let packet = parseDiscovery(vita) else { return }
     
     // YES, process it
+
+    // NOTE: 
     Task {
       await MainActor.run {
         _listenerModel.processPacket(packet)

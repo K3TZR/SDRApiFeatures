@@ -79,12 +79,6 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
       _frames[_index].frameSize = Int(CFSwapInt16BigToHost(hdr[0].frameBinCount))
       _frames[_index].frameNumber = Int(CFSwapInt32BigToHost(hdr[0].frameNumber))
 
-      
-      
-//      print("number", _frames[_index].frameNumber, "Start", _frames[_index].segmentStart, "size", _frames[_index].segmentSize, "toal size", _frames[_index].frameSize)
-      
-      
-
       // validate the packet (could be incomplete at startup)
       if _frames[_index].frameSize == 0 { return }
       if _frames[_index].segmentStart + _frames[_index].segmentSize > _frames[_index].frameSize { return }
@@ -106,18 +100,8 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
         log("Panadapter: missing frame(s), expected = \(_expectedFrameNumber), received = \(_frames[_index].frameNumber), acccumulatedBins = \(_accumulatedBins), frameBinCount = \(_frames[_index].frameSize)", .debug, #function, #file, #line)
         _expectedFrameNumber = -1
         _accumulatedBins = 0
-        
-//        Task { await MainActor.run { streamStatus[id: vita.classCode]?.errors += 1 }}
-        
         return
       }
-      
-      
-      
-//      print(_frames[_index].number, _frames[_index].segmentStart, _frames[_index].segmentSize, _frames[_index].size)
-
-      
-      
       
       vita.payloadData.withUnsafeBytes { ptr in
         // Swap the byte ordering of the data & place it in the bins
@@ -130,13 +114,8 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
       
       // is it a complete Frame?
       if _accumulatedBins == _frames[_index].frameSize {
-//        // YES, pass it to the delegate
-//        delegate?.streamHandler(_frames[_index])
-
-//        print("bin[500] = \(_frames[_index].bins[500])")
-        
-        
         // YES, post it
+        // NOTE: panadapterFrame is observed by a View therefore this requires async updating on the MainActor
         Task { [frame = _frames[_index]] in await MainActor.run {  panadapterFrame = frame }}
         
         // update the expected frame number & dataframe index
