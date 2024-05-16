@@ -210,7 +210,6 @@ final public class ObjectModel {
     removeAll(of: .usbCable)
     removeAll(of: .waterfall)
     removeAll(of: .xvtr)
-    ApiModel.shared.replyHandlers.removeAll()
   }
   
   func removeAll(of type: ObjectType) {

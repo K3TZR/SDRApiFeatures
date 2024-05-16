@@ -30,7 +30,7 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
   public var sampleRate: Double
   //  public var sliceLetter: String?
   
-  public var levels = SignalLevel(rms: -50,peak: -50)
+  @MainActor public var levels = SignalLevel(rms: -50,peak: -50) // accessed by a View
   public var status = "Off"
   
   // ----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
         }
         let levels = SignalLevel(rms: rmsDb, peak: maxDb)
         
-        // NOTE: levels is observed by a View therefore this requires async updating on the MainActor
+        // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
         Task { await MainActor.run {
           self.levels = levels
         }}
@@ -174,7 +174,7 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
     _engine.stop()
     active = false
 
-    // NOTE: levels is observed by a View therefore this requires async updating on the MainActor
+    // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
     Task { await MainActor.run {
       levels = SignalLevel(rms: -50,peak: -50)
     }}

@@ -28,7 +28,7 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
   public var gain: Double
   public var sampleRate: Double
   
-  public var levels = SignalLevel(rms: -50,peak: -50)
+  @MainActor public var levels = SignalLevel(rms: -50,peak: -50)  // accessed by a View
   public var status = "Off"
   
   // ----------------------------------------------------------------------------
@@ -83,6 +83,8 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
     active = false
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
+
+    // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
     Task { await MainActor.run {
       levels = SignalLevel(rms: -50,peak: -50)
     }}
@@ -107,6 +109,8 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
   public func setGain(_ gain: Double) {
 //    self.gain = gain
     if let streamId = streamId {
+      
+      // NOTE: ????
       Task {
         if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
           for slice in await ObjectModel.shared.slices where await slice.sliceLetter == sliceLetter {
@@ -139,9 +143,6 @@ final public class DaxAudioInput: Equatable, DaxAudioInputHandler {
         self.streamId = streamId
         
         start()
-//        Task {
-//          await MainActor.run { StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self }
-//        }
         StreamModel.shared.daxTxAudioStreams[id: streamId]?.delegate = self
         log("DaxAudioInput: input STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
       }

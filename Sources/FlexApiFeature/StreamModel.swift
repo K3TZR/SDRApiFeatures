@@ -40,6 +40,26 @@ final public class StreamStatus: ObservableObject, Identifiable {
 
 
 @Observable
+final public class StreamStatistics {
+
+  public static var shared = StreamStatistics()
+  private init() {}
+
+  public var stats: IdentifiedArrayOf<StreamStatus> = [
+    StreamStatus(Vita.ClassCode.daxAudio),
+    StreamStatus(Vita.ClassCode.daxAudioReducedBw),
+    StreamStatus(Vita.ClassCode.daxIq24),
+    StreamStatus(Vita.ClassCode.daxIq48),
+    StreamStatus(Vita.ClassCode.daxIq96),
+    StreamStatus(Vita.ClassCode.daxIq192),
+    StreamStatus(Vita.ClassCode.meter),
+    StreamStatus(Vita.ClassCode.opus),
+    StreamStatus(Vita.ClassCode.panadapter),
+    StreamStatus(Vita.ClassCode.waterfall),
+  ]
+}
+
+@Observable
 final public class StreamModel: StreamDistributor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
@@ -63,29 +83,19 @@ final public class StreamModel: StreamDistributor {
   public var remoteTxAudioStreams = IdentifiedArrayOf<RemoteTxAudioStream>()
   public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
   
-  public var streamStatistics: IdentifiedArrayOf<StreamStatus> = [
-    StreamStatus(Vita.ClassCode.daxAudio),
-    StreamStatus(Vita.ClassCode.daxAudioReducedBw),
-    StreamStatus(Vita.ClassCode.daxIq24),
-    StreamStatus(Vita.ClassCode.daxIq48),
-    StreamStatus(Vita.ClassCode.daxIq96),
-    StreamStatus(Vita.ClassCode.daxIq192),
-    StreamStatus(Vita.ClassCode.meter),
-    StreamStatus(Vita.ClassCode.opus),
-    StreamStatus(Vita.ClassCode.panadapter),
-    StreamStatus(Vita.ClassCode.waterfall),
-  ]
-  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
   public func streamDistributor(_ vita: Vita) {
     
+
+//    print("----->>>>> \(Thread.current.threadName)")
+
     // update the statistics
     
-    // NOTE: StreamStatistics is observed by a View therefore this requires async updating on the MainActor
+    // NOTE: StreamStatistics is @Observable therefore requires async updating on the MainActor
     Task {
-      await MainActor.run {streamStatistics[id: vita.classCode]?.packets += 1}
+      await MainActor.run { StreamStatistics.shared.stats[id: vita.classCode]?.packets += 1  }
     }
         
     switch vita.classCode {

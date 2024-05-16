@@ -24,7 +24,7 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-  public weak var delegate: AudioProcessor?
+  public weak var delegate: AudioProcessor? { didSet { print("----->>>>> delegate = \(delegate)")}}
   
   public var clientHandle: UInt32 = 0
   public var compression = ""
@@ -91,21 +91,4 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   public func streamProcessor(_ vita: Vita) {
     delegate?.audioProcessor(vita)
   }
-  
 }
-// ----------------------------------------------------------------------------
-// MARK: - Stream definitions
-
-//extension RemoteRxAudioStream {
-//
-//  /// A stream of received RxAudio Messages
-//  public var rxAudioStream: AsyncStream<RemoteRxAudioFrame> {
-//    AsyncStream { continuation in
-//      _rxAudioStream = { frame in
-//        continuation.yield(frame)
-//      }
-//      continuation.onTermination = { @Sendable _ in
-//      }
-//    }
-//  }
-//}

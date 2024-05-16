@@ -71,7 +71,7 @@ public final class MeterStream: Identifiable, StreamProcessor{
           meterIds.append(id)
           
           // find the meter (if present) & update it
-          // NOTE: ObjectModel is @MainActor therefore this requires a Task to enable async access to ObjectModel
+          // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
           Task {
             if let meter = await ObjectModel.shared.meters[id: id] {
               //          meter.streamHandler( value)

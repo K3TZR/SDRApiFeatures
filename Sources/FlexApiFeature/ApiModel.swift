@@ -15,6 +15,29 @@ import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
+final public actor ReplyHandlers {
+  private var replyHandlers = [Int: ReplyTuple]()
+  private var number: Int = 0
+  
+  public func add(_ tuple: ReplyTuple) -> Int {
+    number += 1
+    replyHandlers[number] = tuple
+    return number
+  }
+  
+  public func remove(_ sequenceNumber: Int) {
+    replyHandlers[sequenceNumber] = nil
+  }
+  
+  public func removeAll() {
+    replyHandlers.removeAll()
+  }
+  
+  subscript(index: Int) -> ReplyTuple? {
+      get { replyHandlers[index] }
+  }
+}
+
 @Observable
 public final class ApiModel: MessageProcessor {
   // ----------------------------------------------------------------------------
@@ -32,9 +55,6 @@ public final class ApiModel: MessageProcessor {
   public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var hardwareVersion: String?
   public internal(set) var nthPingReceived = false
-  public internal(set) var replyHandlers : [Int: ReplyTuple] {
-    get { _replyQ.sync { _replyHandlers } }
-    set { _replyQ.sync(flags: .barrier) { _replyHandlers = newValue }}}
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -44,11 +64,10 @@ public final class ApiModel: MessageProcessor {
   private var _awaitClientIpValidation: CheckedContinuation<String, Never>?
   private var _guiClientId: String?
   private var _pinger: Pinger?
-  private var _replyHandlers = [Int: ReplyTuple]()
   private var _wanHandle = ""
 
-  private let _replyQ = DispatchQueue(label: "replyQ", attributes: [.concurrent])
-  
+  private var _replyHandlers = ReplyHandlers()
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
 
@@ -65,7 +84,7 @@ public final class ApiModel: MessageProcessor {
     
     nthPingReceived = false
     
-    if let packet = ListenerModel.shared.activePacket, let station = ListenerModel.shared.activeStation {
+    if let packet = await ListenerModel.shared.activePacket, let station = await ListenerModel.shared.activeStation {
       // Instantiate a Radio
       try await MainActor.run{
         ObjectModel.shared.radio = Radio(packet, isGui)
@@ -171,13 +190,19 @@ public final class ApiModel: MessageProcessor {
     
     Tcp.shared.disconnect()
     
-    ListenerModel.shared.activePacket = nil
-    ListenerModel.shared.activeStation = nil
     
     // remove all of radio's objects
     
-    // NOTE: Objects on ObjectModel are observed by a View therefore this requires async updating on the MainActor
-    Task { await MainActor.run { ObjectModel.shared.removeAllObjects() } }
+    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+    // NOTE: LIstenerModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+    Task {
+      await MainActor.run {
+        ListenerModel.shared.activePacket = nil
+        ListenerModel.shared.activeStation = nil
+        ObjectModel.shared.removeAllObjects()
+      }
+      await _replyHandlers.removeAll()
+    }
     
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
   }
@@ -213,15 +238,16 @@ public final class ApiModel: MessageProcessor {
   ///   - command:        a Command String
   ///   - flag:           use "D"iagnostic form
   ///   - callback:       a callback function (if any)
-  public func sendCommand(_ command: String, diagnostic flag: Bool = false, replyTo callback: ReplyHandler? = nil) {
+  public func sendCommand(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
     
     // NOTE: ????
     Task {
-      await MainActor.run {
-        let sequenceNumber = Tcp.shared.send(command, diagnostic: flag)
-        // register to be notified when reply received
-        replyHandlers[sequenceNumber] = (replyTo: callback, command: command)
-      }
+      // assign sequenceNumber & register to be notified when reply received
+      let sequenceNumber = await _replyHandlers.add((replyTo: callback, command: cmd))
+      // assemble the command
+      let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
+      // tell TCP to send it
+      Tcp.shared.send(command, sequenceNumber)
     }
   }
   
@@ -359,27 +385,29 @@ public final class ApiModel: MessageProcessor {
     
     // is the sequence number in the reply handlers?
     //    if let replyTuple = ObjectModel.shared.replyHandlers[ seqNum ] {
-    if let replyTuple = replyHandlers[ seqNum ] {
-      // YES
-      let command = replyTuple.command
-
-      // Remove the object from the notification list
-      replyHandlers[components[0].sequenceNumber] = nil
-
-//      removeReplyHandler(components[0].sequenceNumber)
-
-      // Anything other than kNoError is an error, log it
-      // ignore non-zero reply from "client program" command
-      if reply != kNoError && !command.hasPrefix("client program ") {
-        log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+    Task {
+      if let replyTuple = await _replyHandlers[ seqNum ] {
+        // YES
+        let command = replyTuple.command
+        
+        // Remove the object from the notification list
+        await _replyHandlers.remove(components[0].sequenceNumber)
+        
+        //      removeReplyHandler(components[0].sequenceNumber)
+        
+        // Anything other than kNoError is an error, log it
+        // ignore non-zero reply from "client program" command
+        if reply != kNoError && !command.hasPrefix("client program ") {
+          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+        }
+        // did the replyTuple include a callback?
+        if let handler = replyTuple.replyTo {
+          // YES, call the sender's Handler
+          handler(command, seqNum, reply, suffix)
+        }
+      } else {
+        log("ApiModel: \(message) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
       }
-      // did the replyTuple include a callback?
-      if let handler = replyTuple.replyTo {
-        // YES, call the sender's Handler
-        handler(command, seqNum, reply, suffix)
-      }
-    } else {
-      log("ApiModel: \(message) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
     }
   }
 
@@ -399,13 +427,9 @@ public final class ApiModel: MessageProcessor {
      
      let properties = keyValues
 
-    // NOTE: ????
-    Task {
-       await MainActor.run {
-         ObjectModel.shared.radio?.parse(properties)
-       }
-     }
-   }
+    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+    Task { await ObjectModel.shared.radio?.parse(properties) }
+  }
 
   private func ipReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
     // YES, resume it
@@ -468,26 +492,20 @@ public final class ApiModel: MessageProcessor {
       firstStatusMessageReceived = true
       _awaitFirstStatusMessage!.resume()
     }
-    
-    // NOTE: 
-    Task {
-      await MainActor.run {
-        ObjectModel.shared.parse(statusType, statusMessage, connectionHandle)
-      }
+
+    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+    Task { await ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle) }
+  }
+}
+
+extension Thread {
+  public var threadName: String {
+    if isMainThread {
+      return "main"
+    } else if let threadName = Thread.current.name, !threadName.isEmpty {
+      return threadName
+    } else {
+      return description
     }
   }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private subscription methods
-
-  /// Process the AsyncStream of inbound TCP messages
-//  private func subscribeToTcpMessages()  {
-//    Task(priority: .high) {
-//      log("ApiModel: TcpMessage subscription STARTED", .debug, #function, #file, #line)
-//      for await tcpMessage in Tcp.shared.messageStream {
-//        parseInboundTcp(tcpMessage.text)
-//      }
-//      log("ApiModel: TcpMessage subscription STOPPED", .debug, #function, #file, #line)
-//    }
-//  }
 }

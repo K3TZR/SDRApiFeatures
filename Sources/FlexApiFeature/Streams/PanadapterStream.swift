@@ -115,8 +115,7 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
       // is it a complete Frame?
       if _accumulatedBins == _frames[_index].frameSize {
         // YES, post it
-        // NOTE: panadapterFrame is observed by a View therefore this requires async updating on the MainActor
-        Task { [frame = _frames[_index]] in await MainActor.run {  panadapterFrame = frame }}
+        panadapterFrame = _frames[_index]
         
         // update the expected frame number & dataframe index
         _expectedFrameNumber += 1

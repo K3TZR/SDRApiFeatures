@@ -121,8 +121,7 @@ public final class WaterfallStream: Identifiable, StreamProcessor {
         // updated just to be consistent (so that downstream won't use the wrong count)
 
         // YES, post it
-        // NOTE: waterfallFrame is observed by a View therefore this requires async updating on the MainActor
-        Task { [frame = _frames[_index]] in await MainActor.run {  waterfallFrame = frame }}
+        waterfallFrame = _frames[_index]
 
         // update the expected frame number & dataframe index
         _expectedFrameNumber += 1

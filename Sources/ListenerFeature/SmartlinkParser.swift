@@ -240,7 +240,12 @@ extension SmartlinkListener {
       packet.source = .smartlink
       // add packet to Packets
       let newPacket = packet
-      _listenerModel.processPacket(newPacket)
+
+      Task {
+        await MainActor.run {
+          _listenerModel.processPacket(newPacket)
+        }
+      }
 
       log("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)", .debug, #function, #file, #line)
     }
@@ -258,6 +263,8 @@ extension SmartlinkListener {
       case upnpUdpPortWorking    = "upnp_udp_port_working"
     }
     
+    var result = SmartlinkTestResult()
+    
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for unknown properties
@@ -270,15 +277,21 @@ extension SmartlinkListener {
       // Known tokens, in alphabetical order
       switch token {
         
-      case .forwardTcpPortWorking:      _listenerModel.smartlinkTestResult.forwardTcpPortWorking = property.value.tValue
-      case .forwardUdpPortWorking:      _listenerModel.smartlinkTestResult.forwardUdpPortWorking = property.value.tValue
-      case .natSupportsHolePunch:       _listenerModel.smartlinkTestResult.natSupportsHolePunch = property.value.tValue
-      case .radioSerial:                _listenerModel.smartlinkTestResult.radioSerial = property.value
-      case .upnpTcpPortWorking:         _listenerModel.smartlinkTestResult.upnpTcpPortWorking = property.value.tValue
-      case .upnpUdpPortWorking:         _listenerModel.smartlinkTestResult.upnpUdpPortWorking = property.value.tValue
+      case .forwardTcpPortWorking:      result.forwardTcpPortWorking = property.value.tValue
+      case .forwardUdpPortWorking:      result.forwardUdpPortWorking = property.value.tValue
+      case .natSupportsHolePunch:       result.natSupportsHolePunch = property.value.tValue
+      case .radioSerial:                result.radioSerial = property.value
+      case .upnpTcpPortWorking:         result.upnpTcpPortWorking = property.value.tValue
+      case .upnpUdpPortWorking:         result.upnpUdpPortWorking = property.value.tValue
+      }
+      
+      Task { [newResult = result] in
+        await MainActor.run {
+          _listenerModel.smartlinkTestResult = newResult
+        }
       }
     }
     // log the result
-    log("Smartlink Listener: Test result received, \(_listenerModel.smartlinkTestResult.success ? "SUCCESS" : "FAILURE")", _listenerModel.smartlinkTestResult.success ? .debug : .warning, #function, #file, #line)
+    log("Smartlink Listener: Test result received, \(result.success ? "SUCCESS" : "FAILURE")", result.success ? .debug : .warning, #function, #file, #line)
   }
 }

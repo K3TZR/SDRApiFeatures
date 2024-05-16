@@ -87,8 +87,9 @@ public final class Tcp: NSObject {
   var _socket: GCDAsyncSocket!
   var _timeout = 0.0   // seconds
   var _startTime: Date?
+//  var _seq = Sequence()
 
-  @MainActor var sequenceNumber: Int = -1
+//  @MainActor var sequenceNumber: Int = -1
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -153,16 +154,17 @@ public final class Tcp: NSObject {
   ///   - cmd:            a Command string
   ///   - diagnostic:     whether to add "D" suffix
   /// - Returns:          the Sequence Number of the Command
-  @MainActor public func send(_ cmd: String, diagnostic: Bool = false) -> Int {
+  public func send(_ command: String, _ sequenceNumber: Int) {
     // increment the Sequence Number
-    sequenceNumber += 1
+//    let sequenceNumber = await _seq.increment()
     
     // assemble the command
-    let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
+//    let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
     
     // send it, no timeout, tag = segNum
+//    _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: sequenceNumber)
     _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: sequenceNumber)
-    
+
     // stream it to the tester (if any)
     if _startTime != nil {
       let timeStamp = Date()
@@ -171,7 +173,7 @@ public final class Tcp: NSObject {
     }
 
     // return the Sequence Number used by this send
-    return sequenceNumber
+//    return sequenceNumber
   }
 }
 

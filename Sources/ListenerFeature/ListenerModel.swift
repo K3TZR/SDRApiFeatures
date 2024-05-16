@@ -33,12 +33,12 @@ final public class ListenerModel: Equatable {
   // ----------------------------------------------------------------------------
   // MARK: - Public Properties
   
-  public var packets = IdentifiedArrayOf<Packet>()
-  public var stations = IdentifiedArrayOf<Station>()
-  public var activePacket: Packet?
-  public var activeStation: String?
-
-  public var smartlinkTestResult = SmartlinkTestResult()
+  // accessed by a View therefore must be @MainActor
+  @MainActor public var activePacket: Packet?
+  @MainActor public var activeStation: String?
+  @MainActor public var packets = IdentifiedArrayOf<Packet>()
+  @MainActor public var smartlinkTestResult = SmartlinkTestResult()
+  @MainActor public var stations = IdentifiedArrayOf<Station>()
 
   public var clientStream: AsyncStream<ClientEvent> {
     AsyncStream { continuation in _clientStream = { clientEvent in continuation.yield(clientEvent) }
@@ -75,31 +75,34 @@ final public class ListenerModel: Equatable {
   // MARK: - Public methods
   
   public func setActive(_ isGui: Bool, _ selection: String, _ directMode: Bool = false) {
-    
-    if directMode {
-      
-      let components = selection.components(separatedBy: "|")
-      let serial = components[0]
-      let publicIp = components[1]
-      
-      if isGui {
-        activePacket = Packet(nickname: "DIRECT", serial: serial, publicIp: publicIp, port: 4_992)
-        activeStation = "SDRApi"
-      } else {
-        fatalError()
-      }
-      
-    } else {
-      if isGui {
-        activePacket = packets[id: selection]!
-        activeStation = "SDRApi"
-      } else {
-        activePacket  = stations[id: selection]!.packet
-        activeStation = stations[id: selection]!.station
+    Task {
+      await MainActor.run {
+        if directMode {
+          
+          let components = selection.components(separatedBy: "|")
+          let serial = components[0]
+          let publicIp = components[1]
+          
+          if isGui {
+            activePacket = Packet(nickname: "DIRECT", serial: serial, publicIp: publicIp, port: 4_992)
+            activeStation = "SDRApi"
+          } else {
+            fatalError()
+          }
+          
+        } else {
+          if isGui {
+            activePacket = packets[id: selection]!
+            activeStation = "SDRApi"
+          } else {
+            activePacket  = stations[id: selection]!.packet
+            activeStation = stations[id: selection]!.station
+          }
+        }
       }
     }
   }
-  
+    
   public func localMode(_ enable: Bool) {
     _localListener?.stop()
     _localListener = nil
@@ -108,7 +111,11 @@ final public class ListenerModel: Equatable {
       _localListener = LocalListener(self)
       _localListener!.start()
     } else {
-      removePackets(condition: {$0.source == .local})
+      Task {
+        await MainActor.run {
+          removePackets(condition: {$0.source == .local})
+        }
+      }
     }
   }
   
@@ -141,7 +148,11 @@ final public class ListenerModel: Equatable {
   }
   
   public func smartlinkStop() {
-    ListenerModel.shared.removePackets(condition: {$0.source == .smartlink})
+    Task {
+      await MainActor.run {
+        removePackets(condition: {$0.source == .smartlink})
+      }
+    }
 
     _smartlinkListener?.stop()
     _smartlinkListener = nil
@@ -190,14 +201,14 @@ final public class ListenerModel: Equatable {
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial) handle=\(handle.hex)")
   }
   
-  public func isValidDefault(for guiDefault: String?, _ nonGuiDefault: String?, _ isGui: Bool) -> Bool {
+  public func isValidDefault(for guiDefault: String?, _ nonGuiDefault: String?, _ isGui: Bool) async -> Bool {
     if isGui {
       guard guiDefault != nil else { return false }
-      return packets[id: guiDefault!] != nil
+      return await packets[id: guiDefault!] != nil
       
     } else {
       guard nonGuiDefault != nil else { return false }
-      return stations[id: nonGuiDefault!] != nil
+      return await stations[id: nonGuiDefault!] != nil
     }
   }
   
@@ -219,7 +230,7 @@ final public class ListenerModel: Equatable {
   
   /// Process an incoming DiscoveryPacket
   /// - Parameter newPacket: the packet
-  func processPacket(_ newPacket: Packet) {
+  @MainActor func processPacket(_ newPacket: Packet) {
     
     // is it a Packet that has been seen previously?
     if let oldPacket = packets[id: newPacket.serial + "|" + newPacket.publicIp] {
@@ -243,7 +254,7 @@ final public class ListenerModel: Equatable {
     }
   }
   
-  private func updatePacketData(_ oldPacket: Packet?, _ newPacket: Packet ) {
+  @MainActor private func updatePacketData(_ oldPacket: Packet?, _ newPacket: Packet ) {
     // update Packets collection
     packets[id: newPacket.serial + "|" + newPacket.publicIp] = newPacket
     
@@ -295,7 +306,7 @@ final public class ListenerModel: Equatable {
   
   /// Remove one or more packets meeting the condition
   /// - Parameter condition: a closure defining the condition
-  public func removePackets(condition: @escaping (Packet) -> Bool) {
+  @MainActor public func removePackets(condition: @escaping (Packet) -> Bool) {
     _formatter.timeStyle = .long
     _formatter.dateStyle = .none
     for packet in packets where condition(packet) {
@@ -313,14 +324,10 @@ final public class ListenerModel: Equatable {
   
   /// FIndthe first packet meeting the condition
   /// - Parameter condition: a closure defining the condition
-  func findPacket(condition: @escaping (Packet) -> Bool) -> Packet? {
+  @MainActor func findPacket(condition: @escaping (Packet) -> Bool) -> Packet? {
     for packet in packets where condition(packet) {
       return packet
     }
     return nil
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private methods
-  
 }
