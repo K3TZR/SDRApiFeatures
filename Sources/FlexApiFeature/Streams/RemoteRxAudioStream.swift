@@ -24,7 +24,7 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-  public weak var delegate: AudioProcessor? { didSet { print("----->>>>> delegate = \(delegate)")}}
+  public weak var delegate: AudioProcessor?
   
   public var clientHandle: UInt32 = 0
   public var compression = ""

@@ -15,11 +15,7 @@ import VitaFeature
 import XCGLogFeature
 
 @Observable
-final public class DaxAudioOutput: Equatable, AudioProcessor {
-  public static func == (lhs: DaxAudioOutput, rhs: DaxAudioOutput) -> Bool {
-    lhs === rhs
-  }
-  
+final public class DaxAudioOutput: AudioProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -54,6 +50,26 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
   private let _engine = AVAudioEngine()
   private var _interleavedBuffer = AVAudioPCMBuffer()
   private var _nonInterleavedBuffer = AVAudioPCMBuffer()
+  
+  private let _minDbLevel: Float = -50
+  
+  
+  
+  private var _pcmProcessor: PcmProcessor
+  private var _ringBuffer: RingBuffer
+
+  // PCM, Float32, Host, 2 channel, non-interleaved
+  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+                                                            mFormatID: kAudioFormatLinearPCM,
+                                                            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
+                                                            mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
+                                                            mFramesPerPacket: 1,
+                                                            mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
+                                                            mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                            mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
+                                                            mReserved: 0)
+
+  
   
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
@@ -137,51 +153,58 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
     
     do {
       try _engine.start()
+      log("DaxAudioPlayer: output STARTED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
+
       _engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) {(buffer, time) in
         guard let channelData = buffer.floatChannelData?[0] else {return}
-        let frames = buffer.frameLength
-        
-        // calc the average
-        var rms: Float = 0
-        vDSP_measqv(channelData, 1, &rms, UInt(frames))
-        var rmsDb = 10*log10f(rms)
-        if rmsDb < -45 {
-          rmsDb = -45
-        }
-        // calc the peak
-        var max: Float = 0
-        vDSP_maxv(channelData, 1, &max, UInt(frames))
-        var maxDb = 10*log10f(max)
-        if maxDb < -45 {
-          maxDb = -45
-        }
-        let levels = SignalLevel(rms: rmsDb, peak: maxDb)
         
         // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
         Task { await MainActor.run {
-          self.levels = levels
+          self.levels = self.levelCalc(buffer)
         }}
       }
       
     } catch {
-      fatalError("DaxAudioOutput: Failed to start, error = \(error)")
+      log("DaxAudioPlayer: Failed to start, error = \(error)", .error, #function, #file, #line)
     }
     
   }
   
   public func stop() {
+    log("DaxAudioPlayer: output STOPPED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
     active = false
 
     // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
     Task { await MainActor.run {
-      levels = SignalLevel(rms: -50,peak: -50)
+      levels = SignalLevel(rms: _minDbLevel, peak: _minDbLevel)
     }}
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private methods
+  
+  private func levelCalc(_ buffer: AVAudioPCMBuffer) -> SignalLevel {
+    guard let channelData = buffer.floatChannelData?[0] else  { return SignalLevel(rms: _minDbLevel, peak: _minDbLevel) }
+    let frames = buffer.frameLength
+
+    // calc the average
+    var rms: Float = 0
+    vDSP_measqv(channelData, 1, &rms, UInt(frames))
+    var rmsDb = 10*log10f(rms)
+    if rmsDb < _minDbLevel {
+      rmsDb = _minDbLevel
+    }
+    // calc the peak
+    var max: Float = 0
+    vDSP_maxv(channelData, 1, &max, UInt(frames))
+    var maxDb = 10*log10f(max)
+    if maxDb < _minDbLevel {
+      maxDb = _minDbLevel
+    }
+    return SignalLevel(rms: rmsDb, peak: maxDb)
+  }
   
 //  public func setDevice(_ deviceId: AudioDeviceID) {
 //    self.deviceId = deviceId
@@ -281,9 +304,14 @@ final public class DaxAudioOutput: Equatable, AudioProcessor {
       if let streamId = reply.streamId {
         self.streamId = streamId
         
-        start()
+        // add the stream to the collection
+        StreamModel.shared.daxRxAudioStreams.append( DaxRxAudioStream(streamId) )
+
+        // set this player as it's delegate
         StreamModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self
-        log("DaxAudioOutput: output STARTED, Stream Id = \(streamId.hex)", .debug, #function, #file, #line)
+
+        // start processing audio
+        start()
       }
     }
   }

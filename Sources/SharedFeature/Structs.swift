@@ -424,7 +424,7 @@ public struct SignalLevel {
   }
 }
 
-public enum MessageFilter: String, CaseIterable {
+public enum MessageFilter: String, Codable, CaseIterable {
   case all
   case prefix
   case includes

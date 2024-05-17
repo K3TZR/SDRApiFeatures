@@ -8,6 +8,7 @@ let package = Package(
   platforms: [.macOS(.v14)],
   
   products: [
+    .library(name: "AudioFeature", targets: ["AudioFeature"]),
     .library(name: "CustomControlFeature", targets: ["CustomControlFeature"]),
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
     .library(name: "DaxAudioFeature", targets: ["DaxAudioFeature"]),
@@ -21,7 +22,6 @@ let package = Package(
     .library(name: "PanafallFeature", targets: ["PanafallFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
-    .library(name: "RxAudioFeature", targets: ["RxAudioFeature"]),
     .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
     .library(name: "SideControlsFeature", targets: ["SideControlsFeature"]),
@@ -43,6 +43,13 @@ let package = Package(
   
   // --------------- Modules ---------------
   targets: [
+    // AudioFeature
+    .target( name: "AudioFeature", dependencies: [
+      .product(name: "XCGLogFeature", package: "LogFeatures"),
+      "FlexApiFeature",
+      "RingBufferFeature",
+    ]),
+    
     // ClientFeature
     .target(name: "ClientFeature", dependencies: [
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
@@ -126,13 +133,6 @@ let package = Package(
 
     // RingBufferFeature
     .target( name: "RingBufferFeature", dependencies: []),
-    
-    // RxAudioFeature
-    .target( name: "RxAudioFeature", dependencies: [
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
-      "FlexApiFeature",
-      "RingBufferFeature",
-    ]),
     
     // SettingsFeature
     .target(name: "SettingsFeature", dependencies: [
