@@ -11,7 +11,8 @@ public protocol StreamDistributor: AnyObject {
 }
 
 public protocol StreamProcessor: AnyObject {
-  func streamProcessor(_ vita: Vita)
+//  func streamProcessor(_ vita: Vita)
+  func streamProcessor(_ vita: Vita) async
 }
 
 public protocol AudioProcessor: AnyObject {

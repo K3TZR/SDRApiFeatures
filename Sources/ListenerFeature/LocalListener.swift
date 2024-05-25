@@ -47,7 +47,7 @@ public final class LocalListener: NSObject, ObservableObject {
   var currentNullCount = 0
   
   static let broadcastTimeout = 20.0
-  
+    
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -80,12 +80,7 @@ public final class LocalListener: NSObject, ObservableObject {
     Timer.publish(every: checkInterval, on: .main, in: .default)
       .autoconnect()
       .sink { now in
-
-        // NOTE:
-        Task {
-          await MainActor.run {
-            self._listenerModel.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
-          }
+        Task { await Discovery.shared.removePackets(for: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
         }
       }
       .store(in: &_cancellables)
@@ -95,26 +90,7 @@ public final class LocalListener: NSObject, ObservableObject {
     _cancellables = Set<AnyCancellable>()
     _udpSocket?.close()
     log("Local Listener: STOPPED", .info, #function, #file, #line)
-  }
-  
-//  func start(checkInterval: TimeInterval = 1.0, timeout: TimeInterval = 10.0) {
-//    try! _udpSocket.beginReceiving()
-//    log("Lan Listener: STARTED", .info, #function, #file, #line)
-//
-//    // setup a timer to watch for Radio timeouts
-//    _cancel = Task {
-//      repeat {
-//        self._listener.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(Date())) > timeout } )
-//        try? await Task.sleep(for: .seconds(checkInterval))
-//      }while (!Task.isCancelled)
-//    }
-//  }
-//  /// stop the listener
-//  func stop() {
-//    _cancel = nil
-//    _udpSocket?.close()
-//    log("Lan Listener: STOPPED", .info, #function, #file, #line)
-//  }
+  }  
 }
 
 // ----------------------------------------------------------------------------
@@ -142,13 +118,7 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
     guard let packet = parseDiscovery(vita) else { return }
     
     // YES, process it
-
-    // NOTE: 
-    Task {
-      await MainActor.run {
-        _listenerModel.processPacket(packet)
-      }
-    }
+    Task { await Discovery.shared.process(packet) }
   }
   
   /// Parse a Vita class containing a Discovery broadcast
@@ -167,12 +137,8 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
       
       if _logBroadcasts { checkPayloadNulls(payloadData) }
       
-//      return Packet.populate( payloadData.keyValuesArray() )
       let packet = Packet.populate( payloadData.keyValuesArray() )
 
-//      for guiClient in packet.guiClients {
-//        _listener.guiClients[id: guiClient.id] = guiClient
-//      }
       return packet
     }
     return nil

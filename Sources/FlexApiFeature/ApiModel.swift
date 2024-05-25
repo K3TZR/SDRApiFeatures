@@ -15,31 +15,8 @@ import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
-final public actor ReplyHandlers {
-  private var replyHandlers = [Int: ReplyTuple]()
-  private var number: Int = 0
-  
-  public func add(_ tuple: ReplyTuple) -> Int {
-    number += 1
-    replyHandlers[number] = tuple
-    return number
-  }
-  
-  public func remove(_ sequenceNumber: Int) {
-    replyHandlers[sequenceNumber] = nil
-  }
-  
-  public func removeAll() {
-    replyHandlers.removeAll()
-  }
-  
-  subscript(index: Int) -> ReplyTuple? {
-      get { replyHandlers[index] }
-  }
-}
-
 @Observable
-public final class ApiModel: MessageProcessor {
+public final class ApiModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
@@ -50,11 +27,13 @@ public final class ApiModel: MessageProcessor {
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
-  
+
+  public private(set) var activePacket: Packet?
+  public var activeSlice: Slice?
+  public private(set) var activeStation: String?
+
   public internal(set) var connectionHandle: UInt32?
-  public internal(set) var firstStatusMessageReceived: Bool = false
   public internal(set) var hardwareVersion: String?
-  public internal(set) var nthPingReceived = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -62,29 +41,32 @@ public final class ApiModel: MessageProcessor {
   private var _awaitFirstStatusMessage: CheckedContinuation<(), Never>?
   private var _awaitWanValidation: CheckedContinuation<String, Never>?
   private var _awaitClientIpValidation: CheckedContinuation<String, Never>?
+  private var _firstStatusMessageReceived: Bool = false
   private var _guiClientId: String?
   private var _pinger: Pinger?
+  private var _replyDictionary = ReplyDictionary()
   private var _wanHandle = ""
-
-  private var _replyHandlers = ReplyHandlers()
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
 
   /// Connect to a Radio
   /// - Parameters:
-  ///   - selection: selection from the Radio Picker
+  ///   - packet: selected broadcast Packet
+  ///   - station: selected Station
   ///   - isGui: true = GUI
   ///   - disconnectHandle: handle to another connection to be disconnected (if any)
   ///   - programName: program name
   ///   - mtuValue: max transport unit
   ///   - lowBandwidthDax: true = use low bw DAX
   ///   - lowBandwidthConnect: true = minimize connection bandwidth
-  public func connect(selection: String, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
+  public func connect(packet: Packet?, station: String?, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
     
-    nthPingReceived = false
-    
-    if let packet = await ListenerModel.shared.activePacket, let station = await ListenerModel.shared.activeStation {
+    if let packet, let station {
+      
+      activePacket = packet
+      activeStation = station
+      
       // Instantiate a Radio
       try await MainActor.run{
         ObjectModel.shared.radio = Radio(packet, isGui)
@@ -100,7 +82,7 @@ public final class ApiModel: MessageProcessor {
       
       if disconnectHandle != nil {
         // pending disconnect
-        sendCommand("client disconnect \(disconnectHandle!.hex)")
+        sendTcp("client disconnect \(disconnectHandle!.hex)")
       }
       
       // wait for the first Status message with my handle
@@ -120,7 +102,7 @@ public final class ApiModel: MessageProcessor {
         
         // send Wan Validate & wait for the reply
         log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
-        sendCommand("wan validate handle=\(_wanHandle)", replyTo: wanValidationReplyHandler)
+        sendTcp("wan validate handle=\(_wanHandle)", replyTo: wanValidationReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           //          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
           //          await sendCommand("wan validate handle=\(_wanHandle), replyTo callback: awaitWanValidation")
@@ -142,11 +124,11 @@ public final class ApiModel: MessageProcessor {
       // is this a Wan connection?
       if packet.source == .smartlink {
         // send Wan Register (no reply)
-        sendUdp(string: "client udp_register handle=" + connectionHandle!.hex )
+        sendUdp("client udp_register handle=" + connectionHandle!.hex )
         log("ApiModel: UDP registration sent", .debug, #function, #file, #line)
         
         // send Client Ip & wait for the reply
-        sendCommand("client ip", replyTo: ipReplyHandler)
+        sendTcp("client ip", replyTo: ipReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           await clientIpValidation()
         }
@@ -162,7 +144,7 @@ public final class ApiModel: MessageProcessor {
       
       // set the UDP port for a Local connection
       if packet.source == .local {
-        sendCommand("client udpport " + "\(Udp.shared.sendPort)")
+        sendTcp("client udpport " + "\(Udp.shared.sendPort)")
         log("ApiModel: Client Udp port set to \(Udp.shared.sendPort)", .info, #function, #file, #line)
       }
     }
@@ -173,8 +155,7 @@ public final class ApiModel: MessageProcessor {
   public func disconnect(_ reason: String? = nil) {
     log("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))", reason == nil ? .debug : .warning, #function, #file, #line)
     
-    firstStatusMessageReceived = false
-    nthPingReceived = false
+    _firstStatusMessageReceived = false
     
     // stop pinging (if active)
     stopPinging()
@@ -186,66 +167,52 @@ public final class ApiModel: MessageProcessor {
     Udp.shared.unbind()
     log("ApiModel: Disconnect, UDP unbound", .debug, #function, #file, #line)
     
-    //    streamModel.unSubscribeToStreams()
-    
     Tcp.shared.disconnect()
     
-    
-    // remove all of radio's objects
-    
-    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-    // NOTE: LIstenerModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+    activePacket = nil
+    activeStation = nil
     Task {
-      await MainActor.run {
-        ListenerModel.shared.activePacket = nil
-        ListenerModel.shared.activeStation = nil
-        ObjectModel.shared.removeAllObjects()
-      }
-      await _replyHandlers.removeAll()
+      await ObjectModel.shared.removeAllObjects()
+      await _replyDictionary.removeAll()
     }
     
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
   }
 
   // ----------------------------------------------------------------------------
-  // MARK: - Public message processor methods
+  // MARK: - Public TCP message processor
 
-  public func messageProcessor(_ msg: TcpMessage) {
+  public func tcpProcessor(_ msg: TcpMessage) {
     let message = msg.text
     
-    // switch on the first character of the text
-    switch message.prefix(1) {
+    // the first character indicates the type of message
+    switch message.prefix(1).uppercased() {
       
-    case "H", "h":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
-    case "M", "m":  parseMessage( message.dropFirst() )
-    case "R", "r":  defaultReplyProcessor( message )
-    case "S", "s":  parseStatus( message.dropFirst() )
-    case "V", "v":  hardwareVersion = String(message.dropFirst())
-    default:        log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
+    case "H":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
+    case "M":  parseMessage( message.dropFirst() )
+    case "R":  defaultReplyProcessor( message.dropFirst() )
+    case "S":  parseStatus( message.dropFirst() )
+    case "V":  hardwareVersion = String(message.dropFirst())
+    default:   log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
     }
   }
 
   // ----------------------------------------------------------------------------
-  // MARK: - Public Command methods
+  // MARK: - Public Send methods
 
-  public func sendPingCommand(_ command: String, _ pingCount: Int, replyTo callback: @escaping ReplyHandler) {
-    if pingCount > 2 { nthPingReceived = true }
-    sendCommand(command, replyTo: callback)
-  }
-  
   /// Send a command to the Radio (hardware) via TCP
   /// - Parameters:
   ///   - command:        a Command String
   ///   - flag:           use "D"iagnostic form
   ///   - callback:       a callback function (if any)
-  public func sendCommand(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
-    
-    // NOTE: ????
+  public func sendTcp(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
     Task {
       // assign sequenceNumber & register to be notified when reply received
-      let sequenceNumber = await _replyHandlers.add((replyTo: callback, command: cmd))
+      let sequenceNumber = await _replyDictionary.add((replyTo: callback, command: cmd))
+      
       // assemble the command
       let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
+      
       // tell TCP to send it
       Tcp.shared.send(command, sequenceNumber)
     }
@@ -254,7 +221,7 @@ public final class ApiModel: MessageProcessor {
   /// Send data to the Radio (hardware) via UDP
   /// - Parameters:
   ///   - data: a Data
-  public func sendUdp(data: Data) {
+  public func sendUdp(_ data: Data) {
     // tell Udp to send the Data message
     Udp.shared.send(data)
   }
@@ -262,7 +229,7 @@ public final class ApiModel: MessageProcessor {
   /// Send data to the Radio (hardware) via UDP
   /// - Parameters:
   ///   - string: a String
-  public func sendUdp(string: String) {
+  public func sendUdp(_ string: String) {
     // tell Udp to send the String message
     Udp.shared.send(string)
   }
@@ -286,9 +253,9 @@ public final class ApiModel: MessageProcessor {
   private func sendInitialCommands(_ isGui: Bool, _ programName: String, _ stationName: String, _ mtuValue: Int, _ lowBandwidthDax: Bool, _ lowBandwidthConnect: Bool) {
     @Shared(.appStorage("guiClientId")) var guiClientId = UUID().uuidString
 
-    if isGui { sendCommand("client gui \(guiClientId)") }
-    sendCommand("client program " + programName)
-    if isGui { sendCommand("client station " + stationName) }
+    if isGui { sendTcp("client gui \(guiClientId)") }
+    sendTcp("client program " + programName)
+    if isGui { sendTcp("client station " + stationName) }
     if lowBandwidthConnect { setLowBandwidthConnect() }
     requestInfo(replyTo: initialCommandsReplyHandler)
     requestVersion(replyTo: initialCommandsReplyHandler)
@@ -305,28 +272,28 @@ public final class ApiModel: MessageProcessor {
   }
 
   private func sendSubAll(callback: ReplyHandler? = nil) {
-    sendCommand("sub tx all")
-    sendCommand("sub atu all")
-    sendCommand("sub amplifier all")
-    sendCommand("sub meter all")
-    sendCommand("sub pan all")
-    sendCommand("sub slice all")
-    sendCommand("sub gps all")
-    sendCommand("sub audio_stream all")
-    sendCommand("sub cwx all")
-    sendCommand("sub xvtr all")
-    sendCommand("sub memories all")
-    sendCommand("sub daxiq all")
-    sendCommand("sub dax all")
-    sendCommand("sub usb_cable all")
-    sendCommand("sub tnf all")
-    sendCommand("sub client all")
+    sendTcp("sub tx all")
+    sendTcp("sub atu all")
+    sendTcp("sub amplifier all")
+    sendTcp("sub meter all")
+    sendTcp("sub pan all")
+    sendTcp("sub slice all")
+    sendTcp("sub gps all")
+    sendTcp("sub audio_stream all")
+    sendTcp("sub cwx all")
+    sendTcp("sub xvtr all")
+    sendTcp("sub memories all")
+    sendTcp("sub daxiq all")
+    sendTcp("sub dax all")
+    sendTcp("sub usb_cable all")
+    sendTcp("sub tnf all")
+    sendTcp("sub client all")
     //      send("sub spot all")    // TODO:
   }
 
   private func startPinging() {
     // tell the Radio to expect pings
-    sendCommand("keepalive enable")
+    sendTcp("keepalive enable")
     // start pinging the Radio
     _pinger = Pinger(self)
   }
@@ -361,14 +328,12 @@ public final class ApiModel: MessageProcessor {
   }
 
   // ----------------------------------------------------------------------------
-  // MARK: - Private reply handler methods
+  // MARK: - Private Reply methods
 
   /// Parse Replies
   /// - Parameters:
   ///   - commandSuffix:      a Reply Suffix
-  private func defaultReplyProcessor(_ message: String) {
-    
-    let replySuffix = message.dropFirst()
+  private func defaultReplyProcessor(_ replySuffix: Substring) {
     
     // separate it into its components
     let components = replySuffix.components(separatedBy: "|")
@@ -386,12 +351,12 @@ public final class ApiModel: MessageProcessor {
     // is the sequence number in the reply handlers?
     //    if let replyTuple = ObjectModel.shared.replyHandlers[ seqNum ] {
     Task {
-      if let replyTuple = await _replyHandlers[ seqNum ] {
+      if let replyTuple = await _replyDictionary[ seqNum ] {
         // YES
         let command = replyTuple.command
         
         // Remove the object from the notification list
-        await _replyHandlers.remove(components[0].sequenceNumber)
+        await _replyDictionary.remove(components[0].sequenceNumber)
         
         //      removeReplyHandler(components[0].sequenceNumber)
         
@@ -406,7 +371,7 @@ public final class ApiModel: MessageProcessor {
           handler(command, seqNum, reply, suffix)
         }
       } else {
-        log("ApiModel: \(message) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+        log("ApiModel: \(replySuffix) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
       }
     }
   }
@@ -487,9 +452,9 @@ public final class ApiModel: MessageProcessor {
     let statusMessage = String(components[1][messageIndex...])
     
     // is this status message the first for our handle?
-    if firstStatusMessageReceived == false && components[0].handle == connectionHandle {
+    if _firstStatusMessageReceived == false && components[0].handle == connectionHandle {
       // YES, set the API state to finish the UDP initialization
-      firstStatusMessageReceived = true
+      _firstStatusMessageReceived = true
       _awaitFirstStatusMessage!.resume()
     }
 
@@ -497,6 +462,10 @@ public final class ApiModel: MessageProcessor {
     Task { await ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle) }
   }
 }
+
+
+// FIXME: Remove when no longer needed
+
 
 extension Thread {
   public var threadName: String {

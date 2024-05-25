@@ -1,6 +1,7 @@
 //
 //  PcmProcessor.swift
-//  
+//  AudioFeature/PcmProcessor
+//
 //
 //  Created by Douglas Adams on 5/16/24.
 //
@@ -11,6 +12,7 @@ import Foundation
 import XCGLogFeature
 
 final public actor PcmProcessor {
+//final public class PcmProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   

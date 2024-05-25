@@ -141,7 +141,7 @@ public final class Equalizer: Identifiable {
       // YES
       rawProperty = altValue
     }
-    ApiModel.shared.sendCommand("eq \(id) \(rawProperty)=\(value)")
+    ApiModel.shared.sendTcp("eq \(id) \(rawProperty)=\(value)")
   }
 
   /* ----- from FlexApi -----

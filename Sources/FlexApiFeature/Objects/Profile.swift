@@ -95,16 +95,16 @@ public final class Profile: Identifiable {
     
     switch cmd {
     case "delete":
-      ApiModel.shared.sendCommand("profile \(id) delete \"\(profileName)\"")
+      ApiModel.shared.sendTcp("profile \(id) delete \"\(profileName)\"")
       list.removeAll(where: { $0 == profileName })
     case "create":
       list.append(profileName)
-      ApiModel.shared.sendCommand("profile \(id) " + "create \"\(profileName)\"")
+      ApiModel.shared.sendTcp("profile \(id) " + "create \"\(profileName)\"")
     case "reset":
-      ApiModel.shared.sendCommand("profile \(id) " + "reset \"\(profileName)\"")
+      ApiModel.shared.sendTcp("profile \(id) " + "reset \"\(profileName)\"")
     default:
       current = profileName
-      ApiModel.shared.sendCommand("profile \(id) " + "load \"\(profileName)\"")
+      ApiModel.shared.sendTcp("profile \(id) " + "load \"\(profileName)\"")
     }
   }
 

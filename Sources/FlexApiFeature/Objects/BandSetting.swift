@@ -112,9 +112,9 @@ public final class BandSetting: Identifiable {
   private func send(_ id: UInt32, _ property: Property, _ value: String) {
     switch property {
     case .inhibit, .hwAlcEnabled, .rfPower, .tunePower:
-      ApiModel.shared.sendCommand("transmit bandset \(id) \(property.rawValue)=\(value)")
+      ApiModel.shared.sendTcp("transmit bandset \(id) \(property.rawValue)=\(value)")
     case .accTxEnabled, .accTxReqEnabled, .rcaTxReqEnabled, .tx1Enabled, .tx2Enabled, .tx3Enabled:
-      ApiModel.shared.sendCommand("interlock bandset \(id) \(property.rawValue)=\(value)")
+      ApiModel.shared.sendTcp("interlock bandset \(id) \(property.rawValue)=\(value)")
     case .name:
       break
     }

@@ -13,9 +13,6 @@ import SwiftUI
 public typealias Hz = Int
 public typealias MHz = Double
 
-public typealias ReplyHandler = (_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) -> Void
-public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
-
 // ----------------------------------------------------------------------------
 // MARK: - Constants
 

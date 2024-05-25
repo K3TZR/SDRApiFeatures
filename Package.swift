@@ -11,7 +11,6 @@ let package = Package(
     .library(name: "AudioFeature", targets: ["AudioFeature"]),
     .library(name: "CustomControlFeature", targets: ["CustomControlFeature"]),
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
-    .library(name: "DaxAudioFeature", targets: ["DaxAudioFeature"]),
     .library(name: "DirectFeature", targets: ["DirectFeature"]),
     .library(name: "FlagAntennaFeature", targets: ["FlagAntennaFeature"]),
     .library(name: "FlagFeature", targets: ["FlagFeature"]),
@@ -46,7 +45,9 @@ let package = Package(
     // AudioFeature
     .target( name: "AudioFeature", dependencies: [
       .product(name: "XCGLogFeature", package: "LogFeatures"),
-      "FlexApiFeature",
+//      "FlexApiFeature",
+      "SharedFeature",
+      "VitaFeature",
       "RingBufferFeature",
     ]),
     
@@ -58,13 +59,6 @@ let package = Package(
     
     // CustomControlFeature
     .target(name: "CustomControlFeature", dependencies: [
-      "SharedFeature",
-    ]),
-    
-    // DaxAudioFeature
-    .target( name: "DaxAudioFeature", dependencies: [
-      "FlexApiFeature",
-      "RingBufferFeature",
       "SharedFeature",
     ]),
     
@@ -89,11 +83,12 @@ let package = Package(
     // FlexApiFeature
     .target(name: "FlexApiFeature", dependencies: [
       .product(name: "XCGLogFeature", package: "LogFeatures"),
+      "AudioFeature",
       "ListenerFeature",
+      "SharedFeature",
       "TcpFeature",
       "UdpFeature",
       "VitaFeature",
-      "SharedFeature",
     ]),
     
     // ListenerFeature

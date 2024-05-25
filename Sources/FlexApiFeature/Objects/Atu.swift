@@ -100,8 +100,8 @@ public final class Atu {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .enabled:            ApiModel.shared.sendCommand("atu \(value == "1" ? "start": "bypass")")
-    case .memoriesEnabled:    ApiModel.shared.sendCommand("atu set \(property.rawValue)=\(value)")
+    case .enabled:            ApiModel.shared.sendTcp("atu \(value == "1" ? "start": "bypass")")
+    case .memoriesEnabled:    ApiModel.shared.sendTcp("atu set \(property.rawValue)=\(value)")
     default:                  break
     }
   }

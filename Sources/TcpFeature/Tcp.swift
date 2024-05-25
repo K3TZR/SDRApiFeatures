@@ -41,8 +41,8 @@ public struct TcpStatus: Identifiable, Equatable {
   public var reason: String?
 }
 
-public protocol MessageProcessor: AnyObject {
-  func messageProcessor(_ message: TcpMessage )
+public protocol TcpProcessor: AnyObject {
+  func tcpProcessor(_ message: TcpMessage )
 }
 
 ///  Tcp Command Class implementation
@@ -70,8 +70,8 @@ public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
-  public weak var apiDelegate: MessageProcessor?
-  public weak var testerDelegate: MessageProcessor?
+  public weak var apiDelegate: TcpProcessor?
+  public weak var testerDelegate: TcpProcessor?
   
 //  private var _messageStream: (TcpMessage) -> Void = { _ in }
 //  private var _testerStream: (TcpMessage) -> Void = { _ in }
@@ -169,7 +169,7 @@ public final class Tcp: NSObject {
     if _startTime != nil {
       let timeStamp = Date()
       let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      testerDelegate?.messageProcessor(message)
+      testerDelegate?.tcpProcessor(message)
     }
 
     // return the Sequence Number used by this send
@@ -195,8 +195,8 @@ extension Tcp: GCDAsyncSocketDelegate {
       // stream it to the Api & tester (if any)
       let timeStamp = Date()
       let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      apiDelegate?.messageProcessor( message )
-      testerDelegate?.messageProcessor(message)
+      apiDelegate?.tcpProcessor( message )
+      testerDelegate?.tcpProcessor(message)
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

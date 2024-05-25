@@ -369,13 +369,13 @@ public final class Radio {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .multiflexEnabled, .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      ApiModel.shared.sendCommand("radio set \(property.rawValue)=\(value)")
+      ApiModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      ApiModel.shared.sendCommand("radio \(property.rawValue) \(value)")
+      ApiModel.shared.sendTcp("radio \(property.rawValue) \(value)")
     case .calibrate:
-      ApiModel.shared.sendCommand("radio pll_start")
+      ApiModel.shared.sendTcp("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      ApiModel.shared.sendCommand("mixer \(property.rawValue) \(value)")
+      ApiModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       
@@ -404,7 +404,7 @@ public final class Radio {
   }
 
   private func filterSend(_ type: Property, _ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

@@ -134,7 +134,7 @@ public final class Waterfall: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: Waterfall.Property, _ value: String) {
-    ApiModel.shared.sendCommand("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendTcp("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

@@ -1,5 +1,5 @@
 {
-  "originHash" : "62fce13b759e1226a8a4e9e2c01f08afb486255b7691673ce246b36581a41d71",
+  "originHash" : "a304ad15ebc5e25b90cbc69d6c4825ae7ae43cc5c813c0b7f82a56686946db08",
   "pins" : [
     {
       "identity" : "cocoaasyncsocket",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-composable-architecture",
       "state" : {
-        "revision" : "8624a8e2c35f78e5e61d5f12c69110e9020e80c8",
-        "version" : "1.10.0"
+        "revision" : "433a23118f739078644ebeb4009e23d307af694a",
+        "version" : "1.10.4"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "revision" : "83fc3d89676b33f1c3d49e9268e76ef62430339f",
-        "version" : "1.1.3"
+        "revision" : "8e8ca36c02abc7775a3ab81f9468c0df5fe22c2c",
+        "version" : "1.1.7"
       }
     },
     {

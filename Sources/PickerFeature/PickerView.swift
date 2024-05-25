@@ -23,14 +23,14 @@ public struct PickerView: View {
   
   @State var selection: String?
   
-  @Environment(ListenerModel.self) var listenerModel
+  @Environment(Discovery.self) var discovery
 
   @MainActor private var isSmartlink: Bool {
     if let selection {
       if store.isGui {
-        return listenerModel.packets[id: selection]?.source == .smartlink
+        return discovery.packets[id: selection]?.source == .smartlink
       } else {
-        return listenerModel.stations[id: selection]?.packet.source == .smartlink
+        return discovery.stations[id: selection]?.packet.source == .smartlink
       }
     }
     return false
@@ -41,7 +41,7 @@ public struct PickerView: View {
       HeaderView(isGui: store.isGui)
       
       Divider()
-      if store.isGui && listenerModel.packets.count == 0 || !store.isGui && listenerModel.stations.count == 0{
+      if store.isGui && discovery.packets.count == 0 || !store.isGui && discovery.stations.count == 0 {
         VStack {
           HStack {
             Spacer()
@@ -57,8 +57,7 @@ public struct PickerView: View {
       else {
         if store.isGui {
           // ----- List of Radios -----
-          List(listenerModel.packets.sorted(by: <), id: \.id, selection: $selection) { packet in
-            //            VStack (alignment: .leading) {
+          List(discovery.packets.sorted(by: <), id: \.id, selection: $selection) { packet in
             HStack(spacing: 0) {
               Group {
                 Text(packet.nickname)
@@ -70,15 +69,13 @@ public struct PickerView: View {
               .foregroundColor(store.defaultValue == packet.serial + "|" + packet.publicIp ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
-            //            }
           }
           .frame(minHeight: 150)
           .padding(.horizontal)
           
         } else {
           // ----- List of Stations -----
-          List(listenerModel.stations.sorted(by: <), id: \.id, selection: $selection) { station in
-            //            VStack (alignment: .leading) {
+          List(discovery.stations.sorted(by: <), id: \.id, selection: $selection) { station in
             HStack(spacing: 0) {
               Group {
                 Text(station.packet.nickname)
@@ -90,7 +87,6 @@ public struct PickerView: View {
               .foregroundColor(store.defaultValue == station.packet.serial + "|" + station.packet.publicIp + "|" + station.station + station.packet.source.rawValue ? .red : nil)
               .frame(minWidth: 140, alignment: .leading)
             }
-            //            }
           }
           .frame(minHeight: 150)
           .padding(.horizontal)
@@ -132,7 +128,6 @@ private struct FooterView: View {
   let selection: String?
   let selectionIsSmartlink: Bool
 
-//  @Environment(ApiModel.self) var apiModel
   @Environment(ListenerModel.self) var listenerModel
 
   @Environment(\.dismiss) var dismiss
@@ -178,12 +173,12 @@ private struct FooterView: View {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: true, defaultValue: nil)) {
     PickerFeature()
   })
-//  .environment(ApiModel.shared)
+  .environment(Discovery.shared)
 }
 
 #Preview("Picker NON-Gui") {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: false, defaultValue: nil)) {
     PickerFeature()
   })
-//  .environment(ApiModel.shared)
+  .environment(Discovery.shared)
 }

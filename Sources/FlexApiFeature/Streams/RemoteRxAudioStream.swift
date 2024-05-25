@@ -7,11 +7,12 @@
 
 import Foundation
 
+import AudioFeature
 import SharedFeature
 import VitaFeature
 import XCGLogFeature
 
-@Observable
+//@Observable
 public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
@@ -24,12 +25,13 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-  public weak var delegate: AudioProcessor?
+//  public weak var delegate: AudioProcessor?
   
   public var clientHandle: UInt32 = 0
   public var compression = ""
   public var ip = ""
-  
+  public var audioOutput: RxAudioPlayer?
+
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -89,6 +91,10 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   /// - Parameters:
   ///   - vita:               an Opus Vita struct
   public func streamProcessor(_ vita: Vita) {
-    delegate?.audioProcessor(vita)
+    if audioOutput == nil {
+      audioOutput = RxAudioPlayer()
+      audioOutput?.start()
+    }
+    audioOutput?.audioProcessor(vita)
   }
 }

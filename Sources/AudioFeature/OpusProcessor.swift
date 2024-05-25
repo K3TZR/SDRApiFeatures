@@ -1,6 +1,7 @@
 //
 //  OpusProcessor.swift
-//  
+//  AudioFeature/OpusProcessor
+//
 //
 //  Created by Douglas Adams on 5/16/24.
 //
@@ -11,7 +12,8 @@ import Foundation
 import SharedFeature
 import XCGLogFeature
 
-final public actor OpusProcessor {
+//final public actor OpusProcessor {
+final public class OpusProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -21,7 +23,7 @@ final public actor OpusProcessor {
     
     // ----- Buffers -----
     // OPUS Float32, Host, 2 Channel, non-interleaved
-    opusBuffer = AVAudioCompressedBuffer(format: AVAudioFormat(streamDescription: &self.asbd)!, packetCapacity: 1, maximumPacketSize: RxAudioPlayer.frameCountOpus)
+    opusBuffer = AVAudioCompressedBuffer(format: AVAudioFormat(streamDescription: &self.opusAsbd)!, packetCapacity: 1, maximumPacketSize: RxAudioPlayer.frameCountOpus)
     
     // PCM Float32, Host, 2 Channel, interleaved
     interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.interleavedAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountOpus))!
@@ -33,7 +35,7 @@ final public actor OpusProcessor {
 
     // ----- Converters -----
     // Opus, UInt8, 2 channel -> PCM, Float32, Host, 2 channel, interleaved
-    opusConverter = AVAudioConverter(from: AVAudioFormat(streamDescription: &self.asbd)!,
+    opusConverter = AVAudioConverter(from: AVAudioFormat(streamDescription: &self.opusAsbd)!,
                                      to: AVAudioFormat(streamDescription: &self.interleavedAsbd)!)!
     
     // PCM, Float32, Host, 2 channel, interleaved -> PCM, Float32, Host, 2 channel, non-interleaved
@@ -45,15 +47,15 @@ final public actor OpusProcessor {
   // MARK: - Private properties
   
   // Opus, UInt8, 2 channel (buffer used to store incoming Opus encoded samples)
-  private var asbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
-                                                 mFormatID: kAudioFormatOpus,
-                                                 mFormatFlags: 0,
-                                                 mBytesPerPacket: 0,
-                                                 mFramesPerPacket: UInt32(RxAudioPlayer.frameCountOpus),
-                                                 mBytesPerFrame: 0,
-                                                 mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
-                                                 mBitsPerChannel: 0,
-                                                 mReserved: 0)
+  private var opusAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+                                                     mFormatID: kAudioFormatOpus,
+                                                     mFormatFlags: 0,
+                                                     mBytesPerPacket: 0,
+                                                     mFramesPerPacket: UInt32(RxAudioPlayer.frameCountOpus),
+                                                     mBytesPerFrame: 0,
+                                                     mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                     mBitsPerChannel: 0,
+                                                     mReserved: 0)
   
   // PCM, Float32, Host, 2 channel, interleaved
   private var interleavedAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
@@ -85,7 +87,7 @@ final public actor OpusProcessor {
       memcpy(opusBuffer.data, payload, payload.count)
       opusBuffer.byteLength = UInt32(payload.count)
       opusBuffer.packetCount = AVAudioPacketCount(1)
-      opusBuffer.packetDescriptions![0].mDataByteSize = opusBuffer.byteLength
+      opusBuffer.packetDescriptions![0].mDataByteSize = UInt32(payload.count)
     } else {
       // Missed packet: create an empty frame
       opusBuffer.byteLength = UInt32(payload.count)

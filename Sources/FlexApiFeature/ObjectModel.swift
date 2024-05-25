@@ -25,7 +25,6 @@ final public class ObjectModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var activeSlice: Slice?
   public internal(set) var boundClientId: String?
   public internal(set) var clientInitialized = false
   public var testMode = false
@@ -184,7 +183,7 @@ final public class ObjectModel {
   ///   _ id:                            a TnfId
   ///   - callback:     ReplyHandler (optional)
   public func removeTnf(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendCommand("tnf remove \(id)", replyTo: callback)
+    ApiModel.shared.sendTcp("tnf remove \(id)", replyTo: callback)
     
     // remove it immediately (Tnf does not send status on removal)
     tnfs.remove(id: id)
@@ -336,14 +335,14 @@ final public class ObjectModel {
         // YES, add it if not already present
         if panadapters[id: id] == nil {
           panadapters.append( Panadapter(id) )
-          StreamModel.shared.panadapterStreams.append( PanadapterStream(id) )
+          StreamModel.shared.add(.panadapter, id)
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
       } else {
         // NO, remove it
         panadapters.remove(id: id)
-        StreamModel.shared.panadapterStreams.remove(id: id)
+        StreamModel.shared.remove(id)
         log("Panadapter \(id.hex): REMOVED", .debug, #function, #file, #line)
       }
     }
@@ -428,7 +427,7 @@ final public class ObjectModel {
         // YES, add it if not already present
         if waterfalls[id: id] == nil {
           waterfalls.append( Waterfall(id) )
-          StreamModel.shared.waterfallStreams.append( WaterfallStream(id) )
+          StreamModel.shared.add(.waterfall, id)
         }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
@@ -436,7 +435,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         waterfalls.remove(id: id)
-        StreamModel.shared.waterfallStreams.remove(id: id)
+        StreamModel.shared.remove(id)
         log("Waterfall \(id.hex): REMOVED", .info, #function, #file, #line)
       }
     }
@@ -562,7 +561,7 @@ final public class ObjectModel {
       }
     }
     
-    if let packet = ListenerModel.shared.activePacket {
+    if let packet = ApiModel.shared.activePacket {
       // is this GuiClient already in GuiClients?
       if let guiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
@@ -580,9 +579,9 @@ final public class ObjectModel {
         // log the addition
         log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
         
-        if radio!.isGui == false && station == ListenerModel.shared.activeStation {
+        if radio!.isGui == false && station == ApiModel.shared.activeStation {
           boundClientId = clientId
-          ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
+          ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
           log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
         }
         //        }
@@ -604,9 +603,9 @@ final public class ObjectModel {
           
           packet.guiClients[id: handle] = guiClient
           
-          if radio!.isGui == false && station == ListenerModel.shared.activeStation {
+          if radio!.isGui == false && station == ApiModel.shared.activeStation {
             boundClientId = clientId
-            ApiModel.shared.sendCommand("client bind client_id=\(clientId)")
+            ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
             log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
         }

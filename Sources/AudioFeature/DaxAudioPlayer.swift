@@ -1,5 +1,6 @@
 //
-//  DaxAudioOutput.swift
+//  DaxAudioPlayer.swift
+//  AudioFeature/DaxAudioPlayer
 //
 //
 //  Created by Douglas Adams on 11/14/23.
@@ -9,7 +10,7 @@ import Accelerate
 import AVFoundation
 import Foundation
 
-import FlexApiFeature
+//import FlexApiFeature
 import SharedFeature
 import VitaFeature
 import XCGLogFeature
@@ -37,7 +38,11 @@ import XCGLogFeature
 //                  interleaved        non-interleaved   non-interleave
 
 @Observable
-final public class DaxAudioPlayer: AudioProcessor {
+final public class DaxAudioPlayer: Equatable, AudioProcessor {
+  public static func == (lhs: DaxAudioPlayer, rhs: DaxAudioPlayer) -> Bool {
+    lhs === rhs
+  }
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -180,7 +185,7 @@ final public class DaxAudioPlayer: AudioProcessor {
 //                         UInt32(MemoryLayout<AudioDeviceID>.size))
 //  }
   
-//  public func setGain(_ gain: Double) {
+  public func setGain(_ gain: Double) {
 //    self.gain = gain
 //    if let streamId = streamId {
 //      Task {
@@ -193,13 +198,13 @@ final public class DaxAudioPlayer: AudioProcessor {
 //        }
 //      }
 //    }
-//  }
+  }
   
-//  public func setSampleRate(_ sampleRate: Int) {
+  public func setSampleRate(_ sampleRate: Int) {
 //    self.sampleRate = Double(sampleRate)
 //    
 //    // FIXME: how to update sample rate ???
-//  }
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Stream Handler protocol method
@@ -219,20 +224,20 @@ final public class DaxAudioPlayer: AudioProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Stream reply handler
   
-  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
-    if responseValue == kNoError {
-      if let streamId = reply.streamId {
-        self.streamId = streamId
-        
-        // add the stream to the collection
-        StreamModel.shared.daxRxAudioStreams.append( DaxRxAudioStream(streamId) )
-
-        // set this player as it's delegate
-        StreamModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self
-
-        // start processing audio
-        start()
-      }
-    }
-  }
+//  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+//    if responseValue == kNoError {
+//      if let streamId = reply.streamId {
+//        self.streamId = streamId
+//        
+//        // add the stream to the collection
+//        StreamModel.shared.daxRxAudioStreams.append( DaxRxAudioStream(streamId) )
+//
+//        // set this player as it's delegate
+//        StreamModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self
+//
+//        // start processing audio
+//        start()
+//      }
+//    }
+//  }
 }

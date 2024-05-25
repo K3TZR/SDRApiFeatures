@@ -265,7 +265,7 @@ public final class Panadapter: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: Property, _ value: String) {
-    ApiModel.shared.sendCommand("display pan set \(id.hex) \(property.rawValue)=\(value)")
+    ApiModel.shared.sendTcp("display pan set \(id.hex) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

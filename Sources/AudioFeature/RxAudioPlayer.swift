@@ -1,6 +1,6 @@
 //
 //  RxAudioPlayer.swift
-//  RxAudioFeature/RxAudioPlayer
+//  AudioFeature/RxAudioPlayer
 //
 //  Created by Douglas Adams on 11/29/23.
 //  Copyright © 2023 Douglas Adams. All rights reserved.
@@ -9,7 +9,7 @@
 import AVFoundation
 import Foundation
 
-import FlexApiFeature
+//import FlexApiFeature
 import SharedFeature
 import VitaFeature
 import XCGLogFeature
@@ -42,7 +42,6 @@ public final class RxAudioPlayer: AudioProcessor {
   // MARK: - Public properties
   
   public var active = false
-  public var streamId: UInt32?
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Static properties
@@ -107,7 +106,7 @@ public final class RxAudioPlayer: AudioProcessor {
     // start processing
     do {
       try _engine.start()
-      log("RxAudioPlayer: audioOutput STARTED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
+      log("RxAudioPlayer: audioOutput STARTED", .debug, #function, #file, #line)
     } catch {
       log("RxAudioPlayer: Failed to start, error = \(error)", .error, #function, #file, #line)
     }
@@ -115,7 +114,7 @@ public final class RxAudioPlayer: AudioProcessor {
   
   public func stop() {
     // stop processing
-    log("RxAudioPlayer: audioOutput STOPPED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
+    log("RxAudioPlayer: audioOutput STOPPED", .debug, #function, #file, #line)
     _engine.stop()
   }
   
@@ -127,31 +126,33 @@ public final class RxAudioPlayer: AudioProcessor {
     
     if vita.classCode == .opus {
       // OPUS Compressed RemoteRxAudio
-      Task { await _opusProcessor.process(vita.payloadData) }
-      
+//      Task { await _opusProcessor.process(vita.payloadData) }
+      _opusProcessor.process(vita.payloadData)
+
     } else {
       // UN-Compressed RemoteRxAudio
       Task { await _pcmProcessor.process(vita.payloadData) }
+//      _pcmProcessor.process(vita.payloadData)
     }
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Stream reply handler
   
-  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
-    if responseValue == kNoError  {
-      if let streamId = reply.streamId {
-        self.streamId = streamId
-        
-        // add the stream to the collection
-        StreamModel.shared.remoteRxAudioStreams.append( RemoteRxAudioStream(streamId) )
-        
-        // set this player as it's delegate
-        StreamModel.shared.remoteRxAudioStreams[id: streamId]!.delegate = self
-        
-        // start processing audio
-        start()
-      }
-    }
-  }
+//  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+//    if responseValue == kNoError  {
+//      if let streamId = reply.streamId {
+//        self.streamId = streamId
+//        
+//        // add the stream to the collection
+//        StreamModel.shared.remoteRxAudioStreams.append( RemoteRxAudioStream(streamId) )
+//        
+//        // set this player as it's delegate
+////        StreamModel.shared.remoteRxAudioStreams[id: streamId]!.delegate = self
+//        
+//        // start processing audio
+//        start()
+//      }
+//    }
+//  }
 }

@@ -8,6 +8,7 @@
 
 import Foundation
 
+import AudioFeature
 import SharedFeature
 import VitaFeature
 import XCGLogFeature
@@ -29,7 +30,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var delegate: AudioProcessor?
+//  public var delegate: AudioProcessor?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -51,6 +52,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
   
+  private var _audioOutput = RxAudioPlayer()
   private var _initialized = false
   private var _rxPacketCount      = 0
   private var _rxLostPacketCount  = 0
@@ -107,7 +109,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   
   
   public func streamProcessor(_ vita: Vita) {
-    delegate?.audioProcessor(vita)
+   _audioOutput.audioProcessor(vita)
   }
 
   // ----------------------------------------------------------------------------

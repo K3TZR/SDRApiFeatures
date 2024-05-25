@@ -27,10 +27,7 @@ public final class Pinger {
   // MARK: - Private properties
   
   private var _apiModel: ApiModel
-  
-  private var _initializationCount = 0
   private var _lastPingRxTime: Date!
-  private var _pingCount = 0
   private let _pingQ = DispatchQueue(label: "PingQ")
   private var _pingTimer: DispatchSourceTimer!
   
@@ -41,7 +38,7 @@ public final class Pinger {
     _pingTimer?.cancel()
   }
   
-  public func pingReply(_ command: String, seqNum: Int, responseValue: String, reply: String) {
+  public func pingReplyHandler(_ command: String, seqNum: Int, responseValue: String, reply: String) {
     _lastPingRxTime = Date()
   }
   
@@ -64,8 +61,7 @@ public final class Pinger {
         stopPinging()
         
       } else {
-        if _pingCount < _initializationCount { _pingCount += 1 }
-        _apiModel.sendPingCommand("ping", _pingCount, replyTo: self.pingReply) }
+        _apiModel.sendTcp("ping", replyTo: self.pingReplyHandler) }
       }
     )
     // start the timer

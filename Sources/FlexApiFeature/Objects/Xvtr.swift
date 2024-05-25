@@ -115,9 +115,9 @@ public final class Xvtr: Identifiable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .create:     ApiModel.shared.sendCommand("xvtr create")
-    case .remove:     ApiModel.shared.sendCommand("xvtr remove \(id.hex)")
-    default:          ApiModel.shared.sendCommand("xvtr set \(id.hex) \(property.rawValue)=\(value)")
+    case .create:     ApiModel.shared.sendTcp("xvtr create")
+    case .remove:     ApiModel.shared.sendTcp("xvtr remove \(id.hex)")
+    default:          ApiModel.shared.sendTcp("xvtr set \(id.hex) \(property.rawValue)=\(value)")
     }
   }
   
