@@ -14,10 +14,9 @@ import XCGLogFeature
 
 // DaxIqStream Class implementation
 //      creates an DaxIqStream instance to be used by a Client to support the
-//      processing of a stream of IQ data from the Radio to the client. DaxIqStream
-//      structs are added / removed by the incoming TCP messages. DaxIqStream
-//      objects periodically receive IQ data in a UDP stream. They are collected
-//      in the Model.daxIqStreams collection.
+//      processing of a UDP stream of IQ data from the Radio to the client. DaxIqStream
+//      structs are added / removed by TCP messages. They are collected
+//      in the StreamsModel.daxIqStreams collection.
 @Observable
 public final class DaxIqStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------

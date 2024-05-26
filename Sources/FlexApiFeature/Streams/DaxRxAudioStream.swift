@@ -15,10 +15,8 @@ import XCGLogFeature
 
 // DaxRxAudioStream
 //      creates a DaxRxAudioStream instance to be used by a Client to support the
-//      processing of a stream of Audio from the Radio to the client. DaxRxAudioStream
-//      instances are added / removed by the incoming TCP messages. DaxRxAudioStream
-//      instances periodically receive Audio in a UDP stream. They are collected
-//      in the Model.daxRxAudioStreams collection.
+//      processing of a UDP stream of Rx Audio from the Radio to the client. THe DaxRxAudioStream
+//      is added / removed by TCP messages. 
 @Observable
 public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
@@ -30,7 +28,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-//  public var delegate: AudioProcessor?
+  public var audioOutput: RxAudioPlayer?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -52,7 +50,6 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private var _audioOutput = RxAudioPlayer()
   private var _initialized = false
   private var _rxPacketCount      = 0
   private var _rxLostPacketCount  = 0
@@ -109,7 +106,11 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   
   
   public func streamProcessor(_ vita: Vita) {
-   _audioOutput.audioProcessor(vita)
+    if audioOutput == nil {
+      audioOutput = RxAudioPlayer()
+      audioOutput?.start()
+    }
+   audioOutput?.audioProcessor(vita)
   }
 
   // ----------------------------------------------------------------------------

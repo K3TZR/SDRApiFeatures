@@ -12,6 +12,10 @@ import SharedFeature
 import VitaFeature
 import XCGLogFeature
 
+// RemoteRxAudioStream
+//      creates a RemoteRxAudioStream instance to be used by a Client to support the
+//      processing of a UDP stream of Rx Audio from the Radio to the client. THe RemoteRxAudioStream
+//      is added / removed by TCP messages.
 //@Observable
 public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // ------------------------------------------------------------------------------

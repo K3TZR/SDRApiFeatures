@@ -8,16 +8,15 @@
 
 import Foundation
 
+import AudioFeature
 import SharedFeature
 import VitaFeature
 import XCGLogFeature
 
 // DaxMicAudioStream
 //      creates a DaxMicAudioStream instance to be used by a Client to support the
-//      processing of a stream of Mic Audio from the Radio to the client. DaxMicAudioStream
-//      instances are added / removed by the incoming TCP messages. DaxMicAudioStream
-//      instances periodically receive Mic Audio in a UDP stream. They are collected
-//      in the Model.daxMicAudioStreams collection.
+//      processing of a UDP stream of Mic Audio from the Radio to the client. The DaxMicAudioStream
+//      is added / removed by TCP messages.
 @Observable
 public final class DaxMicAudioStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
@@ -29,7 +28,7 @@ public final class DaxMicAudioStream: Identifiable, StreamProcessor {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var delegate: AudioProcessor?
+  public var audioOutput: RxAudioPlayer?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""
@@ -135,7 +134,11 @@ public final class DaxMicAudioStream: Identifiable, StreamProcessor {
   /// - Parameters:
   ///   - vita:               an Opus Vita struct
   public func streamProcessor(_ vita: Vita) {
-    delegate?.audioProcessor(vita)
+    if audioOutput == nil {
+      audioOutput = RxAudioPlayer()
+      audioOutput?.start()
+    }
+   audioOutput?.audioProcessor(vita)
   }
   /// Process the DaxAudioStream Vita struct
   /// - Parameters:

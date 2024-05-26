@@ -16,10 +16,8 @@ import XCGLogFeature
 
 // DaxTxAudioStream
 //      creates a DaxTxAudioStream instance to be used by a Client to support the
-//      processing of a stream of Audio from the client to the Radio. DaxTxAudioStream
-//      instances are added / removed by the incoming TCP messages. DaxTxAudioStream
-//      instances periodically send Tx Audio in a UDP stream. They are collected in
-//      the Model.daxTxAudioStreams collection.
+//      processing of a UDP stream of Tx Audio from the client to the Radio. The DaxTxAudioStream
+//      is added / removed by TCP messages.
 @Observable
 public final class DaxTxAudioStream: Identifiable {
   // ----------------------------------------------------------------------------

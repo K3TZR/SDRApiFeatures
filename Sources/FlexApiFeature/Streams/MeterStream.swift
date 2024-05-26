@@ -13,7 +13,7 @@ import XCGLogFeature
 
 // MeterStream Class implementation
 //      creates an MeterStream instance to be used by a Client to support the
-//      processing of a stream of Meter data from the Radio to the client. A MeterStream
+//      processing of a UDP stream of Meter data from the Radio to the client. A MeterStream
 //      is added by the first incoming TCP Meter message.
 @Observable
 public final class MeterStream: Identifiable, StreamProcessor{

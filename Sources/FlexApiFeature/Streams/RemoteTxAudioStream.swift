@@ -15,10 +15,8 @@ import XCGLogFeature
 
 // RemoteTxAudioStream
 //      creates a RemoteTxAudioStream instance to be used by a Client to support the
-//      processing of a stream of Audio to the Radio. RemoteTxAudioStream instances
-//      are added / removed by the incoming TCP messages. RemoteTxAudioStream instances
-//      periodically send Audio in a UDP stream. They are collected in the
-//      Model.RemoteTxAudioStreams collection.
+//      processing of a UDP stream of Tx Audio from the client to the Radio. The RemoteTxAudioStream
+//      is added / removed by TCP messages.
 @Observable
 public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
   // ----------------------------------------------------------------------------
