@@ -100,7 +100,7 @@ final public class StreamModel: StreamDistributor {
     // pass Stream data to the appropriate Object
     switch vita.classCode {
     case .panadapter:
-      //        if let object = await panadapterStreams[id: vita.streamId] { await object.streamProcessor(vita) }
+      if let object = panadapterStreams[id: vita.streamId] { object.streamProcessor(vita) }
       break
       
     case .waterfall:

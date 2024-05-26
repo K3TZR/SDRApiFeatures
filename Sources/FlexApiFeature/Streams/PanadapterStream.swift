@@ -67,11 +67,13 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
   ///
   /// - Parameters:
   ///   - vita:        a Vita struct
-  public func streamProcessor(_ vita: Vita) async {
+  public func streamProcessor(_ vita: Vita) {
 
-    if await _frame.process(vita) {
-      panadapterFrame = await _frame.getFrame()
-      print("frame Complete")
+    Task {
+      if await _frame.process(vita) {
+        panadapterFrame = await _frame.getFrame()
+//        print("frame Complete")
+      }
     }
 
       //    // Bins are just beyond the payload

@@ -28,7 +28,6 @@ public final class ApiModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
-  public private(set) var activePacket: Packet?
   public var activeSlice: Slice?
   public private(set) var activeStation: String?
 
@@ -63,9 +62,11 @@ public final class ApiModel: TcpProcessor {
   public func connect(packet: Packet?, station: String?, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
     
     if let packet, let station {
-      
-      activePacket = packet
-      activeStation = station
+      Task { await MainActor.run {
+        ObjectModel.shared.activePacket = packet
+        ObjectModel.shared.activeStation = station
+      }
+      }
       
       // Instantiate a Radio
       try await MainActor.run{
@@ -74,7 +75,7 @@ public final class ApiModel: TcpProcessor {
       }
       log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
       
-      guard connect(packet) else { throw ApiError.connection }
+      guard connect(using: packet) else { throw ApiError.connection }
       log("ApiModel: Tcp connection established ", .debug, #function, #file, #line)
       
       
@@ -169,8 +170,11 @@ public final class ApiModel: TcpProcessor {
     
     Tcp.shared.disconnect()
     
-    activePacket = nil
-    activeStation = nil
+    Task { await MainActor.run {
+      ObjectModel.shared.activePacket = nil
+      ObjectModel.shared.activeStation = nil
+    }
+    }
     Task {
       await ObjectModel.shared.removeAllObjects()
       await _replyDictionary.removeAll()
@@ -240,7 +244,7 @@ public final class ApiModel: TcpProcessor {
   /// Connect to a Radio
   /// - Parameter params:     a struct of parameters
   /// - Returns:              success / failure
-  private func connect(_ packet: Packet) -> Bool {
+  private func connect(using packet: Packet) -> Bool {
     return Tcp.shared.connect(packet.source == .smartlink,
                               packet.requiresHolePunch,
                               packet.negotiatedHolePunchPort,

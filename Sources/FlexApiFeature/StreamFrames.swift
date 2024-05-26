@@ -343,7 +343,7 @@ public actor WaterfallFrame {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
-  public var waterfallFrame = [UInt16](repeating: 0, count: kMaxBins)
+  public var isComplete = false
 
   public var firstBinFreq: CGFloat = 0.0  // Frequency of first Bin (Hz)
   public var binBandwidth: CGFloat = 0.0  // Bandwidth of a single bin (Hz)
@@ -376,13 +376,20 @@ public actor WaterfallFrame {
   private var _frame = [UInt16](repeating: 0, count: kNumberOfFrames )
   private var _segmentBinCount = 0
   private var _startingBinNumber = 0
+  private var _waterfallFrame = [UInt16](repeating: 0, count: kMaxBins)
 
   private static let kNumberOfFrames = 10
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func process(_ vita: Vita) {
+  public func getFrame() -> [UInt16] {
+    return _waterfallFrame
+  }
+  
+  public func process(_ vita: Vita) -> Bool {
+    isComplete = false
+
     // Bins are just beyond the payload
     let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
     
@@ -436,16 +443,17 @@ public actor WaterfallFrame {
       
       // is it a complete Frame?
       if _accumulatedBins == frameBinCount {
-        // updated just to be consistent (so that downstream won't use the wrong count)
-        
-        // YES, post it
-        waterfallFrame = _frame
+        isComplete = true
         
         // update the expected frame number & dataframe index
         _expectedFrameNumber += 1
         _accumulatedBins = 0
+
+        // YES
+        _waterfallFrame = _frame
       }
     }
+    return isComplete
   }
 }
 

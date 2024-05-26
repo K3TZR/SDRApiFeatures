@@ -68,8 +68,15 @@ public final class WaterfallStream: Identifiable, StreamProcessor {
   /// - Parameters:
   ///   - vita:       a Vita struct
   public func streamProcessor(_ vita: Vita) {
-    
-    Task { await _frame.process(vita) }
+  }
+}
+
+//    Task {
+//      if await _frame.process(vita) {
+//        waterfallFrame = await _frame.getFrame()
+//        print("frame Complete")
+//      }
+//    }
 
 //    // Bins are just beyond the payload
 //    let byteOffsetToBins = MemoryLayout<PayloadHeader>.size
@@ -135,7 +142,5 @@ public final class WaterfallStream: Identifiable, StreamProcessor {
 //        _index = (_index + 1) % WaterfallStream.kNumberOfFrames
 //      }
 //    }
-  }
-}
 
 

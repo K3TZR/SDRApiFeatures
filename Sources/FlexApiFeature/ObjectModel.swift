@@ -25,6 +25,9 @@ final public class ObjectModel {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
+  public var activePacket: Packet?
+  public var activeSlice: Slice?
+  public var activeStation: String?
   public internal(set) var boundClientId: String?
   public internal(set) var clientInitialized = false
   public var testMode = false
@@ -561,7 +564,7 @@ final public class ObjectModel {
       }
     }
     
-    if let packet = ApiModel.shared.activePacket {
+    if let packet = activePacket {
       // is this GuiClient already in GuiClients?
       if let guiClient = packet.guiClients[id: handle] {
         // YES, are all fields populated?
