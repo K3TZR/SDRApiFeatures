@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - Public structs and enums
@@ -64,7 +64,7 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public weak var delegate: StreamDistributor?
+//  public weak var delegate: StreamDistributor?
   public var sendIp = ""
   public var sendPort: UInt16 = 4991 // default port number
   
@@ -219,7 +219,7 @@ extension Udp: GCDAsyncUdpSocketDelegate {
 //      }
       // stream the received data
 //      _inBoundStreams( vita )
-      delegate?.streamDistributor(vita)
+      StreamModel.shared.streamProcessor(vita)
     }
   }
   

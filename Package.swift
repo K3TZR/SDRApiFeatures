@@ -17,17 +17,17 @@ let package = Package(
     .library(name: "FlexApiFeature", targets: ["FlexApiFeature"]),
     .library(name: "ListenerFeature", targets: ["ListenerFeature"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
-    .library(name: "PanadapterFeature", targets: ["PanadapterFeature"]),
-    .library(name: "PanafallFeature", targets: ["PanafallFeature"]),
+//    .library(name: "PanadapterFeature", targets: ["PanadapterFeature"]),
+//    .library(name: "PanafallFeature", targets: ["PanafallFeature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "RingBufferFeature", targets: ["RingBufferFeature"]),
     .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
     .library(name: "SideControlsFeature", targets: ["SideControlsFeature"]),
-    .library(name: "TcpFeature", targets: ["TcpFeature"]),
-    .library(name: "UdpFeature", targets: ["UdpFeature"]),
+//    .library(name: "TcpFeature", targets: ["TcpFeature"]),
+//    .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
-    .library(name: "WaterfallFeature", targets: ["WaterfallFeature"]),
+//    .library(name: "WaterfallFeature", targets: ["WaterfallFeature"]),
   ],
   
   dependencies: [
@@ -86,8 +86,6 @@ let package = Package(
       "AudioFeature",
       "ListenerFeature",
       "SharedFeature",
-      "TcpFeature",
-      "UdpFeature",
       "VitaFeature",
     ]),
     
@@ -107,17 +105,17 @@ let package = Package(
     ]),
 
     // PanadapterFeature
-    .target(name: "PanadapterFeature", dependencies: [
-      "FlagFeature",
-      "FlexApiFeature",
-    ]),
+//    .target(name: "PanadapterFeature", dependencies: [
+//      "FlagFeature",
+//      "FlexApiFeature",
+//    ]),
     
     // PanafallFeature
-    .target(name: "PanafallFeature", dependencies: [
-      "PanadapterFeature",
-      "WaterfallFeature",
-      "FlexApiFeature",
-    ]),
+//    .target(name: "PanafallFeature", dependencies: [
+//      "PanadapterFeature",
+//      "WaterfallFeature",
+//      "FlexApiFeature",
+//    ]),
 
     // PickerFeature
     .target(name: "PickerFeature", dependencies: [
@@ -149,19 +147,19 @@ let package = Package(
     ]),
     
     // TcpFeature
-    .target(name: "TcpFeature", dependencies: [
-      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
-      "SharedFeature",
-    ]),
+//    .target(name: "TcpFeature", dependencies: [
+//      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
+//      .product(name: "XCGLogFeature", package: "LogFeatures"),
+//      "SharedFeature",
+//    ]),
 
     // UdpFeature
-    .target(name: "UdpFeature", dependencies: [
-      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
-      "SharedFeature",
-      "VitaFeature",
-    ]),
+//    .target(name: "UdpFeature", dependencies: [
+//      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
+//      .product(name: "XCGLogFeature", package: "LogFeatures"),
+//      "SharedFeature",
+//      "VitaFeature",
+//    ]),
 
     // VitaFeature
     .target(name: "VitaFeature", dependencies: [
@@ -169,21 +167,21 @@ let package = Package(
     ]),
 
     // WaterfallFeature
-    .target(
-      name: "WaterfallFeature",
-      
-      dependencies: [
-        "FlexApiFeature",
-      ],
-      resources: [
-        .copy("Gradients/Basic.tex"),
-        .copy("Gradients/Dark.tex"),
-        .copy("Gradients/Deuteranopia.tex"),
-        .copy("Gradients/Grayscale.tex"),
-        .copy("Gradients/Purple.tex"),
-        .copy("Gradients/Tritanopia.tex"),
-      ]
-    )
+//    .target(
+//      name: "WaterfallFeature",
+//      
+//      dependencies: [
+//        "FlexApiFeature",
+//      ],
+//      resources: [
+//        .copy("Gradients/Basic.tex"),
+//        .copy("Gradients/Dark.tex"),
+//        .copy("Gradients/Deuteranopia.tex"),
+//        .copy("Gradients/Grayscale.tex"),
+//        .copy("Gradients/Purple.tex"),
+//        .copy("Gradients/Tritanopia.tex"),
+//      ]
+//    )
   ]
   
   // --------------- Tests ---------------

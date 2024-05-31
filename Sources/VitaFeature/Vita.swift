@@ -6,10 +6,6 @@
 
 import Foundation
 
-public protocol StreamDistributor: AnyObject {
-  func streamDistributor(_ vita: Vita)
-}
-
 public protocol StreamProcessor: AnyObject {
 //  func streamProcessor(_ vita: Vita)
   func streamProcessor(_ vita: Vita) async

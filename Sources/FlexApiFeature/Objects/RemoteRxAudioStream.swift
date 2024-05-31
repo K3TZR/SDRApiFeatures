@@ -14,10 +14,12 @@ import XCGLogFeature
 
 // RemoteRxAudioStream
 //      creates a RemoteRxAudioStream instance to be used by a Client to support the
-//      processing of a UDP stream of Rx Audio from the Radio to the client. THe RemoteRxAudioStream
+//      processing of a UDP stream of Rx Audio from the Radio to the client. The RemoteRxAudioStream
 //      is added / removed by TCP messages.
-//@Observable
-public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
+
+@MainActor
+@Observable
+public final class RemoteRxAudioStream: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -34,7 +36,7 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   public var clientHandle: UInt32 = 0
   public var compression = ""
   public var ip = ""
-  public var audioOutput: RxAudioPlayer?
+//  nonisolated public var audioOutput: RxAudioPlayer?
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -91,14 +93,14 @@ public final class RemoteRxAudioStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  /// Receive RxRemoteAudioStream audio
-  /// - Parameters:
-  ///   - vita:               an Opus Vita struct
-  public func streamProcessor(_ vita: Vita) {
-    if audioOutput == nil {
-      audioOutput = RxAudioPlayer()
-      audioOutput?.start()
-    }
-    audioOutput?.audioProcessor(vita)
-  }
+//  /// Receive RxRemoteAudioStream audio
+//  /// - Parameters:
+//  ///   - vita:               an Opus Vita struct
+//  nonisolated public func streamProcessor(_ vita: Vita) {
+//    if audioOutput == nil {
+//      audioOutput = RxAudioPlayer()
+//      audioOutput?.start()
+//    }
+//    audioOutput?.audioProcessor(vita)
+//  }
 }

@@ -10,7 +10,7 @@ import Foundation
 
 import ListenerFeature
 import SharedFeature
-import TcpFeature
+//import TcpFeature
 import XCGLogFeature
 
 @MainActor
@@ -33,7 +33,16 @@ final public class ObjectModel {
   public var testMode = false
   public var radio: Radio?
   
-  // Dynamic Models
+  // single objects
+  public var atu = Atu()
+  public var cwx = Cwx()
+  public var gps = Gps()
+  public var interlock = Interlock()
+  public var transmit = Transmit()
+  public var wan = Wan()
+  public var waveform = Waveform()
+
+  // collection objects
   public var amplifiers = IdentifiedArrayOf<Amplifier>()
   public var bandSettings = IdentifiedArrayOf<BandSetting>()
   public var equalizers = IdentifiedArrayOf<Equalizer>()
@@ -47,16 +56,19 @@ final public class ObjectModel {
   public var waterfalls = IdentifiedArrayOf<Waterfall>()
   public var xvtrs = IdentifiedArrayOf<Xvtr>()
   
-  // Static Models
-  public var atu = Atu()
-  public var cwx = Cwx()
-  public var gps = Gps()
-  public var interlock = Interlock()
-  public var transmit = Transmit()
-  public var wan = Wan()
-  public var waveform = Waveform()
-  
-  
+  // single stream objects
+  public var daxMicAudioStream: DaxMicAudioStream?
+  public var daxTxAudioStream: DaxTxAudioStream?
+  public var meterStream: MeterStream?
+  public var remoteRxAudioStream: RemoteRxAudioStream?
+  public var remoteTxAudioStream: RemoteTxAudioStream?
+
+  // collection stream objects
+  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
+  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
+  public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
+  public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
+
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -88,11 +100,11 @@ final public class ObjectModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
-
+  
   public func clientInitialized(_ state: Bool) {
     clientInitialized = state
   }
-
+  
   public func parse(_ statusType: String, _ statusMessage: String, _ connectionHandle: UInt32?) {
     
     // Check for unknown Object Types
@@ -117,7 +129,7 @@ final public class ObjectModel {
     case .profile:              profileStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse), statusMessage)
     case .radio:                radio!.parse(statusMessage.keyValuesArray())
     case .slice:                sliceStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
-    case .stream:               StreamModel.shared.parse(statusMessage, connectionHandle, testMode)
+    case .stream:               preProcessStream(statusMessage, connectionHandle, testMode)
     case .tnf:                  tnfStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
     case .transmit:             preProcessTransmit(statusMessage)
     case .usbCable:             usbCableStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
@@ -275,6 +287,46 @@ final public class ObjectModel {
     }
   }
   
+  private func daxIqStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if daxIqStreams[id: id] == nil { daxIqStreams.append( DaxIqStream(id) ) }
+      // parse the properties
+      daxIqStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+    }
+  }
+
+  private func daxMicAudioStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if daxMicAudioStream == nil { daxMicAudioStream = DaxMicAudioStream(id) }
+      // parse the properties
+      daxMicAudioStream?.parse( Array(properties.dropFirst(1)) )
+    }
+  }
+
+  private func daxRxAudioStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if daxRxAudioStreams[id: id] == nil { daxRxAudioStreams.append( DaxRxAudioStream(id) ) }
+      // parse the properties
+      daxRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+    }
+  }
+
+  private func daxTxAudioStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if daxTxAudioStream == nil { daxTxAudioStream = DaxTxAudioStream(id) }
+      // parse the properties
+      daxTxAudioStream?.parse( Array(properties.dropFirst(1)) )
+    }
+  }
+
   private func equalizerStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
     // get the id
     let id = properties[0].key
@@ -338,7 +390,7 @@ final public class ObjectModel {
         // YES, add it if not already present
         if panadapters[id: id] == nil {
           panadapters.append( Panadapter(id) )
-          StreamModel.shared.add(.panadapter, id)
+//          StreamModel.shared.add(.panadapter, id)
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -368,6 +420,26 @@ final public class ObjectModel {
     }
   }
   
+  private func remoteRxAudioStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if remoteRxAudioStream == nil { remoteRxAudioStream = RemoteRxAudioStream(id) }
+      // parse the properties
+      remoteRxAudioStream?.parse( Array(properties.dropFirst(2)) )
+    }
+  }
+
+  private func remoteTxAudioStreamStatus(_ properties: KeyValuesArray) {
+    // get the id
+    if let id = properties[0].key.streamId {
+      // add it if not already present
+      if remoteTxAudioStream == nil { remoteTxAudioStream = RemoteTxAudioStream(id)  }
+      // parse the properties
+      remoteTxAudioStream?.parse( Array(properties.dropFirst(2)) )
+    }
+  }
+
   private func sliceStatus(_ properties: KeyValuesArray, _ inUse: Bool) {
     // get the id
     if let id = properties[0].key.objectId {
@@ -430,7 +502,7 @@ final public class ObjectModel {
         // YES, add it if not already present
         if waterfalls[id: id] == nil {
           waterfalls.append( Waterfall(id) )
-          StreamModel.shared.add(.waterfall, id)
+//          StreamModel.shared.add(.waterfall, id)
         }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
@@ -493,6 +565,55 @@ final public class ObjectModel {
     switch properties[0].key {
     case ObjectType.bandSetting.rawValue:   bandSettingStatus(Array(statusMessage.keyValuesArray().dropFirst()), !statusMessage.contains(kRemoved) )
     default:                                interlock.parse(properties) ; interlockStateChange(interlock.state)
+    }
+  }
+  
+  public func preProcessStream(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
+    enum Property: String {
+      case daxIq            = "dax_iq"
+      case daxMic           = "dax_mic"
+      case daxRx            = "dax_rx"
+      case daxTx            = "dax_tx"
+      case remoteRx         = "remote_audio_rx"
+      case remoteTx         = "remote_audio_tx"
+    }
+    
+    let properties = statusMessage.keyValuesArray()
+    
+    // is the 1st KeyValue a StreamId?
+    if let id = properties[0].key.streamId {
+      
+      // is it a removal?
+      if statusMessage.contains(kRemoved) {
+        // YES
+        removeStream(having: id)
+        
+      } else {
+        // NO is it for me?
+        if isForThisClient(properties, connectionHandle, testMode) {
+          // YES
+          guard properties.count > 1 else {
+            log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+            return
+          }
+          guard let token = Property(rawValue: properties[1].value) else {
+            // log it and ignore the Key
+            log("StreamModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
+            return
+          }
+          switch token {
+            
+          case .daxIq:      daxIqStreamStatus(properties)
+          case .daxMic:     daxMicAudioStreamStatus(properties)
+          case .daxRx:      daxRxAudioStreamStatus(properties)
+          case .daxTx:      daxTxAudioStreamStatus(properties)
+          case .remoteRx:   remoteRxAudioStreamStatus(properties)
+          case .remoteTx:   remoteTxAudioStreamStatus(properties)
+          }
+        }
+      }
+    } else {
+      log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
     }
   }
   
@@ -582,7 +703,7 @@ final public class ObjectModel {
         // log the addition
         log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
         
-        if radio!.isGui == false && station == ApiModel.shared.activeStation {
+        if radio!.isGui == false && station == activeStation {
           boundClientId = clientId
           ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
           log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
@@ -606,7 +727,7 @@ final public class ObjectModel {
           
           packet.guiClients[id: handle] = guiClient
           
-          if radio!.isGui == false && station == ApiModel.shared.activeStation {
+          if radio!.isGui == false && station == activeStation {
             boundClientId = clientId
             ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
             log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
@@ -655,6 +776,59 @@ final public class ObjectModel {
       // NO, not me
       print("----->>>>>> TODO: Client disconnected, properties = \(properties), handle = \(handle.hex)")
     }
+  }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Private Stream Removal methods
+
+  private func removeStream(having id: UInt32) {
+    if daxIqStreams[id: id] != nil {
+      daxIqStreams.remove(id: id)
+      log("StreamModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    }
+    else if daxMicAudioStream?.id == id {
+      daxMicAudioStream = nil
+      log("StreamModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    }
+    else if daxRxAudioStreams[id: id] != nil {
+      daxRxAudioStreams.remove(id: id)
+      log("StreamModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+
+    } else if daxTxAudioStream?.id == id {
+      daxTxAudioStream = nil
+      log("StreamModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    }
+    else if remoteRxAudioStream?.id == id {
+      remoteRxAudioStream = nil
+      log("StreamModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    }
+    else if remoteTxAudioStream?.id == id {
+      remoteTxAudioStream = nil
+      log("StreamModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Private Stream Helper methods
+
+  /// Determine if status is for this client
+  /// - Parameters:
+  ///   - properties:     a KeyValuesArray
+  ///   - clientHandle:   the handle of ???
+  /// - Returns:          true if a mtch
+  private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?, _ testMode: Bool) -> Bool {
+    var clientHandle : UInt32 = 0
+    
+    guard testMode == false else { return true }
+    
+    if let connectionHandle {
+      // find the handle property
+      for property in properties.dropFirst(2) where property.key == "client_handle" {
+        clientHandle = property.value.handle ?? 0
+      }
+      return clientHandle == connectionHandle
+    }
+    return false
   }
 }
 

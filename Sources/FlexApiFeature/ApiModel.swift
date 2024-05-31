@@ -10,8 +10,8 @@ import Foundation
 
 import ListenerFeature
 import SharedFeature
-import TcpFeature
-import UdpFeature
+//import TcpFeature
+//import UdpFeature
 import VitaFeature
 import XCGLogFeature
 
@@ -21,15 +21,13 @@ public final class ApiModel: TcpProcessor {
   // MARK: - Singleton
   
   public static var shared = ApiModel()
-  private init() {
-    Tcp.shared.apiDelegate = self
-  }
+  private init() {}
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
   public var activeSlice: Slice?
-  public private(set) var activeStation: String?
+//  public private(set) var activeStation: String?
 
   public internal(set) var connectionHandle: UInt32?
   public internal(set) var hardwareVersion: String?
@@ -77,10 +75,7 @@ public final class ApiModel: TcpProcessor {
       
       guard connect(using: packet) else { throw ApiError.connection }
       log("ApiModel: Tcp connection established ", .debug, #function, #file, #line)
-      
-      
-      Tcp.shared.apiDelegate = self
-      
+            
       if disconnectHandle != nil {
         // pending disconnect
         sendTcp("client disconnect \(disconnectHandle!.hex)")

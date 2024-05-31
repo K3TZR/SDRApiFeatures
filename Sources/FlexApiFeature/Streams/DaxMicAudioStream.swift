@@ -134,11 +134,11 @@ public final class DaxMicAudioStream: Identifiable, StreamProcessor {
   /// - Parameters:
   ///   - vita:               an Opus Vita struct
   public func streamProcessor(_ vita: Vita) {
-    if audioOutput == nil {
-      audioOutput = RxAudioPlayer()
-      audioOutput?.start()
-    }
-   audioOutput?.audioProcessor(vita)
+//    if audioOutput == nil {
+//      audioOutput = RxAudioPlayer(streamId: vita.streamId)
+//      audioOutput?.start()
+//    }
+//   audioOutput?.audioProcessor(vita)
   }
   /// Process the DaxAudioStream Vita struct
   /// - Parameters:

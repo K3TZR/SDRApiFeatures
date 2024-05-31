@@ -37,12 +37,14 @@ import XCGLogFeature
 //                   interleaved       non-interleaved   non-interleaved
 
 //@Observable
-public final class RxAudioPlayer: AudioProcessor {
+//public final class RxAudioPlayer: AudioProcessor {
+public final actor RxAudioPlayer {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public var active = false
-  
+  public var streamId: UInt32?
+
   // ----------------------------------------------------------------------------
   // MARK: - Public Static properties
 
@@ -69,12 +71,13 @@ public final class RxAudioPlayer: AudioProcessor {
                                                             mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
                                                             mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
                                                             mReserved: 0)
-   private var _srcNode: AVAudioSourceNode!
+  private var _srcNode: AVAudioSourceNode!
  
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {
+  public init(streamId: UInt32) {
+    self.streamId = streamId
     _ringBuffer = RingBuffer(_ringBufferAsbd)
     _opusProcessor = OpusProcessor(_ringBufferAsbd, _ringBuffer)
     _pcmProcessor = PcmProcessor(_ringBufferAsbd, _ringBuffer)

@@ -70,8 +70,8 @@ public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
-  public weak var apiDelegate: TcpProcessor?
-  public weak var testerDelegate: TcpProcessor?
+//  public weak var apiDelegate: TcpProcessor?
+//  public weak var testerDelegate: TcpProcessor?
   
 //  private var _messageStream: (TcpMessage) -> Void = { _ in }
 //  private var _testerStream: (TcpMessage) -> Void = { _ in }
@@ -161,7 +161,7 @@ public final class Tcp: NSObject {
     if _startTime != nil {
       let timeStamp = Date()
       let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      testerDelegate?.tcpProcessor(message)
+      MessagesModel.shared.tcpProcessor(message)
     }
   }
 }
@@ -184,8 +184,8 @@ extension Tcp: GCDAsyncSocketDelegate {
       // stream it to the Api & tester (if any)
       let timeStamp = Date()
       let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      apiDelegate?.tcpProcessor( message )
-      testerDelegate?.tcpProcessor(message)
+      ApiModel.shared.tcpProcessor( message )
+      MessagesModel.shared.tcpProcessor(message)
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

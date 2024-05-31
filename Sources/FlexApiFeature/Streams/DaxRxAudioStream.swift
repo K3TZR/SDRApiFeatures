@@ -106,11 +106,11 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
   
   
   public func streamProcessor(_ vita: Vita) {
-    if audioOutput == nil {
-      audioOutput = RxAudioPlayer()
-      audioOutput?.start()
-    }
-   audioOutput?.audioProcessor(vita)
+//    if audioOutput == nil {
+//      audioOutput = RxAudioPlayer(streamId: vita.streamId)
+//      audioOutput?.start()
+//    }
+//   audioOutput?.audioProcessor(vita)
   }
 
   // ----------------------------------------------------------------------------
