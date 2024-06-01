@@ -10,7 +10,6 @@ import Foundation
 
 import ListenerFeature
 import SharedFeature
-//import TcpFeature
 import XCGLogFeature
 
 @MainActor
@@ -401,14 +400,12 @@ final public class ObjectModel {
         // YES, add it if not already present
         if panadapters[id: id] == nil {
           panadapters.append( Panadapter(id) )
-//          StreamModel.shared.add(.panadapter, id)
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
       } else {
         // NO, remove it
         panadapters.remove(id: id)
-        StreamModel.shared.remove(id)
         log("Panadapter \(id.hex): REMOVED", .debug, #function, #file, #line)
       }
     }
@@ -513,7 +510,6 @@ final public class ObjectModel {
         // YES, add it if not already present
         if waterfalls[id: id] == nil {
           waterfalls.append( Waterfall(id) )
-//          StreamModel.shared.add(.waterfall, id)
         }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
@@ -521,7 +517,6 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         waterfalls.remove(id: id)
-        StreamModel.shared.remove(id)
         log("Waterfall \(id.hex): REMOVED", .info, #function, #file, #line)
       }
     }

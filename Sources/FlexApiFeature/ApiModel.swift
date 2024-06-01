@@ -272,13 +272,13 @@ public final class ApiModel: TcpProcessor {
     requestTxProfile()
     requestMicProfile()
     requestDisplayProfile()
-    sendSubAll()
+    sendSubciptions()
     setMtuLimit(mtuValue)
     setLowBandwidthDax(lowBandwidthDax)
     requestUptime(replyTo: initialCommandsReplyHandler)
   }
 
-  private func sendSubAll(callback: ReplyHandler? = nil) {
+  private func sendSubciptions(callback: ReplyHandler? = nil) {
     sendTcp("sub tx all")
     sendTcp("sub atu all")
     sendTcp("sub amplifier all")

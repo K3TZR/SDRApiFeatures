@@ -37,8 +37,8 @@ import XCGLogFeature
 //                   interleaved       non-interleaved   non-interleaved
 
 //@Observable
-//public final class RxAudioPlayer: AudioProcessor {
-public final actor RxAudioPlayer {
+public final class RxAudioPlayer: AudioProcessor {
+//public final actor RxAudioPlayer {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   

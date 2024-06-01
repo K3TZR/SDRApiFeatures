@@ -5,35 +5,35 @@
 //  Created by Douglas Adams on 1/3/20.
 //
 
-import Foundation
+//import Foundation
 
-import SharedFeature
+//import SharedFeature
 
 
-extension Radio {    
-  // ----------------------------------------------------------------------------
-  // MARK: - Amplifier methods
-  
-  public func requestAmplifier(ip: String, port: Int, model: String, serialNumber: String, antennaPairs: String, replyTo callback: ReplyHandler? = nil) {
-    // TODO: add code
-  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - BandSetting methods
-  
-  public func requestBandSetting(_ channel: String, replyTo callback: ReplyHandler? = nil) {
-    // FIXME: need information
-  }
-  
-  public func remove(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
-    // TODO: test this
-    
-    // tell the Radio to remove a Stream
-    ObjectModel.shared.sendTcp("transmit band remove " + "\(id)", replyTo: callback)
-    
-    // notify all observers
-    //    NC.post(.bandSettingWillBeRemoved, object: self as Any?)
-  }
+//extension Radio {    
+//  // ----------------------------------------------------------------------------
+//  // MARK: - Amplifier methods
+//  
+//  public func requestAmplifier(ip: String, port: Int, model: String, serialNumber: String, antennaPairs: String, replyTo callback: ReplyHandler? = nil) {
+//    // TODO: add code
+//  }
+//  
+//  // ----------------------------------------------------------------------------
+//  // MARK: - BandSetting methods
+//  
+//  public func requestBandSetting(_ channel: String, replyTo callback: ReplyHandler? = nil) {
+//    // FIXME: need information
+//  }
+//  
+//  public func removeBandSetting(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
+//    // TODO: test this
+//    
+//    // tell the Radio to remove a Stream
+//    ObjectModel.shared.sendTcp("transmit band remove " + "\(id)", replyTo: callback)
+//    
+//    // notify all observers
+//    //    NC.post(.bandSettingWillBeRemoved, object: self as Any?)
+//  }
   
   // ----------------------------------------------------------------------------
   // MARK: - NetCwStream methods
@@ -118,14 +118,14 @@ extension Radio {
 //    // tell the Radio to create a Stream
 //    _apiModel.sendCommand("stream create type=dax_tx", replyTo: callback)
 //  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Equalizer methods
-  
-  public func requestEqualizerInfo(_ eqType: String, replyTo callback:  ReplyHandler? = nil) {
-    // ask the Radio for an Equalizer's settings
-    ObjectModel.shared.sendTcp("eq " + eqType + " info", replyTo: callback)
-  }
+//  
+//  // ----------------------------------------------------------------------------
+//  // MARK: - Equalizer methods
+//  
+//  public func requestEqualizerInfo(_ eqType: String, replyTo callback:  ReplyHandler? = nil) {
+//    // ask the Radio for an Equalizer's settings
+//    ObjectModel.shared.sendTcp("eq " + eqType + " info", replyTo: callback)
+//  }
   
   // ----------------------------------------------------------------------------
   // MARK: -  GuiClient methods
@@ -217,9 +217,9 @@ extension Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Panadapter methods
   
-  public func requestRfGainList(_ streamId: UInt32, replyTo callback: ReplyHandler? = nil) {
-    ObjectModel.shared.sendTcp("display pan rfgain_info \(streamId.hex)", replyTo: callback)
-  }
+//  public func requestRfGainList(_ streamId: UInt32, replyTo callback: ReplyHandler? = nil) {
+//    ObjectModel.shared.sendTcp("display pan rfgain_info \(streamId.hex)", replyTo: callback)
+//  }
 
   //    public func requestPanadapter(_ dimensions: CGSize = CGSize(width: 100, height: 100), replyTo callback: ReplyHandler? = nil) {
   //        // tell the Radio to create a Panafall (if any available)
@@ -535,4 +535,4 @@ extension Radio {
   //    public func requestXvtr(callback: ReplyHandler? = nil) {
   //        send("xvtr create" , replyTo: callback)
   //    }
-}
+//}

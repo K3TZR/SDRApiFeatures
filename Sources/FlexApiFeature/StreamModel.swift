@@ -62,7 +62,7 @@ final public class StreamStatistics {
 
 //@Observable
 //@MainActor
-final public class StreamModel: StreamProcessor {
+final public actor StreamModel: StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
@@ -121,13 +121,7 @@ final public class StreamModel: StreamProcessor {
 //      meterStream?.streamProcessor(vita)
       
     case .opus:
-      Task {
-        if rxAudioOutput == nil {
-          rxAudioOutput = RxAudioPlayer(streamId: vita.streamId)
-          await rxAudioOutput?.start()
-        }
-        await rxAudioOutput?.audioProcessor(vita)
-      }
+        rxAudioOutput?.audioProcessor(vita)
       
     default:
 //      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
@@ -211,33 +205,36 @@ final public class StreamModel: StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: Public Stream request/remove methods
   
-  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
-    switch streamType {
-    case .remoteRxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
-    case .remoteTxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxMicAudioStream:    ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxRxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-    case .daxTxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-    case .daxIqStream:          ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-    default: return
-    }
-  }
+//  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
+//    switch streamType {
+//    case .remoteRxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
+//    case .remoteTxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+//    case .daxMicAudioStream:    ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+//    case .daxRxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
+//    case .daxTxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+//    case .daxIqStream:          ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
+//    default: return
+//    }
+//  }
 
+  public func remoteRxAudioStart(_ streamId: UInt32)  {
+    rxAudioOutput = RxAudioPlayer(streamId: streamId)
+    rxAudioOutput?.start()
+  }
+  
   public func remoteRxAudioStop()  {
-    Task {
-      await rxAudioOutput?.stop()
-      if let streamId = await rxAudioOutput?.streamId {
-        ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
-      }
-      rxAudioOutput = nil
-    }
-  }
-
-  public func remove(_ streamId: UInt32?)  {
-    if let streamId {
+    rxAudioOutput?.stop()
+    if let streamId = rxAudioOutput?.streamId {
       ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
     }
+    rxAudioOutput = nil
   }
+
+//  public func remove(_ streamId: UInt32?)  {
+//    if let streamId {
+//      ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+//    }
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods

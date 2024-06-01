@@ -10,7 +10,7 @@ import Foundation
 import SharedFeature
 //import TcpFeature
 //import UdpFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 extension ApiModel {
   
@@ -32,7 +32,39 @@ extension ApiModel {
   public func setCwKeyImmediate(state: Bool, replyTo callback: ReplyHandler? = nil) {
     sendTcp("cw key immediate" + " \(state.as1or0)", replyTo: callback)
   }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - Amplifier methods
   
+  public func requestAmplifier(ip: String, port: Int, model: String, serialNumber: String, antennaPairs: String, replyTo callback: ReplyHandler? = nil) {
+    // TODO: add code
+  }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - BandSetting methods
+  
+  public func requestBandSetting(_ channel: String, replyTo callback: ReplyHandler? = nil) {
+    // FIXME: need information
+  }
+  
+  public func removeBandSetting(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
+    // TODO: test this
+    
+    // tell the Radio to remove a Stream
+    sendTcp("transmit band remove " + "\(id)", replyTo: callback)
+    
+    // notify all observers
+    //    NC.post(.bandSettingWillBeRemoved, object: self as Any?)
+  }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Equalizer methods
+  
+  public func requestEqualizerInfo(_ eqType: String, replyTo callback:  ReplyHandler? = nil) {
+    // ask the Radio for an Equalizer's settings
+    sendTcp("eq " + eqType + " info", replyTo: callback)
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Panadapter methods
   
@@ -42,6 +74,10 @@ extension ApiModel {
   
   public func requestPanadapter(callback: ReplyHandler? = nil) {
     sendTcp("display panafall create x=50, y=50", replyTo: callback)
+  }
+
+  public func requestRfGainList(_ streamId: UInt32, replyTo callback: ReplyHandler? = nil) {
+    sendTcp("display pan rfgain_info \(streamId.hex)", replyTo: callback)
   }
 
   // ----------------------------------------------------------------------------
@@ -155,22 +191,22 @@ extension ApiModel {
   // ----------------------------------------------------------------------------
   // MARK: Stream methods
   
-//  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
-//    switch streamType {
-//    case .remoteRxAudioStream:  sendTcp("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
-//    case .remoteTxAudioStream:  sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxMicAudioStream:    sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxRxAudioStream:     sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-//    case .daxTxAudioStream:     sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxIqStream:          sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-//    default: return
-//    }
-//  }
-//
-//  public func removeStream(_ streamId: UInt32?)  {
-//    if let streamId {
-//      sendTcp("stream remove \(streamId.hex)")
-//    }
-//  }
+  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
+    switch streamType {
+    case .remoteRxAudioStream:  sendTcp("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
+    case .remoteTxAudioStream:  sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxMicAudioStream:    sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxRxAudioStream:     sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
+    case .daxTxAudioStream:     sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
+    case .daxIqStream:          sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
+    default: return
+    }
+  }
+
+  public func removeStream(_ streamId: UInt32?)  {
+    if let streamId {
+      sendTcp("stream remove \(streamId.hex)")
+    }
+  }
 
 }
