@@ -241,21 +241,21 @@ public final class Transmit {
     
     switch property {
     case .mox:
-      ApiModel.shared.sendTcp("xmit \(value)")
+      ObjectModel.shared.sendTcp("xmit \(value)")
       
     case .cwBreakInEnabled, .cwBreakInDelay, .cwlEnabled, .cwIambicEnabled,
         .cwPitch, .cwSidetoneEnabled, .cwSyncCwxEnabled, .cwIambicMode,
         .cwSwapPaddles, .cwSpeed:
-      ApiModel.shared.sendTcp("cw \(rawProperty) \(value)")
+      ObjectModel.shared.sendTcp("cw \(rawProperty) \(value)")
       
     case .micBiasEnabled, .micBoostEnabled, .micSelection, .micAccEnabled:
-      ApiModel.shared.sendTcp("mic \(rawProperty) \(value)")
+      ObjectModel.shared.sendTcp("mic \(rawProperty) \(value)")
       
     case .tune:
-      ApiModel.shared.sendTcp("transmit \(rawProperty) \(value)")
+      ObjectModel.shared.sendTcp("transmit \(rawProperty) \(value)")
       
     default:
-      ApiModel.shared.sendTcp("transmit set \(rawProperty)=\(value)")
+      ObjectModel.shared.sendTcp("transmit set \(rawProperty)=\(value)")
     }
   }
 

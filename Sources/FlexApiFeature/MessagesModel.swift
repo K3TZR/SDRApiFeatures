@@ -7,11 +7,8 @@
 
 import ComposableArchitecture
 import Foundation
-//import SwiftUI
 
 import SharedFeature
-//import TcpFeature
-//import XCGLogFeature
 
 @Observable
 public final class MessagesModel: TcpProcessor {
@@ -19,9 +16,7 @@ public final class MessagesModel: TcpProcessor {
   // MARK: - Singleton
   
   public static var shared = MessagesModel()
-  private init() {
-//    Tcp.shared.testerDelegate = self
-  }
+  private init() {}
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -36,6 +31,7 @@ public final class MessagesModel: TcpProcessor {
   private var _filter: MessageFilter = .all
   private var _filterText = ""
   private var _messages = IdentifiedArrayOf<TcpMessage>()
+  private var _startTime: Date?
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -57,7 +53,10 @@ public final class MessagesModel: TcpProcessor {
 
   /// Process a TcpMessage
   /// - Parameter msg: a TcpMessage struct
-  public func tcpProcessor(_ msg: TcpMessage) {
+  public func tcpProcessor(_ text: String, isInput: Bool) {
+
+    if _startTime == nil { _startTime = Date() }
+    let timeStamp = Date()
 
     // ignore routine replies (i.e. replies with no error or no attached data)
     func ignoreReply(_ text: String) -> Bool {
@@ -71,10 +70,12 @@ public final class MessagesModel: TcpProcessor {
     }
 
     // ignore received replies unless they are non-zero or contain additional data
-    if msg.direction == .received && ignoreReply(msg.text) { return }
+    if isInput && ignoreReply(text) { return }
     // ignore sent "ping" messages unless showPings is true
-    if msg.text.contains("ping") && showPings == false { return }
-    
+    if text.contains("ping") && showPings == false { return }
+
+    let msg = TcpMessage(text: String(text), isInput: isInput, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
+
     // filteredMessages is observed by a View therefore requires async updating on the MainActor
     Task {
       await MainActor.run {

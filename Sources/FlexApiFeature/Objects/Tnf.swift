@@ -92,7 +92,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendTcp("tnf remove " + " \(id)", replyTo: callback)
+    ObjectModel.shared.sendTcp("tnf remove " + " \(id)", replyTo: callback)
 
     // remove it immediately (Tnf does not send status on removal)
     ObjectModel.shared.tnfs.remove(id: id)
@@ -111,7 +111,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
   // MARK: - Private Send methods
   
   private func send(_ property: Tnf.Property, _ value: String) {
-    ApiModel.shared.sendTcp("tnf set \(id) \(property.rawValue)=\(value)")
+    ObjectModel.shared.sendTcp("tnf set \(id) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

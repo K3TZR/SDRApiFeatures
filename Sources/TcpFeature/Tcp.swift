@@ -158,11 +158,11 @@ public final class Tcp: NSObject {
     _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: sequenceNumber)
 
     // stream it to the tester (if any)
-    if _startTime != nil {
-      let timeStamp = Date()
-      let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      testerDelegate?.tcpProcessor(message)
-    }
+//    if _startTime != nil {
+//      let timeStamp = Date()
+//      let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
+//      testerDelegate?.tcpProcessor(message)
+//    }
   }
 }
 
@@ -179,13 +179,13 @@ extension Tcp: GCDAsyncSocketDelegate {
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
     // remove the EOL
     if let text = String(data: data, encoding: .ascii)?.dropLast() {
-      if _startTime == nil { _startTime = Date() }
-      
-      // stream it to the Api & tester (if any)
-      let timeStamp = Date()
-      let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      apiDelegate?.tcpProcessor( message )
-      testerDelegate?.tcpProcessor(message)
+//      if _startTime == nil { _startTime = Date() }
+//      
+//      // stream it to the Api & tester (if any)
+//      let timeStamp = Date()
+//      let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
+      apiDelegate?.tcpProcessor( text )
+//      testerDelegate?.tcpProcessor(message)
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

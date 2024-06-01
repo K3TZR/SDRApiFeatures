@@ -240,7 +240,7 @@ public final class Slice: Identifiable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendTcp("slice remove " + " \(id)", replyTo: callback)
+    ObjectModel.shared.sendTcp("slice remove " + " \(id)", replyTo: callback)
   }
   
   // ----------------------------------------------------------------------------
@@ -262,15 +262,15 @@ public final class Slice: Identifiable {
   private func send(_ property: Slice.Property, _ value: String) {
     switch property {
     case .filterLow, .filterHigh:
-      ApiModel.shared.sendTcp("filt \(id) \(filterLow) \(filterHigh)")
+      ObjectModel.shared.sendTcp("filt \(id) \(filterLow) \(filterHigh)")
     case .frequency:
-      ApiModel.shared.sendTcp("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
+      ObjectModel.shared.sendTcp("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
     case .locked:
-      ApiModel.shared.sendTcp("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
+      ObjectModel.shared.sendTcp("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
     case .audioGain, .audioLevel:
-      ApiModel.shared.sendTcp("slice set \(id) audio_level=\(value)")
+      ObjectModel.shared.sendTcp("slice set \(id) audio_level=\(value)")
     default:
-      ApiModel.shared.sendTcp("slice set \(id) \(property.rawValue)=\(value)")
+      ObjectModel.shared.sendTcp("slice set \(id) \(property.rawValue)=\(value)")
     }
   }
   

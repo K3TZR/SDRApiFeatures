@@ -33,6 +33,8 @@ final public class ObjectModel {
   public var testMode = false
   public var radio: Radio?
   
+  public var apiModel: ApiModel?
+  
   // single objects
   public var atu = Atu()
   public var cwx = Cwx()
@@ -100,6 +102,15 @@ final public class ObjectModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
+
+  /// Send a command to the Radio (hardware) via TCP
+  /// - Parameters:
+  ///   - command:        a Command String
+  ///   - diagnostic:     use "D"iagnostic form
+  ///   - replyTo:       a callback function (if any)
+  public func sendTcp(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
+    apiModel?.sendTcp(cmd, diagnostic: diagnostic, replyTo: callback)
+  }
   
   public func clientInitialized(_ state: Bool) {
     clientInitialized = state
@@ -198,7 +209,7 @@ final public class ObjectModel {
   ///   _ id:                            a TnfId
   ///   - callback:     ReplyHandler (optional)
   public func removeTnf(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
-    ApiModel.shared.sendTcp("tnf remove \(id)", replyTo: callback)
+    sendTcp("tnf remove \(id)", replyTo: callback)
     
     // remove it immediately (Tnf does not send status on removal)
     tnfs.remove(id: id)
@@ -705,7 +716,7 @@ final public class ObjectModel {
         
         if radio!.isGui == false && station == activeStation {
           boundClientId = clientId
-          ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
+          sendTcp("client bind client_id=\(clientId)")
           log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
         }
         //        }
@@ -729,7 +740,7 @@ final public class ObjectModel {
           
           if radio!.isGui == false && station == activeStation {
             boundClientId = clientId
-            ApiModel.shared.sendTcp("client bind client_id=\(clientId)")
+            sendTcp("client bind client_id=\(clientId)")
             log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
           }
         }

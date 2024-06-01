@@ -28,6 +28,8 @@ public final class ApiModel: TcpProcessor {
 
   public var activeSlice: Slice?
 //  public private(set) var activeStation: String?
+  public var testMode = false
+
 
   public internal(set) var connectionHandle: UInt32?
   public internal(set) var hardwareVersion: String?
@@ -44,6 +46,10 @@ public final class ApiModel: TcpProcessor {
   private var _replyDictionary = ReplyDictionary()
   private var _wanHandle = ""
 
+  private var _tcp = Tcp()
+  private var _udp = Udp()
+  private var _startTime: Date?
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
 
@@ -108,13 +114,13 @@ public final class ApiModel: TcpProcessor {
         log("ApiModel: Wan validation = \(reply)", .debug, #function, #file, #line)
       }
       // bind UDP
-      let ports = Udp.shared.bind(packet.source == .smartlink,
+      let ports = _udp.bind(packet.source == .smartlink,
                                   packet.publicIp,
                                   packet.requiresHolePunch,
                                   packet.negotiatedHolePunchPort,
                                   packet.publicUdpPort)
       
-      guard ports != nil else { Tcp.shared.disconnect() ; throw ApiError.udpBind }
+      guard ports != nil else { _tcp.disconnect() ; throw ApiError.udpBind }
       log("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)", .debug, #function, #file, #line)
       
       // is this a Wan connection?
@@ -140,8 +146,8 @@ public final class ApiModel: TcpProcessor {
       
       // set the UDP port for a Local connection
       if packet.source == .local {
-        sendTcp("client udpport " + "\(Udp.shared.sendPort)")
-        log("ApiModel: Client Udp port set to \(Udp.shared.sendPort)", .info, #function, #file, #line)
+        sendTcp("client udpport " + "\(_udp.sendPort)")
+        log("ApiModel: Client Udp port set to \(_udp.sendPort)", .info, #function, #file, #line)
       }
     }
   }
@@ -160,10 +166,10 @@ public final class ApiModel: TcpProcessor {
     connectionHandle = nil
     
     // stop udp
-    Udp.shared.unbind()
+    _udp.unbind()
     log("ApiModel: Disconnect, UDP unbound", .debug, #function, #file, #line)
     
-    Tcp.shared.disconnect()
+    _tcp.disconnect()
     
     Task { await MainActor.run {
       ObjectModel.shared.activePacket = nil
@@ -174,25 +180,25 @@ public final class ApiModel: TcpProcessor {
       await ObjectModel.shared.removeAllObjects()
       await _replyDictionary.removeAll()
     }
-    
     log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
   }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public TCP message processor
 
-  public func tcpProcessor(_ msg: TcpMessage) {
-    let message = msg.text
+  public func tcpProcessor(_ msg: String, isInput: Bool) {
+   
+    if testMode { MessagesModel.shared.tcpProcessor(msg, isInput: isInput) }
     
     // the first character indicates the type of message
-    switch message.prefix(1).uppercased() {
+    switch msg.prefix(1).uppercased() {
       
-    case "H":  connectionHandle = String(message.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
-    case "M":  parseMessage( message.dropFirst() )
-    case "R":  defaultReplyProcessor( message.dropFirst() )
-    case "S":  parseStatus( message.dropFirst() )
-    case "V":  hardwareVersion = String(message.dropFirst())
-    default:   log("ApiModel: unexpected message = \(message)", .warning, #function, #file, #line)
+    case "H":  connectionHandle = String(msg.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
+    case "M":  parseMessage( msg.dropFirst() )
+    case "R":  defaultReplyProcessor( msg.dropFirst() )
+    case "S":  parseStatus( msg.dropFirst() )
+    case "V":  hardwareVersion = String(msg.dropFirst())
+    default:   log("ApiModel: unexpected message = \(msg)", .warning, #function, #file, #line)
     }
   }
 
@@ -210,10 +216,12 @@ public final class ApiModel: TcpProcessor {
       let sequenceNumber = await _replyDictionary.add((replyTo: callback, command: cmd))
       
       // assemble the command
-      let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd + "\n"
+      let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd
       
       // tell TCP to send it
-      Tcp.shared.send(command, sequenceNumber)
+      _tcp.send(command + "\n", sequenceNumber)
+       
+      if testMode { MessagesModel.shared.tcpProcessor(command, isInput: false) }
     }
   }
   
@@ -222,7 +230,7 @@ public final class ApiModel: TcpProcessor {
   ///   - data: a Data
   public func sendUdp(_ data: Data) {
     // tell Udp to send the Data message
-    Udp.shared.send(data)
+    _udp.send(data)
   }
   
   /// Send data to the Radio (hardware) via UDP
@@ -230,7 +238,7 @@ public final class ApiModel: TcpProcessor {
   ///   - string: a String
   public func sendUdp(_ string: String) {
     // tell Udp to send the String message
-    Udp.shared.send(string)
+    _udp.send(string)
   }
 
   // ----------------------------------------------------------------------------
@@ -240,7 +248,7 @@ public final class ApiModel: TcpProcessor {
   /// - Parameter params:     a struct of parameters
   /// - Returns:              success / failure
   private func connect(using packet: Packet) -> Bool {
-    return Tcp.shared.connect(packet.source == .smartlink,
+    return _tcp.connect(packet.source == .smartlink,
                               packet.requiresHolePunch,
                               packet.negotiatedHolePunchPort,
                               packet.publicTlsPort,

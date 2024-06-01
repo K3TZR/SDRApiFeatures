@@ -42,7 +42,7 @@ public struct TcpStatus: Identifiable, Equatable {
 }
 
 public protocol TcpProcessor: AnyObject {
-  func tcpProcessor(_ message: TcpMessage )
+  func tcpProcessor(_ text: String , isInput: Bool)
 }
 
 ///  Tcp Command Class implementation
@@ -51,12 +51,13 @@ public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
-  public static var shared = Tcp()
+//  public static var shared = Tcp()
   
   /// Initialize a Command Manager
   /// - Parameters:
   ///   - timeout:        connection timeout (seconds)
-  private init(timeout: Double = 0.5) {
+//  private init(timeout: Double = 0.5) {
+  public init(timeout: Double = 0.5) {
     _timeout = timeout
     super.init()
     
@@ -156,13 +157,6 @@ public final class Tcp: NSObject {
   /// - Returns:          the Sequence Number of the Command
   public func send(_ command: String, _ sequenceNumber: Int) {
     _socket.write(command.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withTimeout: -1, tag: sequenceNumber)
-
-    // stream it to the tester (if any)
-    if _startTime != nil {
-      let timeStamp = Date()
-      let message = TcpMessage(text: String(command.dropLast()), direction: .sent, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      MessagesModel.shared.tcpProcessor(message)
-    }
   }
 }
 
@@ -179,13 +173,7 @@ extension Tcp: GCDAsyncSocketDelegate {
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
     // remove the EOL
     if let text = String(data: data, encoding: .ascii)?.dropLast() {
-      if _startTime == nil { _startTime = Date() }
-      
-      // stream it to the Api & tester (if any)
-      let timeStamp = Date()
-      let message = TcpMessage(text: String(text), direction: .received, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
-      ApiModel.shared.tcpProcessor( message )
-      MessagesModel.shared.tcpProcessor(message)
+      ApiModel.shared.tcpProcessor( String(text), isInput: true )
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

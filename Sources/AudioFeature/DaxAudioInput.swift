@@ -117,7 +117,7 @@ import XCGLogFeature
 //        if let sliceLetter = StreamModel.shared.daxRxAudioStreams[id: streamId]?.sliceLetter {
 //          for slice in await ObjectModel.shared.slices where await slice.sliceLetter == sliceLetter {
 //            if StreamModel.shared.daxRxAudioStreams[id: streamId]?.clientHandle == ApiModel.shared.connectionHandle {
-//              await ApiModel.shared.sendTcp("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
+//              await ObjectModel.shared.sendTcp("audio stream \(streamId.hex) slice \(slice.id) gain \(Int(gain))")
 //            }
 //          }
 //        }

@@ -157,7 +157,7 @@ public final class DaxTxAudioStream: Identifiable {
         
         // FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { Udp.shared.send(vitaData ) }
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { ApiModel.shared.sendUdp(vitaData ) }
         
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16
@@ -202,7 +202,7 @@ public final class DaxTxAudioStream: Identifiable {
         
 //         FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { Udp.shared.send(vitaData ) }
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { ApiModel.shared.sendUdp(vitaData ) }
         
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16

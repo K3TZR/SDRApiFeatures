@@ -144,11 +144,11 @@ public final class Memory: Identifiable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .apply, .remove:   ApiModel.shared.sendTcp("memory \(property.rawValue) \(id)")
-    case .create:           ApiModel.shared.sendTcp("memory create")
-    default:                ApiModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
+    case .apply, .remove:   ObjectModel.shared.sendTcp("memory \(property.rawValue) \(id)")
+    case .create:           ObjectModel.shared.sendTcp("memory create")
+    default:                ObjectModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
     }
-    ApiModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
+    ObjectModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

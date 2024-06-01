@@ -46,12 +46,13 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
-  public static var shared = Udp()
+//  public static var shared = Udp()
   
   /// Initialize a Stream Manager
   /// - Parameters:
   ///   - receivePort: a port number
-  private init(receivePort: UInt16 = 4991) {
+//  private init(receivePort: UInt16 = 4991) {
+  public init(receivePort: UInt16 = 4991) {
     self._receivePort = receivePort
     
     super.init()

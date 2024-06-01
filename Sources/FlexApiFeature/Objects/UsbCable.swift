@@ -151,7 +151,7 @@ public final class UsbCable: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: UsbCable.Property, _ value: String) {
-    ApiModel.shared.sendTcp("usb_cable set \(id) \(property.rawValue)=\(value)")
+    ObjectModel.shared.sendTcp("usb_cable set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

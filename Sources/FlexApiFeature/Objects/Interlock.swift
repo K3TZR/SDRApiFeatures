@@ -160,7 +160,7 @@ public final class Interlock {
   // MARK: - Private Send methods
   
   public func send(_ property: Property, _ value: String) {
-    ApiModel.shared.sendTcp("interlock \(property.rawValue)=\(value)")
+    ObjectModel.shared.sendTcp("interlock \(property.rawValue)=\(value)")
   }
     
   /* ----- from FlexApi -----

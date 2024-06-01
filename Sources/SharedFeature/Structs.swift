@@ -178,15 +178,15 @@ public struct Version {
   }
 }
 
-public enum TcpMessageDirection {
-  case received
-  case sent
-}
+//public enum TcpMessageDirection {
+//  case received
+//  case sent
+//}
 
 public struct TcpMessage: Identifiable, Equatable {
   public var id: UUID
   public var text: String
-  public var direction: TcpMessageDirection
+  public var isInput: Bool
   public var timeStamp: Date
   public var interval: Double
   public var color: Color
@@ -198,7 +198,7 @@ public struct TcpMessage: Identifiable, Equatable {
   public init
   (
     text: String,
-    direction: TcpMessageDirection = .received,
+    isInput: Bool = true,
     timeStamp: Date = Date(),
     interval: Double,
     color: Color = .primary
@@ -206,7 +206,7 @@ public struct TcpMessage: Identifiable, Equatable {
   {
     self.id = UUID()
     self.text = text
-    self.direction = direction
+    self.isInput = isInput
     self.timeStamp = timeStamp
     self.interval = interval
     self.color = color
