@@ -77,7 +77,8 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(sampleRate: Int = 24_000, levelsEnabled: Bool = true) {
+  public init(_ streamId: UInt32, sampleRate: Int = 24_000, levelsEnabled: Bool = true) {
+    self.streamId = streamId
     self.sampleRate = Double(sampleRate)
     self.levelsEnabled = levelsEnabled
 

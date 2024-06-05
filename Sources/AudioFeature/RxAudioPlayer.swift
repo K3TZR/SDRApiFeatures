@@ -76,7 +76,7 @@ public final class RxAudioPlayer: AudioProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(streamId: UInt32) {
+  public init(_ streamId: UInt32) {
     self.streamId = streamId
     _ringBuffer = RingBuffer(_ringBufferAsbd)
     _opusProcessor = OpusProcessor(_ringBufferAsbd, _ringBuffer)

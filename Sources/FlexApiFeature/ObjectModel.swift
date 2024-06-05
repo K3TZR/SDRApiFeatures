@@ -575,15 +575,6 @@ final public class ObjectModel {
   }
   
   public func preProcessStream(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
-    enum Property: String {
-      case daxIq            = "dax_iq"
-      case daxMic           = "dax_mic"
-      case daxRx            = "dax_rx"
-      case daxTx            = "dax_tx"
-      case remoteRx         = "remote_audio_rx"
-      case remoteTx         = "remote_audio_tx"
-    }
-    
     let properties = statusMessage.keyValuesArray()
     
     // is the 1st KeyValue a StreamId?
@@ -602,19 +593,21 @@ final public class ObjectModel {
             log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
             return
           }
-          guard let token = Property(rawValue: properties[1].value) else {
+          guard let token = StreamType(rawValue: properties[1].value) else {
             // log it and ignore the Key
             log("StreamModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
             return
           }
           switch token {
             
-          case .daxIq:      daxIqStreamStatus(properties)
-          case .daxMic:     daxMicAudioStreamStatus(properties)
-          case .daxRx:      daxRxAudioStreamStatus(properties)
-          case .daxTx:      daxTxAudioStreamStatus(properties)
-          case .remoteRx:   remoteRxAudioStreamStatus(properties)
-          case .remoteTx:   remoteTxAudioStreamStatus(properties)
+          case .daxIqStream:          daxIqStreamStatus(properties)
+          case .daxMicAudioStream:    daxMicAudioStreamStatus(properties)
+          case .daxRxAudioStream:     daxRxAudioStreamStatus(properties)
+          case .daxTxAudioStream:     daxTxAudioStreamStatus(properties)
+          case .remoteRxAudioStream:  remoteRxAudioStreamStatus(properties)
+          case .remoteTxAudioStream:  remoteTxAudioStreamStatus(properties)
+            
+          case .panadapter, .waterfall: break     // should never be seen here
           }
         }
       }
