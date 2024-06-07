@@ -106,7 +106,11 @@ public final class Tnf: Identifiable, Equatable, Comparable {
     parse([(property.rawValue, value)])
     send(property, value)
   }
-  
+//  public func sendProperty(_ property: Tnf.Property, _ value: String) {
+//    parse([(property.rawValue, value)])
+//    send(property, value)
+//  }
+ 
   // ----------------------------------------------------------------------------
   // MARK: - Private Send methods
   
