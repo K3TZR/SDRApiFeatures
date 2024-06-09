@@ -120,9 +120,9 @@ final public actor StreamModel: StreamProcessor {
 //        remoteRxAudioStream?.streamProcessor(vita)
 //      }
       
-//    case .meter:
-//      if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-//      meterStream?.streamProcessor(vita)
+    case .meter:
+      if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+      meterStream?.streamProcessor(vita)
       
     case .opus:
         rxAudioOutput?.audioProcessor(vita)

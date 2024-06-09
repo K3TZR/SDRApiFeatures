@@ -39,6 +39,7 @@ final public class ObjectModel {
   public var cwx = Cwx()
   public var gps = Gps()
   public var interlock = Interlock()
+  public var remoteRxAudio: RemoteRxAudio?
   public var transmit = Transmit()
   public var wan = Wan()
   public var waveform = Waveform()
@@ -58,15 +59,14 @@ final public class ObjectModel {
   public var xvtrs = IdentifiedArrayOf<Xvtr>()
   
   // single stream objects
-  public var daxMicAudioStream: DaxMicAudioStream?
-  public var daxTxAudioStream: DaxTxAudioStream?
+  public var daxMicAudio: DaxMicAudio?
+  public var daxTxAudio: DaxTxAudio?
   public var meterStream: MeterStream?
-  public var remoteRxAudioStream: RemoteRxAudioStream?
-  public var remoteTxAudioStream: RemoteTxAudioStream?
+  public var remoteTxAudio: RemoteTxAudio?
 
   // collection stream objects
-  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
-  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
+  public var daxIqs = IdentifiedArrayOf<DaxIq>()
+  public var daxRxAudios = IdentifiedArrayOf<DaxRxAudio>()
   public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
   public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
 
@@ -297,43 +297,43 @@ final public class ObjectModel {
     }
   }
   
-  private func daxIqStreamStatus(_ properties: KeyValuesArray) {
+  private func daxIqStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if daxIqStreams[id: id] == nil { daxIqStreams.append( DaxIqStream(id) ) }
+      if daxIqs[id: id] == nil { daxIqs.append( DaxIq(id) ) }
       // parse the properties
-      daxIqStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+      daxIqs[id: id]!.parse( Array(properties.dropFirst(1)) )
     }
   }
 
-  private func daxMicAudioStreamStatus(_ properties: KeyValuesArray) {
+  private func daxMicAudioStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if daxMicAudioStream == nil { daxMicAudioStream = DaxMicAudioStream(id) }
+      if daxMicAudio == nil { daxMicAudio = DaxMicAudio(id) }
       // parse the properties
-      daxMicAudioStream?.parse( Array(properties.dropFirst(1)) )
+      daxMicAudio?.parse( Array(properties.dropFirst(1)) )
     }
   }
 
-  private func daxRxAudioStreamStatus(_ properties: KeyValuesArray) {
+  private func daxRxAudioStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if daxRxAudioStreams[id: id] == nil { daxRxAudioStreams.append( DaxRxAudioStream(id) ) }
+      if daxRxAudios[id: id] == nil { daxRxAudios.append( DaxRxAudio(id) ) }
       // parse the properties
-      daxRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
+      daxRxAudios[id: id]!.parse( Array(properties.dropFirst(1)) )
     }
   }
 
-  private func daxTxAudioStreamStatus(_ properties: KeyValuesArray) {
+  private func daxTxAudioStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if daxTxAudioStream == nil { daxTxAudioStream = DaxTxAudioStream(id) }
+      if daxTxAudio == nil { daxTxAudio = DaxTxAudio(id) }
       // parse the properties
-      daxTxAudioStream?.parse( Array(properties.dropFirst(1)) )
+      daxTxAudio?.parse( Array(properties.dropFirst(1)) )
     }
   }
 
@@ -428,23 +428,23 @@ final public class ObjectModel {
     }
   }
   
-  private func remoteRxAudioStreamStatus(_ properties: KeyValuesArray) {
+  private func remoteRxAudioStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if remoteRxAudioStream == nil { remoteRxAudioStream = RemoteRxAudioStream(id) }
+      if remoteRxAudio == nil { remoteRxAudio = RemoteRxAudio(id) }
       // parse the properties
-      remoteRxAudioStream?.parse( Array(properties.dropFirst(2)) )
+      remoteRxAudio?.parse( Array(properties.dropFirst(2)) )
     }
   }
 
-  private func remoteTxAudioStreamStatus(_ properties: KeyValuesArray) {
+  private func remoteTxAudioStatus(_ properties: KeyValuesArray) {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if remoteTxAudioStream == nil { remoteTxAudioStream = RemoteTxAudioStream(id)  }
+      if remoteTxAudio == nil { remoteTxAudio = RemoteTxAudio(id)  }
       // parse the properties
-      remoteTxAudioStream?.parse( Array(properties.dropFirst(2)) )
+      remoteTxAudio?.parse( Array(properties.dropFirst(2)) )
     }
   }
 
@@ -600,12 +600,12 @@ final public class ObjectModel {
           }
           switch token {
             
-          case .daxIqStream:          daxIqStreamStatus(properties)
-          case .daxMicAudioStream:    daxMicAudioStreamStatus(properties)
-          case .daxRxAudioStream:     daxRxAudioStreamStatus(properties)
-          case .daxTxAudioStream:     daxTxAudioStreamStatus(properties)
-          case .remoteRxAudioStream:  remoteRxAudioStreamStatus(properties)
-          case .remoteTxAudioStream:  remoteTxAudioStreamStatus(properties)
+          case .daxIqStream:          daxIqStatus(properties)
+          case .daxMicAudioStream:    daxMicAudioStatus(properties)
+          case .daxRxAudioStream:     daxRxAudioStatus(properties)
+          case .daxTxAudioStream:     daxTxAudioStatus(properties)
+          case .remoteRxAudioStream:  remoteRxAudioStatus(properties)
+          case .remoteTxAudioStream:  remoteTxAudioStatus(properties)
             
           case .panadapter, .waterfall: break     // should never be seen here
           }
@@ -781,29 +781,29 @@ final public class ObjectModel {
   // MARK: - Private Stream Removal methods
 
   private func removeStream(having id: UInt32) {
-    if daxIqStreams[id: id] != nil {
-      daxIqStreams.remove(id: id)
-      log("StreamModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    if daxIqs[id: id] != nil {
+      daxIqs.remove(id: id)
+      log("ObjectModel: DaxIq \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
-    else if daxMicAudioStream?.id == id {
-      daxMicAudioStream = nil
-      log("StreamModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    else if daxMicAudio?.id == id {
+      daxMicAudio = nil
+      log("ObjectModel: DaxMicAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
-    else if daxRxAudioStreams[id: id] != nil {
-      daxRxAudioStreams.remove(id: id)
-      log("StreamModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    else if daxRxAudios[id: id] != nil {
+      daxRxAudios.remove(id: id)
+      log("ObjectModel: DaxRxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
 
-    } else if daxTxAudioStream?.id == id {
-      daxTxAudioStream = nil
-      log("StreamModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    } else if daxTxAudio?.id == id {
+      daxTxAudio = nil
+      log("ObjectModel: DaxTxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
-    else if remoteRxAudioStream?.id == id {
-      remoteRxAudioStream = nil
-      log("StreamModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    else if remoteRxAudio?.id == id {
+      remoteRxAudio = nil
+      log("ObjectModel: RemoteRxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
-    else if remoteTxAudioStream?.id == id {
-      remoteTxAudioStream = nil
-      log("StreamModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
+    else if remoteTxAudio?.id == id {
+      remoteTxAudio = nil
+      log("ObjectModel: RemoteTxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
     }
   }
 

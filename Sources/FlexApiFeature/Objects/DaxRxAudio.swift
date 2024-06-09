@@ -1,6 +1,6 @@
 //
-//  DaxRxAudioStream.swift
-//  FlexApiFeature/Streams
+//  DaxRxAudio.swift
+//  FlexApiFeature/Objects
 //
 //  Created by Douglas Adams on 2/24/17.
 //  Copyright © 2017 Douglas Adams & Mario Illgen. All rights reserved.
@@ -13,12 +13,13 @@ import SharedFeature
 import VitaFeature
 import XCGLogFeature
 
-// DaxRxAudioStream
-//      creates a DaxRxAudioStream instance to be used by a Client to support the
-//      processing of a UDP stream of Rx Audio from the Radio to the client. THe DaxRxAudioStream
+// DaxRxAudio
+//      creates a DaxRxAudio instance to be used by a Client to support the
+//      processing of a UDP stream of Rx Audio from the Radio to the client. THe DaxRxAudio
 //      is added / removed by TCP messages. 
+@MainActor
 @Observable
-public final class DaxRxAudioStream: Identifiable, StreamProcessor {
+public final class DaxRxAudio: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -69,7 +70,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
       // check for unknown keys
       guard let token = Property(rawValue: property.key) else {
         // unknown, log it and ignore the Key
-        log("DaxRxAudioStream \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        log("DaxRxAudio \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
         continue
       }
       // known keys, in alphabetical order
@@ -99,43 +100,7 @@ public final class DaxRxAudioStream: Identifiable, StreamProcessor {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("DaxRxAudioStream \(id.hex) ADDED: channel = \(daxChannel), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      log("DaxRxAudio \(id.hex) ADDED: channel = \(daxChannel), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
     }
-  }
-  
-  
-  
-  public func streamProcessor(_ vita: Vita) {
-//    if audioOutput == nil {
-//      audioOutput = RxAudioPlayer(streamId: vita.streamId)
-//      audioOutput?.start()
-//    }
-//   audioOutput?.audioProcessor(vita)
-  }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Public set property methods
-  
-  /// Set a property
-  /// - Parameters:
-  ///   - radio:      the current radio
-  ///   - id:         a DaxRxAudioStream Id
-  ///   - property:   a DaxRxAudioStream Token
-  ///   - value:      the new value
-  public static func setProperty(_ property: Property, value: Any) {
-    // FIXME: add commands
-  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Send methods
-  
-  /// Send a command to Set a DaxRxAudioStream property
-  /// - Parameters:
-  ///   - radio:      a Radio instance
-  ///   - id:         the Id for the specified DaxRxAudioStream
-  ///   - token:      the parse token
-  ///   - value:      the new value
-  private static func send(_ token: Property, _ value: Any) {
-    // FIXME: add commands
   }
 }

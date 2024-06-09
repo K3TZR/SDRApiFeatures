@@ -36,23 +36,20 @@ public final class Cwx {
   public var charSentEventHandler: ((_ index: Int) -> Void)?
   public var eraseSentEventHandler: ((_ start: Int, _ stop: Int) -> Void)?
   public var messageQueuedEventHandler: ((_ sequence: Int, _ bufferIndex: Int) -> Void)?
-  
-  // ------------------------------------------------------------------------------
-  // MARK: - Internal properties
-  
-  var macros: [String]
-  let kMaxNumberOfMacros = 12
-  
-  // ------------------------------------------------------------------------------
-  // MARK: - Internal types
-  
-  enum Property: String {
+
+  public enum Property: String {
     case breakInDelay   = "break_in_delay"
     case qskEnabled     = "qsk_enabled"
     case erase
     case sent
     case wpm            = "wpm"
   }
+
+  // ------------------------------------------------------------------------------
+  // MARK: - Internal properties
+  
+  var macros: [String]
+  let kMaxNumberOfMacros = 12
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -283,15 +280,21 @@ public final class Cwx {
   //        }
   //    }
   
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Command methods
   
-  //    private func cwxCmd(_ token: CwxTokens, _ value: Any) {
-  //        _api.send("cwx " + token.rawValue + " \(value)")
-  //    }
-  //    private func cwxCmd(_ tokenString: String, _ value: Any) {
-  //        _api.send("cwx " + tokenString + " \(value)")
-  //    }
+  // ----------------------------------------------------------------------------
+  // MARK: - Public set property methods
+  
+  public func setProperty(_ property: Cwx.Property, _ value: String) {
+    parse([(property.rawValue, value)])
+    send(property, value)
+  }
+ 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private Send methods
+  
+  private func send(_ property: Cwx.Property, _ value: String) {
+    ObjectModel.shared.sendTcp("cwx \(property.rawValue) \(value)")
+  }
   
   /*
    "cwx macro save " + (index + 1) + " \"" + msg + “\""
