@@ -10,8 +10,9 @@ import Foundation
 
 import SharedFeature
 
+@MainActor
 @Observable
-public final class MessagesModel: TcpProcessor {
+public final class MessagesModel {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   

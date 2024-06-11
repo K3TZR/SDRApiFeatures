@@ -49,14 +49,8 @@ public protocol TcpProcessor: AnyObject {
 ///      manages all Tcp communication with a Radio
 public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
-  // MARK: - Singleton
+  // MARK: - Initialization
   
-//  public static var shared = Tcp()
-  
-  /// Initialize a Command Manager
-  /// - Parameters:
-  ///   - timeout:        connection timeout (seconds)
-//  private init(timeout: Double = 0.5) {
   public init(timeout: Double = 0.5) {
     _timeout = timeout
     super.init()
@@ -70,13 +64,6 @@ public final class Tcp: NSObject {
   }
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
-
-//  public weak var apiDelegate: TcpProcessor?
-//  public weak var testerDelegate: TcpProcessor?
-  
-//  private var _messageStream: (TcpMessage) -> Void = { _ in }
-//  private var _testerStream: (TcpMessage) -> Void = { _ in }
-//  private var _statusStream: (TcpStatus) -> Void = { _ in }
 
   public private(set) var interfaceIpAddress = "0.0.0.0"
   

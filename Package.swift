@@ -24,8 +24,6 @@ let package = Package(
     .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "SharedFeature", targets: ["SharedFeature"]),
     .library(name: "SideControlsFeature", targets: ["SideControlsFeature"]),
-//    .library(name: "TcpFeature", targets: ["TcpFeature"]),
-//    .library(name: "UdpFeature", targets: ["UdpFeature"]),
     .library(name: "VitaFeature", targets: ["VitaFeature"]),
 //    .library(name: "WaterfallFeature", targets: ["WaterfallFeature"]),
   ],
@@ -45,7 +43,6 @@ let package = Package(
     // AudioFeature
     .target( name: "AudioFeature", dependencies: [
       .product(name: "XCGLogFeature", package: "LogFeatures"),
-//      "FlexApiFeature",
       "SharedFeature",
       "VitaFeature",
       "RingBufferFeature",
@@ -146,21 +143,6 @@ let package = Package(
       "SharedFeature"
     ]),
     
-    // TcpFeature
-//    .target(name: "TcpFeature", dependencies: [
-//      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-//      .product(name: "XCGLogFeature", package: "LogFeatures"),
-//      "SharedFeature",
-//    ]),
-
-    // UdpFeature
-//    .target(name: "UdpFeature", dependencies: [
-//      .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-//      .product(name: "XCGLogFeature", package: "LogFeatures"),
-//      "SharedFeature",
-//      "VitaFeature",
-//    ]),
-
     // VitaFeature
     .target(name: "VitaFeature", dependencies: [
       "SharedFeature",

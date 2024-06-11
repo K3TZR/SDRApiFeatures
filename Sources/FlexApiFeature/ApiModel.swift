@@ -187,8 +187,9 @@ public final class ApiModel: TcpProcessor {
   // MARK: - Public TCP message processor
 
   public func tcpProcessor(_ msg: String, isInput: Bool) {
-   
-    if testMode { MessagesModel.shared.tcpProcessor(msg, isInput: isInput) }
+    
+    // received messages sent to the Tester
+    if testMode { Task { await MainActor.run { MessagesModel.shared.tcpProcessor(msg, isInput: true) }}}
     
     // the first character indicates the type of message
     switch msg.prefix(1).uppercased() {
@@ -220,8 +221,9 @@ public final class ApiModel: TcpProcessor {
       
       // tell TCP to send it
       _tcp.send(command + "\n", sequenceNumber)
-       
-      if testMode { MessagesModel.shared.tcpProcessor(command, isInput: false) }
+      
+      // sent messages sent to the Tester
+      if testMode { Task { await MainActor.run { MessagesModel.shared.tcpProcessor(command, isInput: false) }}}
     }
   }
   

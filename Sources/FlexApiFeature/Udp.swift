@@ -43,14 +43,8 @@ public struct UdpStatus: Identifiable, Equatable {
 ///      manages all Udp communication with a Radio
 public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
-  // MARK: - Singleton
+  // MARK: - Initialization
   
-//  public static var shared = Udp()
-  
-  /// Initialize a Stream Manager
-  /// - Parameters:
-  ///   - receivePort: a port number
-//  private init(receivePort: UInt16 = 4991) {
   public init(receivePort: UInt16 = 4991) {
     self._receivePort = receivePort
     
@@ -66,14 +60,12 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-//  public weak var delegate: StreamDistributor?
   public var sendIp = ""
   public var sendPort: UInt16 = 4991 // default port number
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
 
-  private var _inBoundStreams: (Vita) -> Void = { _ in }
   private var _statusStream: (UdpStatus) -> Void = { _ in }
   
   private var _streamModel: StreamModel
@@ -81,7 +73,6 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
   
-//  var _isRegistered = false
   var _socket: GCDAsyncUdpSocket!
   
   // ----------------------------------------------------------------------------
@@ -234,17 +225,6 @@ extension Udp: GCDAsyncUdpSocketDelegate {
 // MARK: - Stream definition extension
 
 extension Udp {
-  
-  /// A stream of received UDP streams
-//  public var inboundStreams: AsyncStream<Vita> {
-//    AsyncStream { continuation in
-//      _inBoundStreams = { vita in
-//        continuation.yield(vita)
-//      }
-//      continuation.onTermination = { @Sendable _ in
-//      }
-//    }
-//  }
   
   /// A stream of UDP status changes
   public var statusStream: AsyncStream<UdpStatus> {
