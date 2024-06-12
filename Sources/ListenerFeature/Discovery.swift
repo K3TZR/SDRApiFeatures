@@ -11,8 +11,8 @@ import Foundation
 import SharedFeature
 import XCGLogFeature
 
-@Observable
 @MainActor
+@Observable
 final public class Discovery {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton

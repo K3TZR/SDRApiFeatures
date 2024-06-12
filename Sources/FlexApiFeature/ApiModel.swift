@@ -48,7 +48,6 @@ public final class ApiModel: TcpProcessor {
 
   private var _tcp = Tcp()
   private var _udp = Udp()
-  private var _startTime: Date?
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
@@ -67,10 +66,10 @@ public final class ApiModel: TcpProcessor {
     
     if let packet, let station {
       Task { await MainActor.run {
+        MessagesModel.shared.startTime = Date()
         ObjectModel.shared.activePacket = packet
         ObjectModel.shared.activeStation = station
-      }
-      }
+      }}
       
       // Instantiate a Radio
       try await MainActor.run{

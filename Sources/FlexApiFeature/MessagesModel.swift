@@ -23,8 +23,8 @@ public final class MessagesModel {
   // MARK: - Public properties
   
   @MainActor public var filteredMessages = IdentifiedArrayOf<TcpMessage>()
-  public var showPings = false
   public var showAllReplies = false
+  public var startTime: Date?
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -32,7 +32,7 @@ public final class MessagesModel {
   private var _filter: MessageFilter = .all
   private var _filterText = ""
   private var _messages = IdentifiedArrayOf<TcpMessage>()
-  private var _startTime: Date?
+  private var _showPings = false
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -51,12 +51,15 @@ public final class MessagesModel {
     _filterText = filterText
     reFilterMessages()
   }
+  
+  public func showPings(_ isEnabled: Bool) {
+    _showPings = isEnabled
+  }
 
   /// Process a TcpMessage
   /// - Parameter msg: a TcpMessage struct
   public func tcpProcessor(_ text: String, isInput: Bool) {
 
-    if _startTime == nil { _startTime = Date() }
     let timeStamp = Date()
 
     // ignore routine replies (i.e. replies with no error or no attached data)
@@ -73,9 +76,9 @@ public final class MessagesModel {
     // ignore received replies unless they are non-zero or contain additional data
     if isInput && ignoreReply(text) { return }
     // ignore sent "ping" messages unless showPings is true
-    if text.contains("ping") && showPings == false { return }
+    if text.contains("ping") && _showPings == false { return }
 
-    let msg = TcpMessage(text: String(text), isInput: isInput, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(_startTime!))
+    let msg = TcpMessage(text: String(text), isInput: isInput, timeStamp: timeStamp, interval: timeStamp.timeIntervalSince(startTime!))
 
     // filteredMessages is observed by a View therefore requires async updating on the MainActor
     Task {
