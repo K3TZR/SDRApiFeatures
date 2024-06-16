@@ -117,8 +117,9 @@ final public class Station: Identifiable, Equatable, Hashable, Comparable {
 // ----------------------------------------------------------------------------
 // MARK: - Packet struct
 
-@Observable
-final public class Packet: Identifiable, Equatable, Hashable , Comparable {
+//@Observable
+//final public class Packet: Identifiable, Equatable, Hashable , Comparable {
+public struct Packet: Identifiable, Equatable, Hashable, Comparable {
   public static func < (lhs: Packet, rhs: Packet) -> Bool {
     lhs.nickname < rhs.nickname
   }
@@ -131,26 +132,8 @@ final public class Packet: Identifiable, Equatable, Hashable , Comparable {
   }
   
   public static func ==(lhs: Packet, rhs: Packet) -> Bool {
-    lhs === rhs
+    lhs.id == rhs.id
   }
-//  public static func ==(lhs: Packet, rhs: Packet) -> Bool {
-//    // same Serial Number and Public IP
-//    guard lhs.serial == rhs.serial && lhs.publicIp == rhs.publicIp else { return false }
-//    guard lhs.guiClients == rhs.guiClients else { return false }
-//    guard lhs.status == rhs.status else { return false }
-//    guard lhs.port == rhs.port else { return false }
-//    guard lhs.inUseHost == rhs.inUseHost else { return false }
-//    guard lhs.inUseIp == rhs.inUseIp else { return false }
-//    guard lhs.publicIp == rhs.publicIp else { return false }
-//    guard lhs.publicTlsPort == rhs.publicTlsPort else { return false }
-//    guard lhs.publicUdpPort == rhs.publicUdpPort else { return false }
-//    guard lhs.publicUpnpTlsPort == rhs.publicUpnpTlsPort else { return false }
-//    guard lhs.publicUpnpUdpPort == rhs.publicUpnpUdpPort else { return false }
-//    guard lhs.callsign == rhs.callsign else { return false }
-//    guard lhs.model == rhs.model else { return false }
-//    guard lhs.nickname == rhs.nickname else { return false }
-//    return true
-//  }
   
   public init(source: PacketSource = .local,
               nickname: String = "",
@@ -277,7 +260,7 @@ final public class Packet: Identifiable, Equatable, Hashable , Comparable {
     var guiClientIps = ""
 
     // create a minimal packet with now as "lastSeen"
-    let packet = Packet()
+    var packet = Packet()
     
     // process each key/value pair, <key=value>
     for property in properties {

@@ -28,7 +28,7 @@ public enum StreamType: String {
 final public class StreamStatus: ObservableObject, Identifiable {
   public var type: Vita.ClassCode
   public var name: String
-  @Published public var packets = 0
+//  @Published public var packets = 0
   @Published public var errors = 0
   
   public var id: Vita.ClassCode { type }

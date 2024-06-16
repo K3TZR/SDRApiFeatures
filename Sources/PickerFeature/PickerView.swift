@@ -23,25 +23,25 @@ public struct PickerView: View {
   
   @State var selection: String?
   
-  @Environment(Discovery.self) var discovery
-
+  @Environment(ListenerModel.self) var listenerModel
+  
   @MainActor private var isSmartlink: Bool {
     if let selection {
       if store.isGui {
-        return discovery.packets[id: selection]?.source == .smartlink
+        return listenerModel.packets[id: selection]?.source == .smartlink
       } else {
-        return discovery.stations[id: selection]?.packet.source == .smartlink
+        return listenerModel.stations[id: selection]?.packet.source == .smartlink
       }
     }
     return false
   }
-
+  
   public var body: some View {
     VStack(alignment: .leading) {
       HeaderView(isGui: store.isGui)
       
       Divider()
-      if store.isGui && discovery.packets.count == 0 || !store.isGui && discovery.stations.count == 0 {
+      if (store.isGui && listenerModel.packets.count == 0) || (!store.isGui && listenerModel.stations.count == 0) {
         VStack {
           HStack {
             Spacer()
@@ -53,11 +53,11 @@ public struct PickerView: View {
         .frame(minHeight: 150)
         .padding(.horizontal)
         
-      } 
+      }
       else {
         if store.isGui {
           // ----- List of Radios -----
-          List(discovery.packets.sorted(by: <), id: \.id, selection: $selection) { packet in
+          List(listenerModel.packets.sorted(by: <), id: \.id, selection: $selection) { packet in
             HStack(spacing: 0) {
               Group {
                 Text(packet.nickname)
@@ -75,7 +75,7 @@ public struct PickerView: View {
           
         } else {
           // ----- List of Stations -----
-          List(discovery.stations.sorted(by: <), id: \.id, selection: $selection) { station in
+          List(listenerModel.stations.sorted(by: <), id: \.id, selection: $selection) { station in
             HStack(spacing: 0) {
               Group {
                 Text(station.packet.nickname)
@@ -98,9 +98,10 @@ public struct PickerView: View {
   }
 }
 
+
 private struct HeaderView: View {
   let isGui: Bool
-
+  
   var body: some View {
     VStack {
       Text("Select a \(isGui ? "RADIO" : "STATION")")
@@ -127,11 +128,11 @@ private struct FooterView: View {
   let store: StoreOf<PickerFeature>
   let selection: String?
   let selectionIsSmartlink: Bool
-
+  
   @Environment(ListenerModel.self) var listenerModel
-
+  
   @Environment(\.dismiss) var dismiss
-
+  
   var body: some View {
     
     HStack(){
@@ -173,12 +174,12 @@ private struct FooterView: View {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: true, defaultValue: nil)) {
     PickerFeature()
   })
-  .environment(Discovery.shared)
+  .environment(ListenerModel.shared)
 }
 
 #Preview("Picker NON-Gui") {
   PickerView(store: Store(initialState: PickerFeature.State(isGui: false, defaultValue: nil)) {
     PickerFeature()
   })
-  .environment(Discovery.shared)
+  .environment(ListenerModel.shared)
 }

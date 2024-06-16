@@ -80,7 +80,7 @@ public final class LocalListener: NSObject, ObservableObject {
     Timer.publish(every: checkInterval, on: .main, in: .default)
       .autoconnect()
       .sink { now in
-        Task { await Discovery.shared.removePackets(for: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
+        Task { await self._listenerModel.removePackets(condition: { $0.source == .local && abs($0.lastSeen.timeIntervalSince(now)) > timeout } )
         }
       }
       .store(in: &_cancellables)
@@ -109,7 +109,7 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
                         fromAddress address: Data,
                         withFilterContext filterContext: Any?) {
     
-    if _logBroadcasts { checkBroadcastBytes(data, address) }
+    //    if _logBroadcasts { checkBroadcastBytes(data, address) }
     
     // VITA packet?
     guard let vita = Vita.decode(from: data) else { return }
@@ -118,7 +118,7 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
     guard let packet = parseDiscovery(vita) else { return }
     
     // YES, process it
-    Task { await Discovery.shared.process(packet) }
+    Task { await MainActor .run { _listenerModel.process(packet) }}
   }
   
   /// Parse a Vita class containing a Discovery broadcast
@@ -130,16 +130,14 @@ extension LocalListener: GCDAsyncUdpSocketDelegate {
       // Payload is a series of strings of the form <key=value> separated by ' ' (space)
       var payloadData = NSString(bytes: vita.payloadData, length: vita.payloadSize, encoding: String.Encoding.utf8.rawValue)! as String
       
-      if _logBroadcasts { checkPayload(payloadData) }
+      //      if _logBroadcasts { checkPayload(payloadData) }
       
       // eliminate any Nulls at the end of the payload
       payloadData = payloadData.trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
       
-      if _logBroadcasts { checkPayloadNulls(payloadData) }
+      //      if _logBroadcasts { checkPayloadNulls(payloadData) }
       
-      let packet = Packet.populate( payloadData.keyValuesArray() )
-
-      return packet
+      return Packet.populate( payloadData.keyValuesArray() )
     }
     return nil
   }

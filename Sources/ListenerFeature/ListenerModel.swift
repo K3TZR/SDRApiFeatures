@@ -36,9 +36,9 @@ final public class ListenerModel: Equatable {
   // accessed by a View therefore must be @MainActor
 //  @MainActor public var activePacket: Packet?
 //  @MainActor public var activeStation: String?
-//  @MainActor public var packets = IdentifiedArrayOf<Packet>()
-  @MainActor public var smartlinkTestResult = SmartlinkTestResult()
-//  @MainActor public var stations = IdentifiedArrayOf<Station>()
+  @MainActor public var packets = IdentifiedArrayOf<Packet>()
+  public var smartlinkTestResult = SmartlinkTestResult()
+  @MainActor public var stations = IdentifiedArrayOf<Station>()
 
   public var clientStream: AsyncStream<ClientEvent> {
     AsyncStream { continuation in _clientStream = { clientEvent in continuation.yield(clientEvent) }
@@ -111,7 +111,7 @@ final public class ListenerModel: Equatable {
       _localListener = LocalListener(self)
       _localListener!.start()
     } else {
-      Task { await Discovery.shared.removePackets(for: {$0.source == .local}) }
+      Task { await removePackets(condition: {$0.source == .local}) }
     }
   }
   
@@ -144,7 +144,7 @@ final public class ListenerModel: Equatable {
   }
   
   public func smartlinkStop() {
-    Task { await Discovery.shared.removePackets(for: {$0.source == .smartlink})  }
+    Task { await removePackets(condition: {$0.source == .smartlink})  }
 
     _smartlinkListener?.stop()
     _smartlinkListener = nil
@@ -196,11 +196,11 @@ final public class ListenerModel: Equatable {
   public func isValidDefault(for guiDefault: String?, _ nonGuiDefault: String?, _ isGui: Bool) async -> Bool {
     if isGui {
       guard guiDefault != nil else { return false }
-      return await Discovery.shared.packets[id: guiDefault!] != nil
+      return await packets[id: guiDefault!] != nil
       
     } else {
       guard nonGuiDefault != nil else { return false }
-      return await Discovery.shared.stations[id: nonGuiDefault!] != nil
+      return await stations[id: nonGuiDefault!] != nil
     }
   }
   
@@ -222,104 +222,94 @@ final public class ListenerModel: Equatable {
   
   /// Process an incoming DiscoveryPacket
   /// - Parameter newPacket: the packet
-//  @MainActor func processPacket(_ newPacket: Packet) {
-//    
-//    // is it a Packet that has been seen previously?
-//    if let oldPacket = packets[id: newPacket.serial + "|" + newPacket.publicIp] {
-//      // KNOWN PACKET
-//      updatePacketData(oldPacket, newPacket)
-//
-////      if newPacket != oldPacket {
-////        // CHANGED KNOWN packet
-////        updatePacketData(oldPacket, newPacket)
-////        log("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: CHANGED packet, \(newPacket.nickname), \(newPacket.serial)", .info, #function, #file, #line)
-////        
-////      } else {
-////        // UN-CHANGED KNOWN packet (timestamp update)
-////        packets[id: newPacket.serial + newPacket.publicIp] = newPacket
-////      }
-//      
-//    } else {
-//      // UNKNOWN packet
-//      updatePacketData(nil, newPacket)
-//      log("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)", .info, #function, #file, #line)
-//    }
-//  }
+  @MainActor func process(_ newPacket: Packet) {
+    
+    // is it a Packet that has been seen previously?
+    if let oldPacket = packets[id: newPacket.serial + "|" + newPacket.publicIp] {
+      // KNOWN PACKET
+      updatePacketData(oldPacket, newPacket)
+      
+    } else {
+      // UNKNOWN packet
+      updatePacketData(nil, newPacket)
+      log("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)", .info, #function, #file, #line)
+    }
+  }
   
-//  @MainActor private func updatePacketData(_ oldPacket: Packet?, _ newPacket: Packet ) {
-//    // update Packets collection
-//    packets[id: newPacket.serial + "|" + newPacket.publicIp] = newPacket
-//    
-//    // identify GuiClient changes
-//    if oldPacket == nil {
-//      for guiClient in newPacket.guiClients {
-//        
-//        stations.append(Station(packet: newPacket, station: guiClient.station))
-//
-////        guiClients[id: guiClient.handle] = guiClient
-//        
-//        _clientStream( ClientEvent(.added, client: guiClient))
-//        log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
-//      }
-//      
-//    } else {
-//      if oldPacket != nil {
-//        
-//        for guiClient in newPacket.guiClients {
-//          if !oldPacket!.guiClients.contains(guiClient){
-//            
-//            stations.append(Station(packet: newPacket, station: guiClient.station))
-//
-////            guiClients[id: guiClient.handle] = guiClient
-//
-//            _clientStream( ClientEvent(.added, client: guiClient))
-//            log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
-//          }
-//        }
-//        for guiClient in oldPacket!.guiClients {
-//          if !newPacket.guiClients.contains(guiClient){
-//            
-//            stations.remove(id: oldPacket!.serial + "|" + oldPacket!.publicIp + "|" + guiClient.station + "|" + oldPacket!.nickname + "|" + oldPacket!.source.rawValue)
-//            
-////            guiClients.remove(id: guiClient.handle)
-//            
-////            if guiClient.station == activeStation {
-////              print("----->>>>> Skould disconnect")
-////            }
-//
-//            _clientStream( ClientEvent(.removed, client: guiClient))
-//            log("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
-//          }
-//        }
-//      }
-//    }
-//  }
+  @MainActor private func updatePacketData(_ oldPacket: Packet?, _ newPacket: Packet ) {
+    // update Packets collection
+    packets[id: newPacket.serial + "|" + newPacket.publicIp] = newPacket
+    
+    // identify GuiClient changes
+    if oldPacket == nil {
+      for guiClient in newPacket.guiClients {
+        
+        stations.append(Station(packet: newPacket, station: guiClient.station))
+
+//        guiClients[id: guiClient.handle] = guiClient
+        
+        _clientStream( ClientEvent(.added, client: guiClient))
+        log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+      }
+      
+    } else {
+      if oldPacket != nil {
+        
+        for guiClient in newPacket.guiClients {
+          if !oldPacket!.guiClients.contains(guiClient){
+            
+            stations.append(Station(packet: newPacket, station: guiClient.station))
+
+//            guiClients[id: guiClient.handle] = guiClient
+
+            _clientStream( ClientEvent(.added, client: guiClient))
+            log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+          }
+        }
+        for guiClient in oldPacket!.guiClients {
+          if !newPacket.guiClients.contains(guiClient){
+            
+            stations.remove(id: oldPacket!.serial + "|" + oldPacket!.publicIp + "|" + guiClient.station + "|" + oldPacket!.nickname + "|" + oldPacket!.source.rawValue)
+            
+//            guiClients.remove(id: guiClient.handle)
+            
+//            if guiClient.station == activeStation {
+//              print("----->>>>> Skould disconnect")
+//            }
+
+            _clientStream( ClientEvent(.removed, client: guiClient))
+            log("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+          }
+        }
+      }
+    }
+  }
   
   
-//  /// Remove one or more packets meeting the condition
-//  /// - Parameter condition: a closure defining the condition
-//  @MainActor public func removePackets(condition: @escaping (Packet) -> Bool) {
-//    _formatter.timeStyle = .long
-//    _formatter.dateStyle = .none
-//    for packet in packets where condition(packet) {
-//      
-//      // update Stations
-//      for station in stations where condition(station.packet) {
-//        stations.remove(station)
-//        log("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
-//      }
-//      // update Packets
-//      packets.remove(packet)
-//      log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
-//    }
-//  }
+  /// Remove one or more packets meeting the condition
+  /// - Parameter condition: a closure defining the condition
+  @MainActor public func removePackets(condition: @escaping (Packet) -> Bool) {
+    _formatter.timeStyle = .long
+    _formatter.dateStyle = .none
+    for packet in packets where condition(packet) {
+      
+      // update Stations
+      for station in stations where condition(station.packet) {
+        stations.remove(station)
+        log("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+      }
+      // update Packets
+      packets.remove(packet)
+      log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+    }
+  }
   
-//  /// FIndthe first packet meeting the condition
-//  /// - Parameter condition: a closure defining the condition
-//  @MainActor func findPacket(condition: @escaping (Packet) -> Bool) -> Packet? {
-//    for packet in packets where condition(packet) {
-//      return packet
-//    }
-//    return nil
-//  }
+  /// FIndthe first packet meeting the condition
+  /// - Parameter condition: a closure defining the condition
+  @MainActor func findPacket(condition: @escaping (Packet) -> Bool) -> Packet? {
+    for packet in packets where condition(packet) {
+      return packet
+    }
+    return nil
+  }
 }

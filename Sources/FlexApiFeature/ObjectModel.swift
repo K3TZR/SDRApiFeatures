@@ -684,12 +684,9 @@ final public class ObjectModel {
       }
     }
     
-    if let packet = activePacket {
+    if activePacket != nil {
       // is this GuiClient already in GuiClients?
-      if let guiClient = packet.guiClients[id: handle] {
-        // YES, are all fields populated?
-        //        if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
-        // the fields are populated
+      if let guiClient = activePacket!.guiClients[id: handle] {
         
         // update the packet's GuiClients collection
         guiClient.clientId = clientId
@@ -697,7 +694,7 @@ final public class ObjectModel {
         guiClient.station = station
         guiClient.isLocalPtt = isLocalPtt
         
-        packet.guiClients[id: handle] = guiClient
+        activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
         log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
@@ -716,7 +713,7 @@ final public class ObjectModel {
                                   clientId: clientId,
                                   isLocalPtt: isLocalPtt,
                                   isThisClient: handle == connectionHandle)
-        packet.guiClients[id: handle] = guiClient
+        activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
         log("ObjectModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
@@ -724,7 +721,7 @@ final public class ObjectModel {
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
           
-          packet.guiClients[id: handle] = guiClient
+          activePacket!.guiClients[id: handle] = guiClient
           
           if radio!.isGui == false && station == activeStation {
             boundClientId = clientId

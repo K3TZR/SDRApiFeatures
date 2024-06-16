@@ -241,7 +241,7 @@ extension SmartlinkListener {
       // add packet to Packets
       let newPacket = packet
 
-      Task { await Discovery.shared.process(newPacket) }
+      Task { await _listenerModel.process(newPacket) }
 
       log("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)", .debug, #function, #file, #line)
     }
