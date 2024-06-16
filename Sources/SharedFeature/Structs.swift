@@ -245,6 +245,12 @@ public struct WanStatus: Equatable {
   }
 }
 
+public enum PacketSource: String, Equatable {
+  case direct = "Direct"
+  case local = "Local"
+  case smartlink = "Smartlink"
+}
+
 public enum WanListenerError: Error {
   case kFailedToObtainIdToken
   case kFailedToConnect

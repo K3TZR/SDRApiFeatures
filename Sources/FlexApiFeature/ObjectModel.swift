@@ -686,23 +686,23 @@ final public class ObjectModel {
     
     if activePacket != nil {
       // is this GuiClient already in GuiClients?
-      if let guiClient = activePacket!.guiClients[id: handle] {
+      if activePacket!.guiClients[id: handle] != nil {
         
         // update the packet's GuiClients collection
-        guiClient.clientId = clientId
-        guiClient.program = program
-        guiClient.station = station
-        guiClient.isLocalPtt = isLocalPtt
+        activePacket!.guiClients[id: handle]!.clientId = clientId
+        activePacket!.guiClients[id: handle]!.program = program
+        activePacket!.guiClients[id: handle]!.station = station
+        activePacket!.guiClients[id: handle]!.isLocalPtt = isLocalPtt
         
-        activePacket!.guiClients[id: handle] = guiClient
+//        activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ObjectModel: guiClient UPDATED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+        log("ObjectModel: guiClient UPDATED, \(handle.hex), \(station), \(program), \(clientId)", .info, #function, #file, #line)
         
         if radio!.isGui == false && station == activeStation {
           boundClientId = clientId
           sendTcp("client bind client_id=\(clientId)")
-          log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
+          log("ObjectModel: NonGui bound to \(station), \(program)", .debug, #function, #file, #line)
         }
         //        }
       } else {
@@ -716,7 +716,7 @@ final public class ObjectModel {
         activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ObjectModel: guiClient ADDED, \(guiClient.handle.hex), \(guiClient.station), \(guiClient.program), \(guiClient.clientId ?? "nil")", .info, #function, #file, #line)
+        log("ObjectModel: guiClient ADDED, \(handle.hex), \(station), \(program), \(clientId)", .info, #function, #file, #line)
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
@@ -726,7 +726,7 @@ final public class ObjectModel {
           if radio!.isGui == false && station == activeStation {
             boundClientId = clientId
             sendTcp("client bind client_id=\(clientId)")
-            log("ObjectModel: NonGui bound to \(guiClient.station), \(guiClient.program)", .debug, #function, #file, #line)
+            log("ObjectModel: NonGui bound to \(station), \(program)", .debug, #function, #file, #line)
           }
         }
       }
@@ -770,7 +770,7 @@ final public class ObjectModel {
       
     } else {
       // NO, not me
-      print("----->>>>>> TODO: Client disconnected, properties = \(properties), handle = \(handle.hex)")
+      activePacket?.guiClients[id: handle] = nil
     }
   }
   

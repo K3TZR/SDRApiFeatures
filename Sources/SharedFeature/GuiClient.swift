@@ -24,9 +24,9 @@ public struct ClientEvent {
   public var client: GuiClient
 }
 
-@Observable
-final public class GuiClient: Identifiable {
-//public struct GuiClient: Equatable, Identifiable {
+//@Observable
+//final public class GuiClient: Identifiable {
+public struct GuiClient: Identifiable {
 
   public init(handle: UInt32, station: String = "", program: String = "",
               clientId: String? = nil, host: String? = nil, ip: String? = nil,

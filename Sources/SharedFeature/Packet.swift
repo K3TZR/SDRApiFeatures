@@ -10,130 +10,23 @@ import Foundation
 import IdentifiedCollections
 
 // ----------------------------------------------------------------------------
-// MARK: - Public structs and enums
-
-public enum PacketSource: String, Equatable {
-  case direct = "Direct"
-  case local = "Local"
-  case smartlink = "Smartlink"
-}
-
-public enum PacketAction: String {
-  case added
-  case removed
-  case updated
-}
-
-public struct PacketEvent {
-//public struct PacketEvent: Equatable {
-  public var action: PacketAction
-  public var packet: Packet
-  
-  public init(_ action: PacketAction, packet: Packet) {
-    self.action = action
-    self.packet = packet
-  }
-}
-
-//public struct Pickable: Identifiable, Equatable {
-//  public var id: UUID
-//  public var packetId: String     // ID from packets
-//  public var name: String
-//  public var source: String
-//  public var status: String
-//  public var station: String
-//  public var isDefault: Bool
-//  
-//  public init(
-//    packetId: String,
-//    name: String,
-//    source: String,
-//    status: String,
-//    station: String,
-//    isDefault: Bool
-//  )
-//  {
-//    self.id = UUID()
-//    self.packetId = packetId
-//    self.name = name
-//    self.source = source
-//    self.status = status
-//    self.station = station
-//    self.isDefault = isDefault
-//  }
-//}
-
-@Observable
-final public class Station: Identifiable, Equatable, Hashable, Comparable {
-  public static func < (lhs: Station, rhs: Station) -> Bool {
-    lhs.station < rhs.station
-  }
-  
-//public struct Station: Identifiable, Equatable, Hashable {
-  
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(packet.serial)
-    hasher.combine(packet.source)
-    hasher.combine(station)
-  }
-
-  public static func ==(lhs: Station, rhs: Station) -> Bool {
-    lhs === rhs
-  }
-
-//  public static func ==(lhs: Station, rhs: Station) -> Bool {
-//    // same Serial Number, Public IP and Station
-//    guard lhs.packet.serial == rhs.packet.serial && lhs.packet.publicIp == rhs.packet.publicIp && lhs.station == rhs.station else { return false }
-//    guard lhs.packet.guiClients == rhs.packet.guiClients else { return false }
-//    guard lhs.packet.status == rhs.packet.status else { return false }
-//    guard lhs.packet.port == rhs.packet.port else { return false }
-//    guard lhs.packet.inUseHost == rhs.packet.inUseHost else { return false }
-//    guard lhs.packet.inUseIp == rhs.packet.inUseIp else { return false }
-//    guard lhs.packet.publicIp == rhs.packet.publicIp else { return false }
-//    guard lhs.packet.publicTlsPort == rhs.packet.publicTlsPort else { return false }
-//    guard lhs.packet.publicUdpPort == rhs.packet.publicUdpPort else { return false }
-//    guard lhs.packet.publicUpnpTlsPort == rhs.packet.publicUpnpTlsPort else { return false }
-//    guard lhs.packet.publicUpnpUdpPort == rhs.packet.publicUpnpUdpPort else { return false }
-//    guard lhs.packet.callsign == rhs.packet.callsign else { return false }
-//    guard lhs.packet.model == rhs.packet.model else { return false }
-//    guard lhs.packet.nickname == rhs.packet.nickname else { return false }
-//    return true
-//  }
-  
-  public init(
-    packet: Packet,
-    station: String = ""
-  ) 
-  {
-    self.packet = packet
-    self.station = station
-  }
-  
-  public var id: String { packet.serial + "|" + packet.publicIp + "|" + station + "|" + packet.nickname + "|" + packet.source.rawValue}
-  public var packet: Packet
-  public var station: String
-}
-
-// ----------------------------------------------------------------------------
 // MARK: - Packet struct
 
-//@Observable
-//final public class Packet: Identifiable, Equatable, Hashable , Comparable {
 public struct Packet: Identifiable, Equatable, Hashable, Comparable {
-  public static func < (lhs: Packet, rhs: Packet) -> Bool {
-    lhs.nickname < rhs.nickname
+  public var id: String { serial + "|" + publicIp }
+  public static func ==(lhs: Packet, rhs: Packet) -> Bool {
+    lhs.id == rhs.id
   }
-  
-//public struct Packet: Identifiable, Equatable, Hashable {
-  
   public func hash(into hasher: inout Hasher) {
     hasher.combine(serial)
     hasher.combine(source)
   }
-  
-  public static func ==(lhs: Packet, rhs: Packet) -> Bool {
-    lhs.id == rhs.id
+  public static func < (lhs: Packet, rhs: Packet) -> Bool {
+    lhs.nickname < rhs.nickname
   }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Initialization
   
   public init(source: PacketSource = .local,
               nickname: String = "",
@@ -150,7 +43,7 @@ public struct Packet: Identifiable, Equatable, Hashable, Comparable {
     self.port = port
     self.status = status
   }
- 
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -158,7 +51,6 @@ public struct Packet: Identifiable, Equatable, Hashable, Comparable {
   //  @Published public var guiClients = IdentifiedArrayOf<GuiClient>()
   public var guiClients = IdentifiedArrayOf<GuiClient>()
   
-  public var id: String { serial + "|" + publicIp }
   public var isPortForwardOn = false
   public var lastSeen: Date
   public var localInterfaceIP = ""
