@@ -29,10 +29,10 @@ final public class ObjectModel {
   public var activeStation: String?
   public internal(set) var boundClientId: String?
   public internal(set) var clientInitialized = false
-  public var testMode = false
+//  public var testMode = false
   public var radio: Radio?
   
-  public var apiModel: ApiModel?
+//  public var apiModel: ApiModel?
   
   // single objects
   public var atu = Atu()
@@ -108,7 +108,7 @@ final public class ObjectModel {
   ///   - diagnostic:     use "D"iagnostic form
   ///   - replyTo:       a callback function (if any)
   public func sendTcp(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
-    apiModel?.sendTcp(cmd, diagnostic: diagnostic, replyTo: callback)
+    ApiModel.shared.sendTcp(cmd, diagnostic: diagnostic, replyTo: callback)
   }
   
   public func clientInitialized(_ state: Bool) {
@@ -120,7 +120,7 @@ final public class ObjectModel {
     // Check for unknown Object Types
     guard let objectType = ObjectType(rawValue: statusType)  else {
       // log it and ignore the message
-      log("ApiModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
+      log("ObjectModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
       return
     }
     
@@ -139,7 +139,7 @@ final public class ObjectModel {
     case .profile:              profileStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse), statusMessage)
     case .radio:                radio!.parse(statusMessage.keyValuesArray())
     case .slice:                sliceStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kNotInUse))
-    case .stream:               preProcessStream(statusMessage, connectionHandle, testMode)
+    case .stream:               preProcessStream(statusMessage, connectionHandle)
     case .tnf:                  tnfStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
     case .transmit:             preProcessTransmit(statusMessage)
     case .usbCable:             usbCableStatus(statusMessage.keyValuesArray(), !statusMessage.contains(kRemoved))
@@ -574,7 +574,7 @@ final public class ObjectModel {
     }
   }
   
-  public func preProcessStream(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
+  public func preProcessStream(_ statusMessage: String, _ connectionHandle: UInt32?) {
     let properties = statusMessage.keyValuesArray()
     
     // is the 1st KeyValue a StreamId?
@@ -587,7 +587,7 @@ final public class ObjectModel {
         
       } else {
         // NO is it for me?
-        if isForThisClient(properties, connectionHandle, testMode) {
+        if isForThisClient(properties, connectionHandle) {
           // YES
           guard properties.count > 1 else {
             log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
@@ -753,7 +753,7 @@ final public class ObjectModel {
         // check for unknown property
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore this Key
-          log("ApiModel: unknown client disconnection property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+          log("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
           continue
         }
         // Known properties, in alphabetical order
@@ -812,10 +812,10 @@ final public class ObjectModel {
   ///   - properties:     a KeyValuesArray
   ///   - clientHandle:   the handle of ???
   /// - Returns:          true if a mtch
-  private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?, _ testMode: Bool) -> Bool {
+  private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?) -> Bool {
     var clientHandle : UInt32 = 0
     
-    guard testMode == false else { return true }
+    guard ApiModel.shared.testMode == false else { return true }
     
     if let connectionHandle {
       // find the handle property
