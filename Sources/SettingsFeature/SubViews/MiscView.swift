@@ -28,7 +28,7 @@ struct MiscView: View {
       Spacer()
       Toggle("Log Broadcasts", isOn: $store.logBroadcasts)
       Toggle("Ignore TimeStamps", isOn: $store.ignoreTimeStamps)
-      Toggle("Alert on Error / Warning", isOn: $store.alertOnError)
+      Toggle("Alert on Error / Warning", isOn: $store.appSettings.alertOnError)
       
       Spacer()
       

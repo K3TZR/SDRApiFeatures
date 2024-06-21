@@ -1,11 +1,11 @@
 //
 //  Extensions.swift
-//  SharedFeatures/Shared
+//  SharedFeature/Extensions
 //
 //  Created by Douglas Adams on 3/19/22.
 //
 
-//import AppKit
+import ComposableArchitecture
 import Foundation
 import SwiftUI
 
@@ -264,6 +264,30 @@ extension NumberFormatter {
     formatter.numberStyle = .decimal
     return formatter
   }()
+}
+
+// ----------------------------------------------------------------------------
+// MARK: - URL Extension
+
+extension URL {
+  static let appSettings = Self
+    .applicationSupportDirectory
+    .appending(path: "appSettings.json")
+}
+
+// ----------------------------------------------------------------------------
+// MARK: - PersistenceKey Extension
+
+extension PersistenceKey
+where Self == PersistenceKeyDefault<
+  FileStorageKey<AppSettings>
+> {
+  public static var appSettings: Self {
+    PersistenceKeyDefault(
+      .fileStorage(.appSettings),
+      AppSettings()
+    )
+  }
 }
 
 // ----------------------------------------------------------------------------

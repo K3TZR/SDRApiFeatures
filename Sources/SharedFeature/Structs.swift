@@ -28,6 +28,48 @@ public let FlexSuite = "group.net.k3tzr.flexapps"
 // ----------------------------------------------------------------------------
 // MARK: - Structs & Enums
 
+public struct AppSettings: Codable, Equatable {
+  public var alertOnError = true
+  public var clearOnSend = false
+  public var clearOnStart = true
+  public var clearOnStop = true
+  public var commandsArray = [String]()
+  public var commandsIndex = 0
+  public var commandToSend = ""
+  public var daxSelection = -1
+  public var directEnabled = false
+  public var directGuiIp = ""
+  public var directNonGuiIp = ""
+  public var gotoBottom = false
+  public var messageFilter: MessageFilter = .all
+  public var messageFilterText = ""
+  public var showPings = false
+  public var showTimes = true
+  public var newLineBetweenMessages = false
+  
+  public var fontSize = 12
+  public var guiDefault: String = ""
+  public var isGui = true
+  public var localEnabled = true
+  public var lowBandwidthConnect = false
+  public var lowBandwidthDax = false
+  public var mtuValue = 1_300
+  public var nonGuiDefault: String = ""
+  public var radioObjectFilter: RadioObjectFilter = .all
+  public var stationObjectFilter: StationObjectFilter = .noMeters
+  public var previousCommand = ""
+  public var previousIdToken: String = ""
+  public var refreshToken: String = ""
+  public var remoteRxAudioCompressed = false
+  public var remoteRxAudioEnabled = false
+  public var remoteTxAudioEnabled = false
+  public var smartlinkEnabled = false
+  public var smartlinkLoginRequired = false
+  public var smartlinkUser = ""
+  public var station = "SDRApi"
+  public var useDefaultEnabled = false
+}
+
 public struct ControlsOptions: OptionSet {
   
   public init(rawValue: Int) {
@@ -438,7 +480,7 @@ public enum MessageFilter: String, Codable, CaseIterable {
   case S0
 }
 
-public enum RadioObjectFilter: String, CaseIterable {
+public enum RadioObjectFilter: String, Codable, CaseIterable {
   case all
   case atu
   case bandSettings = "band settings"
@@ -449,7 +491,7 @@ public enum RadioObjectFilter: String, CaseIterable {
   case transmit
 }
 
-public enum StationObjectFilter: String, CaseIterable {
+public enum StationObjectFilter: String, Codable, CaseIterable {
   case all
   case noMeters = "w/o meters"
   case amplifiers

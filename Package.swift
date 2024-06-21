@@ -132,6 +132,7 @@ let package = Package(
 
     // SharedFeature
     .target(name: "SharedFeature", dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
     ]),
 
