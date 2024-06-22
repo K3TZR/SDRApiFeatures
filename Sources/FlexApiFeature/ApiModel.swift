@@ -28,7 +28,8 @@ public final class ApiModel: TcpProcessor {
 
   public var activeSlice: Slice?
 //  public private(set) var activeStation: String?
-  public var testMode = false
+//  public var testMode = false
+  public var testDelegate: TcpProcessor?
 
 
   public internal(set) var connectionHandle: UInt32?
@@ -66,7 +67,7 @@ public final class ApiModel: TcpProcessor {
     
     if let packet, let station {
       Task { await MainActor.run {
-        MessagesModel.shared.startTime = Date()
+//        MessagesModel.shared.startTime = Date()
         ObjectModel.shared.activePacket = packet
         ObjectModel.shared.activeStation = station
       }}
@@ -188,7 +189,7 @@ public final class ApiModel: TcpProcessor {
   public func tcpProcessor(_ msg: String, isInput: Bool) {
     
     // received messages sent to the Tester
-    if testMode { Task { await MainActor.run { MessagesModel.shared.tcpProcessor(msg, isInput: true) }}}
+    if testDelegate != nil { Task { await MainActor.run { testDelegate!.tcpProcessor(msg, isInput: true) }}}
     
     // the first character indicates the type of message
     switch msg.prefix(1).uppercased() {
@@ -222,7 +223,7 @@ public final class ApiModel: TcpProcessor {
       _tcp.send(command + "\n", sequenceNumber)
       
       // sent messages sent to the Tester
-      if testMode { Task { await MainActor.run { MessagesModel.shared.tcpProcessor(command, isInput: false) }}}
+      if testDelegate != nil { Task { await MainActor.run { testDelegate!.tcpProcessor(command, isInput: true) }}}
     }
   }
   

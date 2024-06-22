@@ -265,30 +265,30 @@ extension NumberFormatter {
     return formatter
   }()
 }
-
-// ----------------------------------------------------------------------------
-// MARK: - URL Extension
-
-extension URL {
-  static let appSettings = Self
-    .applicationSupportDirectory
-    .appending(path: "appSettings.json")
-}
-
-// ----------------------------------------------------------------------------
-// MARK: - PersistenceKey Extension
-
-extension PersistenceKey
-where Self == PersistenceKeyDefault<
-  FileStorageKey<AppSettings>
-> {
-  public static var appSettings: Self {
-    PersistenceKeyDefault(
-      .fileStorage(.appSettings),
-      AppSettings()
-    )
-  }
-}
+//
+//// ----------------------------------------------------------------------------
+//// MARK: - URL Extension
+//
+//extension URL {
+//  static let appSettings = Self
+//    .applicationSupportDirectory
+//    .appending(path: "appSettings.json")
+//}
+//
+//// ----------------------------------------------------------------------------
+//// MARK: - PersistenceKey Extension
+//
+//extension PersistenceKey
+//where Self == PersistenceKeyDefault<
+//  FileStorageKey<AppSettings>
+//> {
+//  public static var appSettings: Self {
+//    PersistenceKeyDefault(
+//      .fileStorage(.appSettings),
+//      AppSettings()
+//    )
+//  }
+//}
 
 // ----------------------------------------------------------------------------
 // MARK: - String Extensions

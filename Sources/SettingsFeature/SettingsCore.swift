@@ -40,10 +40,10 @@ public struct SettingsCore {
     
     public init() {}
 
-    @Shared(.appSettings) var appSettings
+//    @Shared(.appSettings) var appSettings
 
     // ---------- GUI Settings ----------
-//    @Shared(.appStorage("alertOnError")) var alertOnError = false
+    @Shared(.appStorage("alertOnError")) var alertOnError = false
     //    @Shared(.appStorage("altAntennaNames")) var altAntennaNames: [AntennaName]
     //    @Shared(.appStorage("cwxEnabled")) var cwxEnabled: Bool
     //    @Shared(.appStorage("daxPanelOptions")) var daxPanelOptions: DaxPanelOptions

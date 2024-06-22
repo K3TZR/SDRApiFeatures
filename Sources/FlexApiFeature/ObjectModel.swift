@@ -815,7 +815,7 @@ final public class ObjectModel {
   private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?) -> Bool {
     var clientHandle : UInt32 = 0
     
-    guard ApiModel.shared.testMode == false else { return true }
+    guard ApiModel.shared.testDelegate != nil else { return true }
     
     if let connectionHandle {
       // find the handle property
