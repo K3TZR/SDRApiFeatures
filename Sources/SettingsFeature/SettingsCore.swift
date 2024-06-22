@@ -40,8 +40,6 @@ public struct SettingsCore {
     
     public init() {}
 
-//    @Shared(.appSettings) var appSettings
-
     // ---------- GUI Settings ----------
     @Shared(.appStorage("alertOnError")) var alertOnError = false
     //    @Shared(.appStorage("altAntennaNames")) var altAntennaNames: [AntennaName]

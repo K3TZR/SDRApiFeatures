@@ -284,7 +284,7 @@ extension NumberFormatter {
 //> {
 //  public static var appSettings: Self {
 //    PersistenceKeyDefault(
-//      .fileStorage(.appSettings),
+//      .fileStorage(),
 //      AppSettings()
 //    )
 //  }
