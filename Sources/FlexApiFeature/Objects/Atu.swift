@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -66,7 +66,7 @@ public final class Atu {
       // Check for Unknown Keys
       guard let token = Atu.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Atu: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Atu: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -82,7 +82,7 @@ public final class Atu {
     if _initialized == false{
       // NO, it is now
       _initialized = true
-      log("Atu: initialized", .debug, #function, #file, #line)
+      apiLog.debug("Atu: initialized")
     }
   }
   

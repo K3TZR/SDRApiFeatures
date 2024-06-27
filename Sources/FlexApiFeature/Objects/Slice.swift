@@ -8,7 +8,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -140,7 +140,7 @@ public final class Slice: Identifiable {
       // check for unknown Keys
       guard let token = Slice.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Slice \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Slice \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -235,7 +235,7 @@ public final class Slice: Identifiable {
     if _initialized == false && panadapterId != 0 && frequency != 0 && mode != "" {
       // NO, it is now
       _initialized = true
-      log("Slice \(id): ADDED, frequency = \(frequency.hzToMhz), panadapter = \(panadapterId.hex)", .debug, #function, #file, #line)
+      apiLog.debug("Slice \(self.id): ADDED, frequency = \(self.frequency.hzToMhz), panadapter = \(self.panadapterId.hex)")
     }
   }
   

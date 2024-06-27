@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -85,7 +85,7 @@ public final class Equalizer: Identifiable {
       // check for unknown Keys
       guard let token = Equalizer.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Equalizer \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Equalizer \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -106,7 +106,7 @@ public final class Equalizer: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        log("Equalizer \(id): ADDED", .debug, #function, #file, #line)
+        apiLog.debug("Equalizer \(self.id): ADDED")
       }
     }
   }

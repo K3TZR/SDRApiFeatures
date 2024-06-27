@@ -13,7 +13,7 @@ import Foundation
 //import FlexApiFeature
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 //  DATA FLOW (Reduced Bandwidth)
 //
@@ -112,7 +112,7 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
     
     do {
       try _engine.start()
-      log("DaxAudioPlayer: output STARTED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
+      apiLog.debug("DaxAudioPlayer: output STARTED, Stream Id = \(self.streamId!.hex)")
       
       if levelsEnabled {
         // use a Tap to inspect the data and calculate average and peak levels
@@ -127,13 +127,13 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
       }
       
     } catch {
-      log("DaxAudioPlayer: Failed to start, error = \(error)", .error, #function, #file, #line)
+      apiLog.error("DaxAudioPlayer: Failed to start, error = \(error)")
     }
     
   }
   
   public func stop() {
-    log("DaxAudioPlayer: output STOPPED, Stream Id = \(streamId!.hex)", .debug, #function, #file, #line)
+    apiLog.debug("DaxAudioPlayer: output STOPPED, Stream Id = \(self.streamId!.hex)")
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
     active = false
@@ -214,11 +214,13 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
     
     if vita.classCode == .daxAudioReducedBw {
       // Reduced Bandwidth DaxRxAudio
-      Task { await _pcmProcessor.process(vita.payloadData, reducedBandwidth: true) }
-      
+//      Task { await _pcmProcessor.process(vita.payloadData, reducedBandwidth: true) }
+      _pcmProcessor.process(vita.payloadData, reducedBandwidth: true)
+
     } else {
       // Full Bandwidth DaxRxAudio
-      Task { await _pcmProcessor.process(vita.payloadData) }
+//      Task { await _pcmProcessor.process(vita.payloadData) }
+      _pcmProcessor.process(vita.payloadData)
     }
   }
   

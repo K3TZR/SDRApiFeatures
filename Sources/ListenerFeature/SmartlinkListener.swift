@@ -10,7 +10,7 @@ import CocoaAsyncSocket
 import Combine
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 public enum ListenerError: String, Error {
   case wanConnect = "WanConnect Failed"
@@ -103,11 +103,11 @@ public final class SmartlinkListener: NSObject, ObservableObject {
 //    } else 
     let validatedTokens = await _authentication.authenticate(currentTokens)
     if !validatedTokens.idToken.isEmpty {
-      log("Smartlink Listener: idToken found using authenticate", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: idToken found using authenticate")
       return connect(using: validatedTokens)
       
     } else {
-      log("Smartlink Listener: idToken NOT found", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: idToken NOT found")
     }
     return Tokens("", "")
   }
@@ -120,7 +120,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
     let tokens = await _authentication.requestTokens(user: user, pwd: pwd)
     if !tokens.idToken.isEmpty {
       //      _previousIdToken = idToken
-      log("Smartlink Listener: IdToken obtained from login credentials", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: IdToken obtained from login credentials")
       return connect(using: tokens)
     }
     return Tokens("", "")
@@ -130,7 +130,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   func stop() {
     _cancellables.removeAll()
     _tcpSocket.disconnect()
-    log("Smartlink Listener: STOPPED", .info, #function, #file, #line)
+    apiLog.info("Smartlink Listener: STOPPED")
   }
   
   /// Send a command to the server using TLS
@@ -163,11 +163,11 @@ public final class SmartlinkListener: NSObject, ObservableObject {
     // use the ID Token to connect to the Smartlink service
     do {
       try _tcpSocket.connect(toHost: kSmartlinkHost, onPort: kSmartlinkPort, withTimeout: _timeout)
-      log("Smartlink Listener: TCP Socket connection initiated", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: TCP Socket connection initiated")
       return tokens
 
     } catch {
-      log("Smartlink Listener: TCP Socket connection FAILED", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: TCP Socket connection FAILED")
       return Tokens("", "")
     }
   }
@@ -198,7 +198,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
         self.sendTlsCommand("ping from client", timeout: -1)
       }
       .store(in: &_cancellables)
-    log("Smartlink Listener: STARTED pinging \(_host ?? "????")", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: STARTED pinging \(self._host ?? "????")")
   }
 }
 
@@ -219,29 +219,29 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
                      didConnectToHost host: String,
                      port: UInt16) {
     _host = host
-    log("Smartlink Listener: TCP Socket didConnectToHost, \(host):\(port)", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: TCP Socket didConnectToHost, \(host):\(port)")
     
     // initiate a secure (TLS) connection to the Smartlink server
     var tlsSettings = [String : NSObject]()
     tlsSettings[kCFStreamSSLPeerName as String] = kSmartlinkHost as NSObject
     _tcpSocket.startTLS(tlsSettings)
     
-    log("Smartlink Listener: TLS Socket connection initiated", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: TLS Socket connection initiated")
   }
   
   public func socketDidSecure(_ sock: GCDAsyncSocket) {
-    log("Smartlink Listener: TLS socketDidSecure", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: TLS socketDidSecure")
     
     // start pinging SmartLink server
     startPinging()
     
     // register the Application / token pair with the SmartLink server
     sendTlsCommand("application register name=\(_appName!) platform=\(kPlatform) token=\(_currentTokens.idToken)", timeout: _timeout, tag: 0)
-    log("Smartlink Listener: Application registered, name=\(_appName!) platform=\(kPlatform)", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: Application registered, name=\(self._appName!) platform=\(self.kPlatform)")
 
     // start reading
     _tcpSocket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)
-    log("Smartlink Listener: STARTED", .info, #function, #file, #line)
+    apiLog.info("Smartlink Listener: STARTED")
   }
   
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
@@ -257,8 +257,11 @@ extension SmartlinkListener: GCDAsyncSocketDelegate {
   public func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
     // Disconnected from the Smartlink server
     let error = (err == nil ? "" : " with error: " + err!.localizedDescription)
-    log("Smartlink Listener: TCP socketDidDisconnect \(error)",
-         err == nil ? .debug : .warning, #function, #file, #line)
+    if err == nil {
+      apiLog.debug("Smartlink Listener: TCP socketDidDisconnect \(error)")
+    } else {
+      apiLog.error("Smartlink Listener: TCP socketDidDisconnect \(error)")
+    }
     if err != nil { stop() }
   }
   

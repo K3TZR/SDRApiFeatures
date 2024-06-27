@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -99,7 +99,7 @@ public final class UsbCable: Identifiable {
         // check for unknown Keys
         guard let token = UsbCable.Property(rawValue: property.key) else {
           // log it and ignore the Key
-          log("USBCable \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+          apiLog.warning("USBCable \(self.id): unknown property, \(property.key) = \(property.value)")
           continue
         }
         // Known keys, in alphabetical order
@@ -135,7 +135,7 @@ public final class UsbCable: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("USBCable \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
+      apiLog.debug("USBCable \(self.id): ADDED, name = \(self.name)")
     }
   }
   

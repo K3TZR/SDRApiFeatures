@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -156,7 +156,7 @@ public final class Transmit {
       // Check for Unknown Keys
       guard let token = Transmit.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Transmit: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Transmit: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -214,7 +214,7 @@ public final class Transmit {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        log("Transmit: initialized", .debug, #function, #file, #line)
+        apiLog.debug("Transmit: initialized")
       }
     }
   }

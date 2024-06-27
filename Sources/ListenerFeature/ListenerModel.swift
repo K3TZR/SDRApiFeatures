@@ -9,7 +9,7 @@ import ComposableArchitecture
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 public typealias IdToken = String
 public typealias RefreshToken = String
@@ -122,7 +122,7 @@ final public class ListenerModel: Equatable {
     _smartlinkListener = SmartlinkListener(self)
     let tokens = await _smartlinkListener!.start(Tokens(previousIdToken, refreshToken))
     if !tokens.idToken.isEmpty {
-      log("Smartlink Listener: STARTED", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: STARTED")
       return tokens
     } else {
       _smartlinkListener = nil
@@ -134,10 +134,10 @@ final public class ListenerModel: Equatable {
     _smartlinkListener = SmartlinkListener(self)
     let tokens = await _smartlinkListener!.start(user: user, pwd: pwd)
     if !tokens.idToken.isEmpty {
-      log("Smartlink Listener: Login SUCCESS", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: Login SUCCESS")
       return tokens
     } else {
-      log("Smartlink Listener: Login FAILURE", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: Login FAILURE")
       _smartlinkListener = nil
       return Tokens("", "")
     }
@@ -155,7 +155,7 @@ final public class ListenerModel: Equatable {
   /// - Returns:              success / failure
   public func smartlinkTest(_ selection: String) {
     let serial = selection.prefix(19)
-    log("Smartlink Listener: test initiated to serial number, \(serial)", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: test initiated to serial number, \(serial)")
     // send a command to SmartLink to test the connection for the specified Radio
     _smartlinkListener?.sendTlsCommand("application test_connection serial=\(serial)")
   }
@@ -169,7 +169,7 @@ final public class ListenerModel: Equatable {
     
     return try await withCheckedThrowingContinuation{ continuation in
       _smartlinkListener?.awaitWanHandle = continuation
-      log("Smartlink Listener: Connect sent to serial \(serial)", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: Connect sent to serial \(serial)")
       // send a command to SmartLink to request a connection to the specified Radio
       _smartlinkListener?.sendTlsCommand("application connect serial=\(serial) hole_punch_port=\(holePunchPort))")
     }
@@ -178,7 +178,7 @@ final public class ListenerModel: Equatable {
   /// Disconnect a smartlink Radio
   /// - Parameter serialNumber:         the serial number of the Radio
   public func smartlinkDisconnect(for serial: String) {
-    log("Smartlink Listener: Disconnect sent to serial \(serial)", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: Disconnect sent to serial \(serial)")
     // send a command to SmartLink to request disconnection from the specified Radio
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial)")
   }
@@ -188,7 +188,7 @@ final public class ListenerModel: Equatable {
   ///   - serialNumber:         the serial number of the Radio
   ///   - handle:               the handle of the Client
   public func smartlinkDisconnectClient(for serial: String, handle: UInt32) {
-    log("Smartlink Listener: Disconnect sent to serial \(serial), handle \(handle.hex)", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: Disconnect sent to serial \(serial), handle \(handle.hex)")
     // send a command to SmartLink to request disconnection from the specified Radio
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial) handle=\(handle.hex)")
   }
@@ -232,7 +232,7 @@ final public class ListenerModel: Equatable {
     } else {
       // UNKNOWN packet
       updatePacketData(nil, newPacket)
-      log("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)", .info, #function, #file, #line)
+      apiLog.info("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)")
     }
   }
   
@@ -249,7 +249,7 @@ final public class ListenerModel: Equatable {
 //        guiClients[id: guiClient.handle] = guiClient
         
         _clientStream( ClientEvent(.added, client: guiClient))
-        log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+        apiLog.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
       }
       
     } else {
@@ -263,7 +263,7 @@ final public class ListenerModel: Equatable {
 //            guiClients[id: guiClient.handle] = guiClient
 
             _clientStream( ClientEvent(.added, client: guiClient))
-            log("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+            apiLog.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
           }
         }
         for guiClient in oldPacket!.guiClients {
@@ -278,7 +278,7 @@ final public class ListenerModel: Equatable {
 //            }
 
             _clientStream( ClientEvent(.removed, client: guiClient))
-            log("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)", .info, #function, #file, #line)
+            apiLog.info("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)")
           }
         }
       }
@@ -289,18 +289,17 @@ final public class ListenerModel: Equatable {
   /// Remove one or more packets meeting the condition
   /// - Parameter condition: a closure defining the condition
   @MainActor public func removePackets(condition: @escaping (Packet) -> Bool) {
-    _formatter.timeStyle = .long
-    _formatter.dateStyle = .none
     for packet in packets where condition(packet) {
       
+      let timeStamp = packet.lastSeen.formatted(date: .omitted, time: .complete)
       // update Stations
       for station in stations where condition(station.packet) {
         stations.remove(station)
-        log("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+        apiLog.info("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp )")
       }
       // update Packets
       packets.remove(packet)
-      log("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ " + _formatter.string(from: packet.lastSeen), .info, #function, #file, #line)
+      apiLog.info("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp)")
     }
   }
   

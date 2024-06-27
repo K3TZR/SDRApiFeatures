@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -232,7 +232,7 @@ public final class Radio {
         // Check for Unknown Keys
         guard let token = Radio.Property(rawValue: property.key)  else {
           // log it and ignore the Key
-          log("Radio: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+          apiLog.warning("Radio: unknown property, \(property.key) = \(property.value)")
           continue
         }
         // Known tokens, in alphabetical order
@@ -335,7 +335,7 @@ public final class Radio {
     if !_initialized {
       // YES, notify all observers
       _initialized = true
-      log("Radio: initialized, name = \(name)", .debug, #function, #file, #line)
+      apiLog.debug("Radio: initialized, name = \(self.name)")
     }
   }
   

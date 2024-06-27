@@ -12,7 +12,7 @@ import Foundation
 //import FlexApiFeature
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 //  DATA FLOW (Opus compressed)
 //
@@ -88,6 +88,11 @@ public final class RxAudioPlayer: AudioProcessor {
   
   public func start(isCompressed: Bool = true) {
     
+    Task {
+      let availableFrames = await _ringBuffer.availableFrames()
+      apiLog.debug("RxAudioPlayer start: available frames = \(availableFrames)")
+    }
+
     _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
       // retrieve the requested number of frames
       Task { await self._ringBuffer.deque(audioBufferList, frameCount) }
@@ -109,16 +114,21 @@ public final class RxAudioPlayer: AudioProcessor {
     // start processing
     do {
       try _engine.start()
-      log("RxAudioPlayer: audioOutput STARTED", .debug, #function, #file, #line)
+      apiLog.debug("RxAudioPlayer: audioOutput STARTED")
     } catch {
-      log("RxAudioPlayer: Failed to start, error = \(error)", .error, #function, #file, #line)
+      apiLog.error("RxAudioPlayer: Failed to start, error = \(error)")
     }
   }
   
   public func stop() {
     // stop processing
-    log("RxAudioPlayer: audioOutput STOPPED", .debug, #function, #file, #line)
+    apiLog.debug("RxAudioPlayer: audioOutput STOPPED")
     _engine.stop()
+
+    Task {
+      let availableFrames = await _ringBuffer.availableFrames()
+      apiLog.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
+    }
   }
   
   // ----------------------------------------------------------------------------
@@ -134,8 +144,8 @@ public final class RxAudioPlayer: AudioProcessor {
 
     } else {
       // UN-Compressed RemoteRxAudio
-      Task { await _pcmProcessor.process(vita.payloadData) }
-//      _pcmProcessor.process(vita.payloadData)
+//      Task { await _pcmProcessor.process(vita.payloadData) }
+      _pcmProcessor.process(vita.payloadData)
     }
   }
   

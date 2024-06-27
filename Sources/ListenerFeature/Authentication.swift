@@ -10,7 +10,7 @@ import JWTDecode
 import SwiftUI
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 public final class Authentication {
   
@@ -71,31 +71,31 @@ public final class Authentication {
       // has it expired?
       if isValid(currentTokens.idToken) {
         // NO, use it
-        log("Authentication: Unexpired previous token", .debug, #function, #file, #line)
+        apiLog.debug("Authentication: Unexpired previous token")
         updateClaims(from: currentTokens.idToken)
         return currentTokens
         
       } else {
         // YES, try to use the refreshToken
-        log("Authentication: Expired previous token", .debug, #function, #file, #line)
+        apiLog.debug("Authentication: Expired previous token")
       }
     }
     
     // is there a refresh token?
     if !currentTokens.refreshToken.isEmpty {
       // YES, can we get an Id Token from the Refresh Token?
-      log("Authentication: Refresh token found", .debug, #function, #file, #line)
+      apiLog.debug("Authentication: Refresh token found")
       if let idToken = await requestIdToken(from: currentTokens.refreshToken) {
         // YES, is it valid?
         if isValid(idToken) {
           // YES, update the claims and use the Id Token
-          log("Authentication: Valid Id Token obtained from Refresh token", .debug, #function, #file, #line)
+          apiLog.debug("Authentication: Valid Id Token obtained from Refresh token")
                     updateClaims(from: idToken)
           return Tokens(idToken, currentTokens.refreshToken)
           
         } else {
           // NO
-          log("Authentication: Invalid Id Token obtained from Refresh token", .debug, #function, #file, #line)
+          apiLog.debug("Authentication: Invalid Id Token obtained from Refresh token")
         }
       }
     }

@@ -11,7 +11,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // DaxTxAudioStream
 //      creates a DaxTxAudioStream instance to be used by a Client to support the
@@ -74,7 +74,7 @@ public final class DaxTxAudioStream: Identifiable {
       // check for unknown keys
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        log("DaxTxAudioStream \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("DaxTxAudioStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -90,7 +90,7 @@ public final class DaxTxAudioStream: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("DaxTxAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      apiLog.debug("DaxTxAudioStream \(self.id.hex) ADDED: handle = \(self.clientHandle.hex)")
     }
   }
 

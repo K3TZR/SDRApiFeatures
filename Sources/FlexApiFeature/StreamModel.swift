@@ -12,7 +12,7 @@ import AudioFeature
 import SharedFeature
 //import UdpFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 public enum StreamType: String {
   case daxIqStream = "dax_iq"
@@ -125,7 +125,8 @@ final public actor StreamModel: StreamProcessor {
       meterStream?.streamProcessor(vita)
       
     case .opus:
-        rxAudioOutput?.audioProcessor(vita)
+      rxAudioOutput?.audioProcessor(vita)
+//      print("count ", vita.payloadData.count)
       
     default:
 //      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)

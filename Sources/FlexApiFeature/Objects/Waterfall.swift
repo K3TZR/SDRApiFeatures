@@ -9,7 +9,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -96,7 +96,7 @@ public final class Waterfall: Identifiable {
       // check for unknown Keys
       guard let token = Waterfall.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Waterfall \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Waterfall \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -118,7 +118,7 @@ public final class Waterfall: Identifiable {
     if _initialized == false && panadapterId != 0 {
       // NO, it is now
       _initialized = true
-      log("Waterfall \(id.hex): ADDED handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      apiLog.debug("Waterfall \(self.id.hex): ADDED handle = \(self.clientHandle.hex)")
     }
   }
   

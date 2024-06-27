@@ -11,7 +11,7 @@ import Foundation
 import AudioFeature
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // DaxRxAudio
 //      creates a DaxRxAudio instance to be used by a Client to support the
@@ -70,7 +70,7 @@ public final class DaxRxAudio: Identifiable {
       // check for unknown keys
       guard let token = Property(rawValue: property.key) else {
         // unknown, log it and ignore the Key
-        log("DaxRxAudio \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("DaxRxAudio \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -100,7 +100,7 @@ public final class DaxRxAudio: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("DaxRxAudio \(id.hex) ADDED: channel = \(daxChannel), handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      apiLog.debug("DaxRxAudio \(self.id.hex) ADDED: channel = \(self.daxChannel), handle = \(self.clientHandle.hex)")
     }
   }
 }

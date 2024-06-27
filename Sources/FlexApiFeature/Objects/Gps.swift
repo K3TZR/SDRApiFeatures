@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -67,7 +67,7 @@ public final class Gps {
       // Check for Unknown Keys
       guard let token = Gps.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Gps: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Gps: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -89,7 +89,7 @@ public final class Gps {
     if _initialized == false{
       // NO, it is now
       _initialized = true
-      log("Gps: initialized", .debug, #function, #file, #line)
+      apiLog.debug("Gps: initialized")
     }
   }
   

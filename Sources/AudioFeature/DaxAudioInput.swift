@@ -12,7 +12,7 @@ import AVFoundation
 //import FlexApiFeature
 import RingBufferFeature
 //import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @Observable
 //final public class DaxAudioInput: Equatable, DaxAudioInputHandler {

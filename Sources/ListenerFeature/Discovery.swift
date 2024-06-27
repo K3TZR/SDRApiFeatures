@@ -9,7 +9,7 @@ import ComposableArchitecture
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 //@MainActor
 //@Observable

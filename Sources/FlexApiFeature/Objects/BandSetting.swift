@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -71,7 +71,7 @@ public final class BandSetting: Identifiable {
       // check for unknown Keys
       guard let token = BandSetting.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("BandSetting \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("BandSetting \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -93,7 +93,7 @@ public final class BandSetting: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        log("BandSetting \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
+        apiLog.debug("BandSetting \(self.id): ADDED, name = \(self.name)")
       }
     }
   }

@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // WaterfallStream Class implementation
 //      WaterfallStream instances process FFT data used to display a waterfall.
@@ -23,7 +23,7 @@ public final class WaterfallStream: Identifiable, StreamProcessor {
   
   public init(_ id: UInt32) {
     self.id = id
-    log("WaterfallStream \(id.hex) ADDED", .debug, #function, #file, #line)
+    apiLog.debug("WaterfallStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

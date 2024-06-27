@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 public final class Meter: ObservableObject, Identifiable {  
@@ -111,7 +111,7 @@ public final class Meter: ObservableObject, Identifiable {
       // check for unknown Keys
       guard let token = Meter.Property(rawValue: key) else {
         // unknown, log it and ignore the Key
-        log("Meter \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Meter \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known Keys, in alphabetical order
@@ -131,7 +131,7 @@ public final class Meter: ObservableObject, Identifiable {
     if _initialized == false && group != "" && units != "" {
       //NO, it is now
       _initialized = true
-      log("Meter \(id): ADDED, name = \(name), source = \(source), group = \(group)", .debug, #function, #file, #line)
+      apiLog.debug("Meter \(self.id): ADDED, name = \(self.name), source = \(self.source), group = \(self.group)")
     }
   }
   

@@ -10,7 +10,7 @@ import Foundation
 
 import ListenerFeature
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -120,7 +120,7 @@ final public class ObjectModel {
     // Check for unknown Object Types
     guard let objectType = ObjectType(rawValue: statusType)  else {
       // log it and ignore the message
-      log("ObjectModel: unknown status token = \(statusType)", .warning, #function, #file, #line)
+      apiLog.warning("ObjectModel: unknown status token = \(statusType)")
       return
     }
     
@@ -212,7 +212,7 @@ final public class ObjectModel {
     
     // remove it immediately (Tnf does not send status on removal)
     tnfs.remove(id: id)
-    log("ObjectModel: Tnf removed, id = \(id)", .debug, #function, #file, #line)
+    apiLog.debug("ObjectModel: Tnf removed, id = \(id)")
   }
   
   // ----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ final public class ObjectModel {
     case .xvtr:                 xvtrs.removeAll()
     default:            break
     }
-    log("ObjectModel: removed all \(type.rawValue) objects", .debug, #function, #file, #line)
+    apiLog.debug("ObjectModel: removed all \(type.rawValue) objects")
   }
   
   // ----------------------------------------------------------------------------
@@ -275,7 +275,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         amplifiers.remove(id: id)
-        log("Amplifier \(id.hex): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Amplifier \(id.hex): REMOVED")
       }
     }
   }
@@ -292,7 +292,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         bandSettings.remove(id: id)
-        log("BandSetting \(id): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("BandSetting \(id): REMOVED")
       }
     }
   }
@@ -351,7 +351,7 @@ final public class ObjectModel {
     } else {
       // NO, remove it
       equalizers.remove(id: id)
-      log("Equalizer \(id): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("Equalizer \(id): REMOVED")
     }
   }
   
@@ -368,7 +368,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         memories.remove(id: id)
-        log("Memory \(id): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Memory \(id): REMOVED")
       }
     }
   }
@@ -386,7 +386,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         meters.remove(id: id)
-        log("Meter \(id): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Meter \(id): REMOVED")
       }
     }
   }
@@ -406,7 +406,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         panadapters.remove(id: id)
-        log("Panadapter \(id.hex): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Panadapter \(id.hex): REMOVED")
       }
     }
   }
@@ -424,7 +424,7 @@ final public class ObjectModel {
     } else {
       // NO, remove it
       profiles.remove(id: id)
-      log("Profile \(id): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("Profile \(id): REMOVED")
     }
   }
   
@@ -462,7 +462,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         slices.remove(id: id)
-        log("Slice \(id) REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Slice \(id) REMOVED")
       }
     }
   }
@@ -480,7 +480,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         tnfs.remove(id: id)
-        log("Tnf \(id): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Tnf \(id): REMOVED")
       }
     }
   }
@@ -498,7 +498,7 @@ final public class ObjectModel {
     } else {
       // NO, remove it
       usbCables.remove(id: id)
-      log("USBCable \(id): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("USBCable \(id): REMOVED")
     }
   }
   
@@ -517,7 +517,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         waterfalls.remove(id: id)
-        log("Waterfall \(id.hex): REMOVED", .info, #function, #file, #line)
+        apiLog.debug("Waterfall \(id.hex): REMOVED")
       }
     }
   }
@@ -535,7 +535,7 @@ final public class ObjectModel {
       } else {
         // NO, remove it
         xvtrs.remove(id: id)
-        log("Xvtr \(id): REMOVED", .debug, #function, #file, #line)
+        apiLog.debug("Xvtr \(id): REMOVED")
       }
     }
   }
@@ -590,12 +590,12 @@ final public class ObjectModel {
         if isForThisClient(properties, connectionHandle) {
           // YES
           guard properties.count > 1 else {
-            log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+            apiLog.warning("StreamModel: invalid Stream message: \(statusMessage)")
             return
           }
           guard let token = StreamType(rawValue: properties[1].value) else {
             // log it and ignore the Key
-            log("StreamModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
+            apiLog.warning("StreamModel: unknown Stream type: \(properties[1].value)")
             return
           }
           switch token {
@@ -612,7 +612,7 @@ final public class ObjectModel {
         }
       }
     } else {
-      log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
+      apiLog.warning("StreamModel: invalid Stream message: \(statusMessage)")
     }
   }
   
@@ -671,7 +671,7 @@ final public class ObjectModel {
       // check for unknown properties
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore this Key
-        log("ObjectModel: unknown client property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("ObjectModel: unknown client property, \(property.key)=\(property.value)")
         continue
       }
       // Known properties, in alphabetical order
@@ -697,12 +697,12 @@ final public class ObjectModel {
 //        activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ObjectModel: guiClient UPDATED, \(handle.hex), \(station), \(program), \(clientId)", .info, #function, #file, #line)
+        apiLog.info("ObjectModel: guiClient UPDATED, \(handle.hex), \(station), \(program), \(clientId)")
         
         if radio!.isGui == false && station == activeStation {
           boundClientId = clientId
           sendTcp("client bind client_id=\(clientId)")
-          log("ObjectModel: NonGui bound to \(station), \(program)", .debug, #function, #file, #line)
+          apiLog.debug("ObjectModel: NonGui bound to \(station), \(program)")
         }
         //        }
       } else {
@@ -716,7 +716,7 @@ final public class ObjectModel {
         activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        log("ObjectModel: guiClient ADDED, \(handle.hex), \(station), \(program), \(clientId)", .info, #function, #file, #line)
+        apiLog.info("ObjectModel: guiClient ADDED, \(handle.hex), \(station), \(program), \(clientId)")
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
@@ -726,7 +726,7 @@ final public class ObjectModel {
           if radio!.isGui == false && station == activeStation {
             boundClientId = clientId
             sendTcp("client bind client_id=\(clientId)")
-            log("ObjectModel: NonGui bound to \(station), \(program)", .debug, #function, #file, #line)
+            apiLog.debug("ObjectModel: NonGui bound to \(station), \(program)")
           }
         }
       }
@@ -753,7 +753,7 @@ final public class ObjectModel {
         // check for unknown property
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore this Key
-          log("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)", .warning, #function, #file, #line)
+          apiLog.warning("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)")
           continue
         }
         // Known properties, in alphabetical order
@@ -764,7 +764,7 @@ final public class ObjectModel {
         case .wanValidationFailed:  if property.value.bValue { reason = "Wan validation failed" }
         }
       }
-      log("ObjectModel: client disconnection, reason = \(reason)", .warning, #function, #file, #line)
+      apiLog.warning("ObjectModel: client disconnection, reason = \(reason)")
       
       clientInitialized = false
       
@@ -780,27 +780,27 @@ final public class ObjectModel {
   private func removeStream(having id: UInt32) {
     if daxIqs[id: id] != nil {
       daxIqs.remove(id: id)
-      log("ObjectModel: DaxIq \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: DaxIq \(id.hex): REMOVED")
     }
     else if daxMicAudio?.id == id {
       daxMicAudio = nil
-      log("ObjectModel: DaxMicAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: DaxMicAudio \(id.hex): REMOVED")
     }
     else if daxRxAudios[id: id] != nil {
       daxRxAudios.remove(id: id)
-      log("ObjectModel: DaxRxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: DaxRxAudio \(id.hex): REMOVED")
 
     } else if daxTxAudio?.id == id {
       daxTxAudio = nil
-      log("ObjectModel: DaxTxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: DaxTxAudio \(id.hex): REMOVED")
     }
     else if remoteRxAudio?.id == id {
       remoteRxAudio = nil
-      log("ObjectModel: RemoteRxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: RemoteRxAudio \(id.hex): REMOVED")
     }
     else if remoteTxAudio?.id == id {
       remoteTxAudio = nil
-      log("ObjectModel: RemoteTxAudio \(id.hex): REMOVED", .debug, #function, #file, #line)
+      apiLog.debug("ObjectModel: RemoteTxAudio \(id.hex): REMOVED")
     }
   }
 

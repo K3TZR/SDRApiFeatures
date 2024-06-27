@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // RemoteTxAudioStream
 //      creates a RemoteTxAudioStream instance to be used by a Client to support the
@@ -57,7 +57,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
       // check for unknown Keys
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("RemoteTxAudioStream \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("RemoteTxAudioStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known Keys, in alphabetical order
@@ -74,7 +74,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("RemoteTxAudioStream \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      apiLog.debug("RemoteTxAudioStream \(self.id.hex) ADDED: handle = \(self.clientHandle.hex)")
     }
   }
   
@@ -115,7 +115,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
       _txSequenceNumber = (_txSequenceNumber + 1) % 16
       
     } else {
-      log("RemoteTxAudioStream, compression != opus: frame ignored", .warning, #function, #file, #line)
+      apiLog.warning("RemoteTxAudioStream, compression != opus: frame ignored")
     }
   }
 

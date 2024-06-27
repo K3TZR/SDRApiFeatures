@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // PanadapterStream Class implementation
 //      PanadapterStream instances process FFT data used to display a panadapter.
@@ -23,7 +23,7 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
   
   public init(_ id: UInt32) {
     self.id = id
-    log("PanadapterStream \(id.hex) ADDED", .debug, #function, #file, #line)
+    apiLog.debug("PanadapterStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

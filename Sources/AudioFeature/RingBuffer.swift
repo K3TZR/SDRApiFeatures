@@ -51,4 +51,8 @@ final public actor RingBuffer{
   public func clear() {
     TPCircularBufferClear(&buffer)
   }
+  
+  public func availableFrames() -> UInt32 {
+    return TPCircularBufferGetAvailableSpace(&buffer, &asbd)
+  }
 }

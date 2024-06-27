@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -71,7 +71,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
       // check for unknown Keys
       guard let token = Tnf.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Tnf \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Tnf \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -86,7 +86,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
       if _initialized == false && frequency != 0 {
         // NO, it is now
         _initialized = true
-        log("Tnf \(id): ADDED, frequency = \(frequency.hzToMhz)", .debug, #function, #file, #line)
+        apiLog.debug("Tnf \(self.id): ADDED, frequency = \(self.frequency.hzToMhz)")
       }
     }
   }
@@ -96,7 +96,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
 
     // remove it immediately (Tnf does not send status on removal)
     ObjectModel.shared.tnfs.remove(id: id)
-    log("Tnf, removed: id = \(id)", .debug, #function, #file, #line)
+    apiLog.debug("Tnf, removed: id = \(self.id)")
   }
   
   // ----------------------------------------------------------------------------

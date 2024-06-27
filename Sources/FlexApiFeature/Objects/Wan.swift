@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -59,7 +59,7 @@ public final class Wan {
       // Check for Unknown Keys
       guard let token = Wan.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Wan: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Wan: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -78,7 +78,7 @@ public final class Wan {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("Wan: initialized ServerConnected = \(serverConnected), RadioAuthenticated = \(radioAuthenticated)", .debug, #function, #file, #line)
+      apiLog.debug("Wan: initialized ServerConnected = \(self.serverConnected), RadioAuthenticated = \(self.radioAuthenticated)")
     }
   }
 }

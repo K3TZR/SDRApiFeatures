@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // DaxIqStream Class implementation
 //      creates an DaxIqStream instance to be used by a Client to support the
@@ -72,7 +72,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        log("DaxIqStream \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("DaxIqStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -91,7 +91,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("DaxIqStream \(id.hex) ADDED: channel = \(channel)", .debug, #function, #file, #line)
+      apiLog.debug("DaxIqStream \(self.id.hex) ADDED: channel = \(self.channel)")
     }
   }
   
@@ -142,7 +142,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
     case (let expected, let received) where received < expected:
       // from a previous group, ignore it
-      log("DaxIqStream, delayed frame(s) ignored: expected \(expected), received \(received)", .warning, #function, #file, #line)
+      apiLog.warning("DaxIqStream, delayed frame(s) ignored: expected \(expected), received \(received)")
       return
       
     case (let expected, let received) where received > expected:
@@ -150,7 +150,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
       // from a later group, jump forward
       let lossPercent = String(format: "%04.2f", (Float(_rxLostPacketCount)/Float(_rxPacketCount)) * 100.0 )
-      log("DaxIqStream, missing frame(s) skipped: expected \(expected), received \(received), loss = \(lossPercent) %", .warning, #function, #file, #line)
+      apiLog.warning("DaxIqStream, missing frame(s) skipped: expected \(expected), received \(received), loss = \(lossPercent) %")
       
       _rxSequenceNumber = received
       fallthrough

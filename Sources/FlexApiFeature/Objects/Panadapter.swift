@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -149,7 +149,7 @@ public final class Panadapter: Identifiable {
       // check for unknown Keys
       guard let token = Panadapter.Property(rawValue: property.key) else {
         // unknown, log it and ignore the Key
-        log("Panadapter \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Panadapter \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -192,7 +192,7 @@ public final class Panadapter: Identifiable {
     if _initialized == false && center != 0 && bandwidth != 0 && (minDbm != 0.0 || maxDbm != 0.0) {
       // NO, it is now
       _initialized = true
-      log("Panadapter \(id.hex): ADDED, center = \(center.hzToMhz), bandwidth = \(bandwidth.hzToMhz)", .debug, #function, #file, #line)
+      apiLog.debug("Panadapter \(self.id.hex): ADDED, center = \(self.center.hzToMhz), bandwidth = \(self.bandwidth.hzToMhz)")
       
       // FIXME: ????
 //      _apiModel.activePanadapter = self
@@ -253,7 +253,7 @@ public final class Panadapter: Identifiable {
       }
       
     case .segment:
-      print("zoom to segmeny")
+      print("zoom to segment")
     }
   }
   

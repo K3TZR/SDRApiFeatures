@@ -7,13 +7,14 @@
 
 import ComposableArchitecture
 import Foundation
+import os
 
 import ListenerFeature
 import SharedFeature
 //import TcpFeature
 //import UdpFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @Observable
 public final class ApiModel: TcpProcessor {
@@ -37,7 +38,7 @@ public final class ApiModel: TcpProcessor {
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
-  
+
   private var _awaitFirstStatusMessage: CheckedContinuation<(), Never>?
   private var _awaitWanValidation: CheckedContinuation<String, Never>?
   private var _awaitClientIpValidation: CheckedContinuation<String, Never>?
@@ -77,10 +78,11 @@ public final class ApiModel: TcpProcessor {
         ObjectModel.shared.radio = Radio(packet, isGui)
         guard ObjectModel.shared.radio != nil else { throw ApiError.instantiation }
       }
-      log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
-      
+//      log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: Radio instantiated \(packet.nickname), \(packet.source.rawValue)")
+
       guard connect(using: packet) else { throw ApiError.connection }
-      log("ApiModel: Tcp connection established ", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: Tcp connection established")
             
       if disconnectHandle != nil {
         // pending disconnect
@@ -91,7 +93,7 @@ public final class ApiModel: TcpProcessor {
       try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
         await awaitFirstStatusMessage()
       }
-      log("ApiModel: First status message received", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: First status message received")
       
       // is this a Wan connection?
       if packet.source == .smartlink {
@@ -100,10 +102,10 @@ public final class ApiModel: TcpProcessor {
           try await ListenerModel.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
         }
         
-        log("ApiModel: wanHandle received", .debug, #function, #file, #line)
+        apiLog.debug("ApiModel: wanHandle received")
         
         // send Wan Validate & wait for the reply
-        log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
+        apiLog.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
         sendTcp("wan validate handle=\(_wanHandle)", replyTo: wanValidationReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           //          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
@@ -111,7 +113,7 @@ public final class ApiModel: TcpProcessor {
           
           await wanValidation()
         }
-        log("ApiModel: Wan validation = \(reply)", .debug, #function, #file, #line)
+        apiLog.debug("ApiModel: Wan validation = \(reply)")
       }
       // bind UDP
       let ports = _udp.bind(packet.source == .smartlink,
@@ -121,33 +123,33 @@ public final class ApiModel: TcpProcessor {
                                   packet.publicUdpPort)
       
       guard ports != nil else { _tcp.disconnect() ; throw ApiError.udpBind }
-      log("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)")
       
       // is this a Wan connection?
       if packet.source == .smartlink {
         // send Wan Register (no reply)
         sendUdp("client udp_register handle=" + connectionHandle!.hex )
-        log("ApiModel: UDP registration sent", .debug, #function, #file, #line)
+        apiLog.debug("ApiModel: UDP registration sent")
         
         // send Client Ip & wait for the reply
         sendTcp("client ip", replyTo: ipReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           await clientIpValidation()
         }
-        log("ApiModel: Client ip = \(reply)", .debug, #function, #file, #line)
+        apiLog.debug("ApiModel: Client ip = \(reply)")
       }
       
       // send the initial commands
       sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax, lowBandwidthConnect)
-      log("ApiModel: initial commands sent (isGui = \(isGui))", .info, #function, #file, #line)
+      apiLog.info("ApiModel: initial commands sent (isGui = \(isGui))")
       
       startPinging()
-      log("ApiModel: pinging \(packet.publicIp)", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: pinging \(packet.publicIp)")
       
       // set the UDP port for a Local connection
       if packet.source == .local {
         sendTcp("client udpport " + "\(_udp.sendPort)")
-        log("ApiModel: Client Udp port set to \(_udp.sendPort)", .info, #function, #file, #line)
+        apiLog.info("ApiModel: Client Udp port set to \(self._udp.sendPort)")
       }
     }
   }
@@ -155,19 +157,21 @@ public final class ApiModel: TcpProcessor {
   /// Disconnect the current Radio and remove all its objects / references
   /// - Parameter reason: an optional reason
   public func disconnect(_ reason: String? = nil) {
-    log("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))", reason == nil ? .debug : .warning, #function, #file, #line)
+    if reason == nil {
+      apiLog.debug("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))")
+    }
     
     _firstStatusMessageReceived = false
     
     // stop pinging (if active)
     stopPinging()
-    log("ApiModel: Pinging STOPPED", .debug, #function, #file, #line)
+    apiLog.debug("ApiModel: Pinging STOPPED")
     
     connectionHandle = nil
     
     // stop udp
     _udp.unbind()
-    log("ApiModel: Disconnect, UDP unbound", .debug, #function, #file, #line)
+    apiLog.debug("ApiModel: Disconnect, UDP unbound")
     
     _tcp.disconnect()
     
@@ -180,7 +184,7 @@ public final class ApiModel: TcpProcessor {
       await ObjectModel.shared.removeAllObjects()
       await _replyDictionary.removeAll()
     }
-    log("ApiModel: Disconnect, Objects removed", .debug, #function, #file, #line)
+    apiLog.debug("ApiModel: Disconnect, Objects removed")
   }
 
   // ----------------------------------------------------------------------------
@@ -194,12 +198,12 @@ public final class ApiModel: TcpProcessor {
     // the first character indicates the type of message
     switch msg.prefix(1).uppercased() {
       
-    case "H":  connectionHandle = String(msg.dropFirst()).handle ; log("Api: connectionHandle = \(connectionHandle?.hex ?? "missing")", .debug, #function, #file, #line)
+    case "H":  connectionHandle = String(msg.dropFirst()).handle ; apiLog.debug("Api: connectionHandle = \(self.connectionHandle?.hex ?? "missing")")
     case "M":  parseMessage( msg.dropFirst() )
     case "R":  defaultReplyProcessor( msg.dropFirst() )
     case "S":  parseStatus( msg.dropFirst() )
     case "V":  hardwareVersion = String(msg.dropFirst())
-    default:   log("ApiModel: unexpected message = \(msg)", .warning, #function, #file, #line)
+    default:   apiLog.warning("ApiModel: unexpected message = \(msg)")
     }
   }
 
@@ -318,21 +322,21 @@ public final class ApiModel: TcpProcessor {
   private func awaitFirstStatusMessage() async {
     return await withCheckedContinuation{ continuation in
       _awaitFirstStatusMessage = continuation
-      log("ApiModel: waiting for first status message", .debug, #function, #file, #line)
+      apiLog.debug("ApiModel: waiting for first status message")
     }
   }
   
   private func clientIpValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitClientIpValidation = continuation
-      log("Api: Client ip request sent", .debug, #function, #file, #line)
+      apiLog.debug("Api: Client ip request sent")
     }
   }
 
   private func wanValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitWanValidation = continuation
-      log("Api: Wan validate sent for handle=\(_wanHandle)", .debug, #function, #file, #line)
+      apiLog.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
     }
   }
 
@@ -348,7 +352,7 @@ public final class ApiModel: TcpProcessor {
     let components = replySuffix.components(separatedBy: "|")
     // ignore incorrectly formatted replies
     if components.count < 2 {
-      log("ApiModel: incomplete reply, r\(replySuffix)", .warning, #function, #file, #line)
+      apiLog.warning("ApiModel: incomplete reply, r\(replySuffix)")
       return
     }
     
@@ -372,7 +376,7 @@ public final class ApiModel: TcpProcessor {
         // Anything other than kNoError is an error, log it
         // ignore non-zero reply from "client program" command
         if reply != kNoError && !command.hasPrefix("client program ") {
-          log("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+          apiLog.error("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)")
         }
         // did the replyTuple include a callback?
         if let handler = replyTuple.replyTo {
@@ -380,7 +384,7 @@ public final class ApiModel: TcpProcessor {
           handler(command, seqNum, reply, suffix)
         }
       } else {
-        log("ApiModel: \(replySuffix) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)", .error, #function, #file, #line)
+        apiLog.error("ApiModel: \(replySuffix) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)")
       }
     }
   }
@@ -427,13 +431,18 @@ public final class ApiModel: TcpProcessor {
     
     // ignore incorrectly formatted messages
     if components.count < 2 {
-      log("ApiModel: incomplete message = c\(msg)", .warning, #function, #file, #line)
+      apiLog.warning("ApiModel: incomplete message = c\(msg)")
       return
     }
     let msgText = components[1]
     
     // log it
-    log("ApiModel: message = \(msgText)", flexErrorLevel(errorCode: components[0]), #function, #file, #line)
+    switch flexErrorLevel(errorCode: components[0]) {
+    case .error:    apiLog.error("ApiModel: message = \(msgText)")
+    case .info:     apiLog.info("ApiModel: message = \(msgText)")
+    case .warning:  apiLog.warning("ApiModel: message = \(msgText)")
+    default:        apiLog.warning("ApiModel: message = \(msgText)")
+    }
     
     // FIXME: Take action on some/all errors?
   }
@@ -448,7 +457,7 @@ public final class ApiModel: TcpProcessor {
     
     // ignore incorrectly formatted status
     guard components.count > 1 else {
-      log("ApiModel: incomplete status = c\(commandSuffix)", .warning, #function, #file, #line)
+      apiLog.warning("ApiModel: incomplete status = c\(commandSuffix)")
       return
     }
     

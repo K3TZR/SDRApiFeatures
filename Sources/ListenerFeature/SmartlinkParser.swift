@@ -8,7 +8,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 extension SmartlinkListener {
   // ------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it
-      log("Smartlink Listener: \(msg)", .warning, #function, #file, #line)
+      apiLog.warning("Smartlink Listener: \(msg)")
       return
     }
     // which primary message type?
@@ -56,7 +56,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it and ignore the message
-      log("Smartlink Listener: unknown application property, \(properties[1].key)", .warning, #function, #file, #line)
+      apiLog.warning("Smartlink Listener: unknown application property, \(properties[1].key)")
       return
     }
     switch token {
@@ -79,7 +79,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it and ignore the message
-      log("Smartlink Listener: unknown radio property, \(properties[1].key)", .warning, #function, #file, #line)
+      apiLog.warning("Smartlink Listener: unknown radio property, \(properties[1].key)")
       return
     }
     // which secondary message type?
@@ -99,14 +99,14 @@ extension SmartlinkListener {
       case publicIp = "public_ip"
     }
 
-    log("Smartlink Listener: ApplicationInfo received", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: ApplicationInfo received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Smartlink Listener: unknown info property, \(property.key)", .warning, #function, #file, #line)
+        apiLog.warning("Smartlink Listener: unknown info property, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -128,7 +128,7 @@ extension SmartlinkListener {
   /// Respond to an Invalid registration
   /// - Parameter msg:                the message text
   private func parseRegistrationInvalid(_ properties: KeyValuesArray) {
-        log("Smartlink Listener: invalid registration: \(properties.count == 3 ? properties[2].key : "")", .warning, #function, #file, #line)
+    apiLog.warning("Smartlink Listener: invalid registration: \(properties.count == 3 ? properties[2].key : "")")
   }
   
   /// Parse a received "user settings" message
@@ -140,14 +140,14 @@ extension SmartlinkListener {
       case lastName     = "last_name"
     }
 
-    log("Smartlink Listener: UserSettings received", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: UserSettings received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for Unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Smartlink Listener: unknown user setting, \(property.key)", .warning, #function, #file, #line)
+        apiLog.warning("Smartlink Listener: unknown user setting, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -175,14 +175,14 @@ extension SmartlinkListener {
       case serial
     }
 
-    log("Smartlink Listener: ConnectReady received", .debug, #function, #file, #line)
+    apiLog.debug("Smartlink Listener: ConnectReady received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Smartlink Listener: unknown connect property, \(property.key)", .warning, #function, #file, #line)
+        apiLog.warning("Smartlink Listener: unknown connect property, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -243,7 +243,7 @@ extension SmartlinkListener {
 
       Task { await _listenerModel.process(newPacket) }
 
-      log("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)", .debug, #function, #file, #line)
+      apiLog.debug("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)")
     }
   }
   
@@ -266,7 +266,7 @@ extension SmartlinkListener {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Smartlink Listener: unknown testConnection property, \(property.key)", .warning, #function, #file, #line)
+        apiLog.warning("Smartlink Listener: unknown testConnection property, \(property.key)")
         continue
       }
       
@@ -288,6 +288,11 @@ extension SmartlinkListener {
       }
     }
     // log the result
-    log("Smartlink Listener: Test result received, \(result.success ? "SUCCESS" : "FAILURE")", result.success ? .debug : .warning, #function, #file, #line)
+    if result.success {
+      apiLog.debug("Smartlink Listener: Test result received, SUCCESS")
+    } else {
+      apiLog.warning("Smartlink Listener: Test result received, FAILURE")
+    }
+  
   }
 }

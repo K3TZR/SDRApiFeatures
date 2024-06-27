@@ -9,10 +9,11 @@
 import AVFoundation
 import Foundation
 
-import XCGLogFeature
+import SharedFeature
+//import XCGLogFeature
 
-final public actor PcmProcessor {
-//final public class PcmProcessor {
+//final public actor PcmProcessor {
+final public class PcmProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -89,7 +90,7 @@ final public actor PcmProcessor {
       do {
         try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       } catch {
-        log("PcmProcessor: Interleave conversion error = \(error)", .error, #function, #file, #line)
+        apiLog.error("PcmProcessor: Interleave conversion error = \(error)")
       }
     }
     // append the data to the Ring buffer

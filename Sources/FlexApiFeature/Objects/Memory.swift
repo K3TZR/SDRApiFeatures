@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -92,7 +92,7 @@ public final class Memory: Identifiable {
       // check for unknown Keys
       guard let token = Memory.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Memory \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Memory \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -126,7 +126,7 @@ public final class Memory: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        log("Memory \(id): ADDED", .debug, #function, #file, #line)
+        apiLog.debug("Memory \(self.id): ADDED")
       }
     }
   }

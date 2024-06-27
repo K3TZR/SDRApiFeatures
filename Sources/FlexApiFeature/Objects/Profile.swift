@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import XCGLogFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -57,7 +57,7 @@ public final class Profile: Identifiable {
     // check for unknown Key
     guard let token = Profile.Property(rawValue: properties[1].key) else {
       // log it and ignore the Key
-      log("Profile \(id): unknown property, \(properties[1].key)", .warning, #function, #file, #line)
+      apiLog.warning("Profile \(id): unknown property, \(properties[1].key)")
       return
     }
     // known keys
@@ -83,7 +83,7 @@ public final class Profile: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("Profile \(id): ADDED", .debug, #function, #file, #line)
+      apiLog.debug("Profile \(id): ADDED")
     }
   }
   

@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // RemoteTxAudio
 //      creates a RemoteTxAudio instance to be used by a Client to support the
@@ -58,7 +58,7 @@ public final class RemoteTxAudio: Identifiable {
       // check for unknown Keys
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("RemoteTxAudio \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("RemoteTxAudio \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known Keys, in alphabetical order
@@ -75,7 +75,7 @@ public final class RemoteTxAudio: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("RemoteTxAudio \(id.hex) ADDED: handle = \(clientHandle.hex)", .debug, #function, #file, #line)
+      apiLog.debug("RemoteTxAudio \(self.id.hex) ADDED: handle = \(self.clientHandle.hex)")
     }
   }
 }

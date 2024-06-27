@@ -9,7 +9,7 @@ import CocoaAsyncSocket
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // ----------------------------------------------------------------------------
 // MARK: - Public structs and enums
@@ -60,7 +60,7 @@ public final class Tcp: NSObject {
     _socket.isIPv4PreferredOverIPv6 = true
     _socket.isIPv6Enabled = false
     
-    log("Tcp: socket initialized", .debug, #function, #file, #line)
+    apiLog.debug("Tcp: socket initialized")
   }
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -110,23 +110,23 @@ public final class Tcp: NSObject {
         
         // connect via the localInterface
         try _socket.connect(toHost: publicIp, onPort: UInt16(portToUse), viaInterface: localInterface, withTimeout: _timeout)
-        log("Tcp: connect on the \(String(describing: localInterface)) interface to \(publicIp) port \(portToUse)", .debug, #function, #file, #line)
+        apiLog.debug("Tcp: connect on the \(String(describing: localInterface)) interface to \(publicIp) port \(portToUse)")
 
       } else {
         // connect on the default interface
         try _socket.connect(toHost: publicIp, onPort: UInt16(portToUse), withTimeout: _timeout)
-        log("Tcp: connect on the default interface to \(publicIp) port \(portToUse)", .debug, #function, #file, #line)
+        apiLog.debug("Tcp: connect on the default interface to \(publicIp) port \(portToUse)")
       }
       
     } catch _ {
       // connection attemp failed
-      log("Tcp: connection failed", .debug, #function, #file, #line)
+      apiLog.debug("Tcp: connection failed")
       success = false
     }
     //        if success { _isWan = packet.isWan ; _seqNum = 0 }
     if success {
 //      _sequenceNumber = 0
-      log("Tcp: connection successful", .debug, #function, #file, #line)
+      apiLog.debug("Tcp: connection successful")
     }
     return success
   }
@@ -184,7 +184,7 @@ extension Tcp: GCDAsyncSocketDelegate {
   ///   - completionHandler: a completion handler
   public func socket(_ sock: GCDAsyncSocket, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
     // no validation required
-    log("Tcp: TLS socket did receive trust", .debug, #function, #file, #line)
+    apiLog.debug("Tcp: TLS socket did receive trust")
     completionHandler(true)
   }
   

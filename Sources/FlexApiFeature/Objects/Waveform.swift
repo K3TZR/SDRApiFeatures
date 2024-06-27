@@ -8,7 +8,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -46,7 +46,7 @@ public final class Waveform {
       // Check for Unknown Keys
       guard let token = Waveform.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Waveform: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Waveform: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -59,7 +59,7 @@ public final class Waveform {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("Waveform: initialized", .debug, #function, #file, #line)
+      apiLog.debug("Waveform: initialized")
     }
   }
   

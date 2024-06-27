@@ -8,7 +8,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -72,7 +72,7 @@ public final class Xvtr: Identifiable {
       // check for unknown Keys
       guard let token = Xvtr.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Xvtr \(id): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Xvtr \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -98,7 +98,7 @@ public final class Xvtr: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("Xvtr \(id): ADDED, name = \(name)", .debug, #function, #file, #line)
+      apiLog.debug("Xvtr \(self.id): ADDED, name = \(self.name)")
     }
   }
   

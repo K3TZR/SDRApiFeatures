@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // Cwx
 //      creates a Cwx instance to be used by a Client to support the
@@ -85,7 +85,7 @@ public final class Cwx {
         // Check for Unknown Keys
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore the Key
-          log("Cwx: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+          apiLog.warning("Cwx: unknown property, \(property.key) = \(property.value)")
           return
         }
         // Known tokens, in alphabetical order
@@ -111,7 +111,7 @@ public final class Cwx {
       if _initialized == false{
         // NO, it is now
         _initialized = true
-        log("Cwx: initialized", .debug, #function, #file, #line)
+        apiLog.debug("Cwx: initialized")
       }
     }
   }
@@ -136,7 +136,7 @@ public final class Cwx {
     
     // if zero or anything greater than 2 it's an error, log it and ignore the Reply
     guard components == 1 || components == 2 else {
-      log("Cwx, Invalid reply: to \(command)", .warning, #function, #file, #line)
+      apiLog.warning("Cwx, Invalid reply: to \(command)")
       return
     }
     // get the character position
@@ -144,7 +144,7 @@ public final class Cwx {
     
     // if not an integer, log it and ignore the Reply
     guard charPos != nil else {
-      log("Cwx, Invalid character position: for \(command)", .warning, #function, #file, #line)
+      apiLog.warning("Cwx, Invalid character position: for \(command)")
       return
     }
     
@@ -161,7 +161,7 @@ public final class Cwx {
       // not an integer, log it and ignore the Reply
       guard block != nil else {
         
-        log("Cwx, Invalid block: for \(command)", .warning, #function, #file, #line)
+        apiLog.warning("Cwx, Invalid block: for \(command)")
         return
       }
       // inform the Event Handler (if any)

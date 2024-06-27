@@ -9,7 +9,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // MeterStream Class implementation
 //      creates an MeterStream instance to be used by a Client to support the
@@ -22,7 +22,7 @@ public final class MeterStream: Identifiable, StreamProcessor{
   
   public init(_ id: UInt32) {
     self.id = id
-    log("MeterStream \(id.hex) ADDED", .debug, #function, #file, #line)
+    apiLog.debug("MeterStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

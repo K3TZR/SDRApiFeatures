@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 // DaxIq Class implementation
 //      creates an DaxIq instance to be used by a Client to support the
@@ -73,7 +73,7 @@ public final class DaxIq: Identifiable {
       
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        log("DaxIq \(id.hex): unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("DaxIq \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -92,7 +92,7 @@ public final class DaxIq: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      log("DaxIq \(id.hex) ADDED: channel = \(channel)", .debug, #function, #file, #line)
+      apiLog.debug("DaxIq \(self.id.hex) ADDED: channel = \(self.channel)")
     }
   }
 }

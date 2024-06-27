@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -112,7 +112,7 @@ public final class Interlock {
       // Check for Unknown Keys
       guard let token = Interlock.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        log("Interlock: unknown property, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Interlock: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -144,7 +144,7 @@ public final class Interlock {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      log("Interlock: initialized", .debug, #function, #file, #line)
+      apiLog.debug("Interlock: initialized")
     }
   }
   

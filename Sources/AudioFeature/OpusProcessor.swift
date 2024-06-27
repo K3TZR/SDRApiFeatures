@@ -10,7 +10,7 @@ import AVFoundation
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 //final public actor OpusProcessor {
 final public class OpusProcessor {
@@ -103,14 +103,14 @@ final public class OpusProcessor {
     })
     
     // check for decode errors
-    if error != nil { log("OpusProcessor: Opus conversion error: \(error!)", .error, #function, #file, #line) }
+    if error != nil { apiLog.error("OpusProcessor: Opus conversion error: \(error!)") }
     
     do {
       try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       // append the data to the Ring buffer
       Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioPlayer.frameCountOpus))  }
     } catch {
-      log("OpusProcessor: Interleave conversion error = \(error)", .error, #function, #file, #line)
+      apiLog.error("OpusProcessor: Interleave conversion error = \(error)")
     }
   }
 }

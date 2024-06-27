@@ -9,7 +9,7 @@
 import Foundation
 
 import SharedFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 @MainActor
 @Observable
@@ -64,7 +64,7 @@ public final class Amplifier: Identifiable {
       // check for unknown Keys
       guard let token = Amplifier.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        log("Amplifier \(id.hex): unknown propety, \(property.key) = \(property.value)", .warning, #function, #file, #line)
+        apiLog.warning("Amplifier \(self.id.hex): unknown propety, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -82,7 +82,7 @@ public final class Amplifier: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        log("Amplifier \(id.hex): ADDED, model = \(model)", .debug, #function, #file, #line)
+        apiLog.debug("Amplifier \(self.id.hex): ADDED, model = \(self.model)")
       }
     }
   }

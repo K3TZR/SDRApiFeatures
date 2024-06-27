@@ -12,7 +12,7 @@ import Combine
 
 import SharedFeature
 import VitaFeature
-import XCGLogFeature
+//import XCGLogFeature
 
 public enum LanListenerError: Error {
   case kSocketError
@@ -74,7 +74,7 @@ public final class LocalListener: NSObject, ObservableObject {
   
   func start(checkInterval: TimeInterval = 1.0, timeout: TimeInterval = broadcastTimeout) {
     try! _udpSocket.beginReceiving()
-    log("Local Listener: STARTED", .info, #function, #file, #line)
+    apiLog.info("Local Listener: STARTED")
 
     // setup a timer to watch for Radio timeouts
     Timer.publish(every: checkInterval, on: .main, in: .default)
@@ -89,8 +89,8 @@ public final class LocalListener: NSObject, ObservableObject {
   func stop() {
     _cancellables = Set<AnyCancellable>()
     _udpSocket?.close()
-    log("Local Listener: STOPPED", .info, #function, #file, #line)
-  }  
+    apiLog.info("Local Listener: STOPPED")
+  }
 }
 
 // ----------------------------------------------------------------------------
