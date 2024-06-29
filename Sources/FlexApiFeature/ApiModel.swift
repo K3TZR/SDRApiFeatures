@@ -434,15 +434,9 @@ public final class ApiModel: TcpProcessor {
       apiLog.warning("ApiModel: incomplete message = c\(msg)")
       return
     }
-    let msgText = components[1]
     
     // log it
-    switch flexErrorLevel(errorCode: components[0]) {
-    case .error:    apiLog.error("ApiModel: message = \(msgText)")
-    case .info:     apiLog.info("ApiModel: message = \(msgText)")
-    case .warning:  apiLog.warning("ApiModel: message = \(msgText)")
-    default:        apiLog.warning("ApiModel: message = \(msgText)")
-    }
+    logFlexError(errorCode: components[0], msgText:  components[1])
     
     // FIXME: Take action on some/all errors?
   }
