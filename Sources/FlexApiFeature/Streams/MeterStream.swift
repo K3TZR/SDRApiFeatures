@@ -9,7 +9,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-//import XCGLogFeature
+
 
 // MeterStream Class implementation
 //      creates an MeterStream instance to be used by a Client to support the

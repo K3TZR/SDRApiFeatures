@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-//import XCGLogFeature
+
 
 // DaxIqStream Class implementation
 //      creates an DaxIqStream instance to be used by a Client to support the

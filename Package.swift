@@ -29,9 +29,6 @@ let package = Package(
   ],
   
   dependencies: [
-    // ----- K3TZR -----
-    .package(url: "https://github.com/K3TZR/LogFeatures.git", branch: "main"),
-    // ----- OTHER -----
     .package(url: "https://github.com/robbiehanson/CocoaAsyncSocket", from: "7.6.5"),
     .package(url: "https://github.com/auth0/JWTDecode.swift", from: "2.6.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.10.2"),
@@ -42,7 +39,6 @@ let package = Package(
   targets: [
     // AudioFeature
     .target( name: "AudioFeature", dependencies: [
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "SharedFeature",
       "VitaFeature",
       "RingBufferFeature",
@@ -79,7 +75,6 @@ let package = Package(
 
     // FlexApiFeature
     .target(name: "FlexApiFeature", dependencies: [
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "AudioFeature",
       "ListenerFeature",
       "SharedFeature",
@@ -91,7 +86,6 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       .product(name: "JWTDecode", package: "JWTDecode.swift"),
       .product(name: "CocoaAsyncSocket", package: "CocoaAsyncSocket"),
-      .product(name: "XCGLogFeature", package: "LogFeatures"),
       "SharedFeature",
       "VitaFeature",
     ]),

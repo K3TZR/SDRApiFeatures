@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-//import XCGLogFeature
+
 
 // WaterfallStream Class implementation
 //      WaterfallStream instances process FFT data used to display a waterfall.

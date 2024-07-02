@@ -10,7 +10,7 @@ import Foundation
 
 import SharedFeature
 import VitaFeature
-//import XCGLogFeature
+
 
 // PanadapterStream Class implementation
 //      PanadapterStream instances process FFT data used to display a panadapter.
