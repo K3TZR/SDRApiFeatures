@@ -171,14 +171,14 @@ private struct FooterView: View {
 // MARK: - Preview
 
 #Preview("Picker Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: true, defaultValue: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State(listener: ListenerModel.shared, isGui: true, defaultValue: nil)) {
     PickerFeature()
   })
   .environment(ListenerModel.shared)
 }
 
 #Preview("Picker NON-Gui") {
-  PickerView(store: Store(initialState: PickerFeature.State(isGui: false, defaultValue: nil)) {
+  PickerView(store: Store(initialState: PickerFeature.State(listener: ListenerModel.shared, isGui: false, defaultValue: nil)) {
     PickerFeature()
   })
   .environment(ListenerModel.shared)

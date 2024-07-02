@@ -63,12 +63,3 @@ public struct LoginView: View {
     LoginFeature()
   })
 }
-
-/*
- #Preview("Picker Gui") {
-   PickerView(store: Store(initialState: PickerFeature.State(listener: Listener(), isGui: true, guiDefault: nil, nonGuiDefault: nil)) {
-     PickerFeature()
-   })
- }
-
- */

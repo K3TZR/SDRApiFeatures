@@ -70,7 +70,7 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   private let kPlatform = "macOS"
   
   
-  let _listenerModel: ListenerModel!
+//  let _listenerModel: ListenerModel!
   
   
   var awaitWanHandle: CheckedContinuation<String, Error>?
@@ -78,8 +78,9 @@ public final class SmartlinkListener: NSObject, ObservableObject {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  init(_ listenerModel: ListenerModel, timeout: Double = kTimeout) {
-    _listenerModel = listenerModel
+  init(timeout: Double = kTimeout) {
+//  init(_ listenerModel: ListenerModel, timeout: Double = kTimeout) {
+//    _listenerModel = listenerModel
 
     super.init()
 

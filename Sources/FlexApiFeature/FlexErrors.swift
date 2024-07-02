@@ -11,9 +11,6 @@ import os
 
 import SharedFeature
 
-//import XCGLogger
-
-
 /// Given an errorcode log the error
 ///      Flex 6000 error codes
 ///      see http://wiki.flexradio.com/index.php?title=Known_API_Responses

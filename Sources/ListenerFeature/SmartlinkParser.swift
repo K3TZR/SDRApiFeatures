@@ -119,7 +119,7 @@ extension SmartlinkListener {
 
         // NOTE:
 //        Task {
-        _listenerModel.statusUpdate(WanStatus(.publicIp, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
+        ListenerModel.shared.statusUpdate(WanStatus(.publicIp, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //        }
       }
     }
@@ -162,7 +162,7 @@ extension SmartlinkListener {
     if _firstName != nil && _lastName != nil && _callsign != nil {
       // NOTE:
 //      Task {
-      _listenerModel.statusUpdate(WanStatus(.settings, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
+      ListenerModel.shared.statusUpdate(WanStatus(.settings, _firstName! + " " + _lastName!, _callsign!, _serial, _wanHandle, _publicIp))
 //      }
     }
   }
@@ -241,7 +241,7 @@ extension SmartlinkListener {
       // add packet to Packets
       let newPacket = packet
 
-      Task { await _listenerModel.process(newPacket) }
+      Task { await ListenerModel.shared.process(newPacket) }
 
       apiLog.debug("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)")
     }
@@ -283,7 +283,7 @@ extension SmartlinkListener {
       
       Task { [newResult = result] in
         await MainActor.run {
-          _listenerModel.smartlinkTestResult = newResult
+          ListenerModel.shared.smartlinkTestResult = newResult
         }
       }
     }

@@ -7,6 +7,10 @@
 
 import Foundation
 
+public protocol TcpProcessor: AnyObject {
+  func tcpProcessor(_ text: String , isInput: Bool)
+}
+
 /// UDP Stream handler protocol
 public protocol StreamHandler: AnyObject {
   /// Process a frame of Stream data

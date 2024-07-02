@@ -17,10 +17,12 @@ public struct PickerFeature {
 
   @ObservableState
   public struct State {
+    let listener: ListenerModel
     var isGui: Bool
     var defaultValue: String?
     
-    public init(isGui: Bool, defaultValue: String?) {
+    public init(listener: ListenerModel, isGui: Bool, defaultValue: String?) {
+      self.listener = listener
       self.isGui = isGui
       self.defaultValue = defaultValue
     }
@@ -44,7 +46,9 @@ public struct PickerFeature {
         return defaultButton(&state, selection)
 
       case let .testButtonTapped(selection):
-        return .run { _ in ListenerModel.shared.smartlinkTest(selection) }
+//        return .run { _ in ListenerModel.shared.smartlinkTest(selection) }
+        state.listener.smartlinkTest(selection)
+        return .none
       }
     }
   }

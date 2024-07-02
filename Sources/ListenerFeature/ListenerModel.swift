@@ -119,7 +119,7 @@ final public class ListenerModel: Equatable {
     _smartlinkListener?.stop()
     _smartlinkListener = nil
     
-    _smartlinkListener = SmartlinkListener(self)
+    _smartlinkListener = SmartlinkListener()
     let tokens = await _smartlinkListener!.start(Tokens(previousIdToken, refreshToken))
     if !tokens.idToken.isEmpty {
       apiLog.debug("Smartlink Listener: STARTED")
@@ -131,7 +131,7 @@ final public class ListenerModel: Equatable {
   }
   
   public func smartlinkStart(_ user: String, _ pwd: String) async -> Tokens {
-    _smartlinkListener = SmartlinkListener(self)
+    _smartlinkListener = SmartlinkListener()
     let tokens = await _smartlinkListener!.start(user: user, pwd: pwd)
     if !tokens.idToken.isEmpty {
       apiLog.debug("Smartlink Listener: Login SUCCESS")

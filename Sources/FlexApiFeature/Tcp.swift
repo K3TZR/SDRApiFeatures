@@ -10,7 +10,6 @@ import Foundation
 
 import SharedFeature
 
-
 // ----------------------------------------------------------------------------
 // MARK: - Public structs and enums
 
@@ -41,9 +40,9 @@ public struct TcpStatus: Identifiable, Equatable {
   public var reason: String?
 }
 
-public protocol TcpProcessor: AnyObject {
-  func tcpProcessor(_ text: String , isInput: Bool)
-}
+//public protocol TcpProcessor: AnyObject {
+//  func tcpProcessor(_ text: String , isInput: Bool)
+//}
 
 ///  Tcp Command Class implementation
 ///      manages all Tcp communication with a Radio
