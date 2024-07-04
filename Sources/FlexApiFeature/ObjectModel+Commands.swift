@@ -9,7 +9,7 @@ import Foundation
 
 import SharedFeature
 
-extension ApiModel {
+extension ObjectModel {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Request methods

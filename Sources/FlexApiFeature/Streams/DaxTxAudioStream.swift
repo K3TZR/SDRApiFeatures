@@ -159,7 +159,7 @@ public final class DaxTxAudioStream: Identifiable {
         
         if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
           Task { await  MainActor.run {
-            ApiModel.shared.sendUdp(vitaData)
+            ObjectModel.shared.sendUdp(vitaData)
           }}
         }
         // increment the sequence number (mod 16)
@@ -207,7 +207,7 @@ public final class DaxTxAudioStream: Identifiable {
         
         if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
           Task { await  MainActor.run {
-            ApiModel.shared.sendUdp(vitaData)
+            ObjectModel.shared.sendUdp(vitaData)
           }}
         }
         // increment the sequence number (mod 16)

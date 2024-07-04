@@ -46,7 +46,7 @@ struct RadioView: View {
 private struct RadioGridView: View {
   var radio: Radio
 
-  @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
 
   private let width: CGFloat = 150
 
@@ -58,7 +58,7 @@ private struct RadioGridView: View {
       }
       GridRow() {
         Text("Hardware Version")
-        Text("v" + (apiModel.hardwareVersion ?? ""))
+        Text("v" + (objectModel.hardwareVersion ?? ""))
         Text("Firmware Version")
         Text("v" + (radio.softwareVersion))
       }
@@ -166,7 +166,7 @@ private struct CalibrationGridView: View {
     SettingsCore()
   })
   
-  .environment(ApiModel.shared)
+//  .environment(ApiModel.shared)
   .environment(ObjectModel.shared)
 
   .frame(width: 600, height: 350)

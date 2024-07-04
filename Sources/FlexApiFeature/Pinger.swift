@@ -17,17 +17,17 @@ public final class Pinger {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(pingInterval: Int = 1, pingTimeout: Double = 10, _ apiModel: ApiModel) {
+  public init(pingInterval: Int = 1, pingTimeout: Double = 10, _ objectModel: ObjectModel) {
     _lastPingRxTime = Date(timeIntervalSinceNow: 0)
-    _apiModel = apiModel
+    _objectModel = objectModel
     startPinging(interval: pingInterval, timeout: pingTimeout)
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private var _apiModel: ApiModel
   private var _lastPingRxTime: Date!
+  private var _objectModel: ObjectModel
   private let _pingQ = DispatchQueue(label: "PingQ")
   private var _pingTimer: DispatchSourceTimer!
   
@@ -62,7 +62,7 @@ public final class Pinger {
         
       } else {
         Task { await MainActor.run {
-          _apiModel.sendTcp("ping", replyTo: self.pingReplyHandler)
+          _objectModel.sendTcp("ping", replyTo: self.pingReplyHandler)
         }}
       }
     })

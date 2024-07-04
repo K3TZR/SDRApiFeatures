@@ -111,7 +111,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
       
       if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: 0x00) { 
         Task { await  MainActor.run {
-          ApiModel.shared.sendUdp(vitaData)
+          ObjectModel.shared.sendUdp(vitaData)
         }}
       }
       // increment the sequence number (mod 16)

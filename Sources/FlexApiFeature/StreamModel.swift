@@ -230,7 +230,7 @@ final public actor StreamModel: StreamProcessor {
     daxAudioOutputs[channel]?.stop()
     if let streamId = daxAudioOutputs[channel]?.streamId {
       Task { await MainActor.run {
-        ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     daxAudioOutputs[channel] = nil
@@ -245,7 +245,7 @@ final public actor StreamModel: StreamProcessor {
     rxAudioOutput?.stop()
     if let streamId = rxAudioOutput?.streamId {
       Task { await MainActor.run {
-        ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     rxAudioOutput = nil

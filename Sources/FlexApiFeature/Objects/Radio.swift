@@ -349,7 +349,7 @@ public final class Radio {
     guard type == .cw || type == .voice || type == .digital else { return }
     parse([(type.rawValue, "")])
     parse([(property.rawValue, value)])
-    ApiModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
+    ObjectModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
   
   // ----------------------------------------------------------------------------
@@ -359,13 +359,13 @@ public final class Radio {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .multiflexEnabled, .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      ApiModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
+      ObjectModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      ApiModel.shared.sendTcp("radio \(property.rawValue) \(value)")
+      ObjectModel.shared.sendTcp("radio \(property.rawValue) \(value)")
     case .calibrate:
-      ApiModel.shared.sendTcp("radio pll_start")
+      ObjectModel.shared.sendTcp("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      ApiModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
+      ObjectModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       
