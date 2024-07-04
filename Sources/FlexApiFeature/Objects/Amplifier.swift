@@ -17,8 +17,9 @@ public final class Amplifier: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
   
   // ----------------------------------------------------------------------------
@@ -52,6 +53,7 @@ public final class Amplifier: Identifiable {
   // MARK: - Private properties
   
   public var _initialized = false
+  public let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -90,7 +92,7 @@ public final class Amplifier: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }

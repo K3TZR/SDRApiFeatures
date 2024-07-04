@@ -17,12 +17,10 @@ public struct PickerFeature {
 
   @ObservableState
   public struct State {
-    let listener: ListenerModel
     var isGui: Bool
     var defaultValue: String?
     
-    public init(listener: ListenerModel, isGui: Bool, defaultValue: String?) {
-      self.listener = listener
+    public init(isGui: Bool, defaultValue: String?) {
       self.isGui = isGui
       self.defaultValue = defaultValue
     }
@@ -31,7 +29,7 @@ public struct PickerFeature {
   public enum Action {
     case connectButtonTapped(String)
     case defaultButtonTapped(String)
-    case testButtonTapped(String)
+    case testButtonTapped(String, ListenerModel)
   }
   
   public var body: some ReducerOf<Self> {
@@ -45,9 +43,9 @@ public struct PickerFeature {
       case let .defaultButtonTapped(selection):
         return defaultButton(&state, selection)
 
-      case let .testButtonTapped(selection):
+      case let .testButtonTapped(selection, listenerModel):
 //        return .run { _ in ListenerModel.shared.smartlinkTest(selection) }
-        state.listener.smartlinkTest(selection)
+        listenerModel.smartlinkTest(selection)
         return .none
       }
     }

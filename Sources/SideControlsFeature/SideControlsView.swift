@@ -82,6 +82,7 @@ public struct ControlsView: View {
   ControlsView(store: Store(initialState: SideControlsFeature.State()) {
     SideControlsFeature()
   })
+  
   .environment(ApiModel.shared)
   
   .frame(width: 275)

@@ -10,7 +10,6 @@ import SwiftUI
 
 import SharedFeature
 
-
 @MainActor
 @Observable
 public final class Radio {
@@ -252,7 +251,7 @@ public final class Radio {
         case .enforcePrivateIpEnabled:  enforcePrivateIpEnabled = property.value.bValue             //
         case .freqErrorPpb:             freqErrorPpb = property.value.iValue                        //
         case .fullDuplexEnabled:        fullDuplexEnabled = property.value.bValue                   //
-//        case .frontSpeakerMute:         frontSpeakerMute = property.value.bValue
+        case .frontSpeakerMute:         frontSpeakerMute = property.value.bValue
         case .gateway:                  gateway = property.value
         case .gps:                      gpsPresent = (property.value != "Not Present")
         case .headphoneGain, .headphonegain:            headphoneGain = property.value.iValue       //
@@ -308,12 +307,12 @@ public final class Radio {
 //        case .staticIp:                 staticIp = property.value
 //        case .staticMask:               staticMask = property.value
           
-//        case .extPresent:               extPresent = property.value.bValue
-//        case .gpsdoPresent:             gpsdoPresent = property.value.bValue
+        case .extPresent:               extPresent = property.value.bValue
+        case .gpsdoPresent:             gpsdoPresent = property.value.bValue
         case .locked:                   locked = property.value.bValue
         case .setting:                  setting = property.value
         case .state:                    state = property.value
-//        case .tcxoPresent:              tcxoPresent = property.value.bValue
+        case .tcxoPresent:              tcxoPresent = property.value.bValue
           
         case .filterSharpness:          break
         case .staticNetParams:          break
@@ -327,8 +326,7 @@ public final class Radio {
         case .psocMbTrx:    psocMbtrxVersion = property.value
         case .psocMbPa100:  psocMbPa100Version = property.value
         case .fpgaMb:       fpgaMbVersion = property.value
-
-        default:  print("----->>>>> token received: \(token)")
+        default:            apiLog.warning("Radio: token not processed, \(property.key)")
         }
       }
     // is the Radio initialized?
@@ -339,27 +337,19 @@ public final class Radio {
     }
   }
   
-  
-  
-  
-  
-  
-  
-  
-  
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String = "") {
+  public func set(_ property: Property, _ value: String = "") {
     parse([(property.rawValue, value)])
     send(property, value)
   }
   
-  public func setFilterProperty(_ type: Property, _ property: Radio.Property, _ value: String) {
+  public func setFilter(_ type: Property, _ property: Radio.Property, _ value: String) {
     guard type == .cw || type == .voice || type == .digital else { return }
     parse([(type.rawValue, "")])
     parse([(property.rawValue, value)])
-    filterSend(type, property, value)
+    ApiModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
   
   // ----------------------------------------------------------------------------
@@ -369,13 +359,13 @@ public final class Radio {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .multiflexEnabled, .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      ObjectModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
+      ApiModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      ObjectModel.shared.sendTcp("radio \(property.rawValue) \(value)")
+      ApiModel.shared.sendTcp("radio \(property.rawValue) \(value)")
     case .calibrate:
-      ObjectModel.shared.sendTcp("radio pll_start")
+      ApiModel.shared.sendTcp("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      ObjectModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
+      ApiModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       
@@ -401,10 +391,6 @@ public final class Radio {
     case .antList, .micList, .uptime:
       break
     }
-  }
-
-  private func filterSend(_ type: Property, _ property: Property, _ value: String) {
-    ObjectModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

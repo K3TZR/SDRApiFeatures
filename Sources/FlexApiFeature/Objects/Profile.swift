@@ -18,8 +18,9 @@ public final class Profile: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) {
+  public init(_ id: String, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -41,7 +42,8 @@ public final class Profile: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -90,21 +92,21 @@ public final class Profile: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ cmd: String, _ profileName: String) {
+  public func set(_ cmd: String, _ profileName: String) {
     guard id == "mic" || id == "tx" || id == "global" else { return }
     
     switch cmd {
     case "delete":
-      ObjectModel.shared.sendTcp("profile \(id) delete \"\(profileName)\"")
+      _objectModel.sendTcp("profile \(id) delete \"\(profileName)\"")
       list.removeAll(where: { $0 == profileName })
     case "create":
       list.append(profileName)
-      ObjectModel.shared.sendTcp("profile \(id) " + "create \"\(profileName)\"")
+      _objectModel.sendTcp("profile \(id) " + "create \"\(profileName)\"")
     case "reset":
-      ObjectModel.shared.sendTcp("profile \(id) " + "reset \"\(profileName)\"")
+      _objectModel.sendTcp("profile \(id) " + "reset \"\(profileName)\"")
     default:
       current = profileName
-      ObjectModel.shared.sendTcp("profile \(id) " + "load \"\(profileName)\"")
+      _objectModel.sendTcp("profile \(id) " + "load \"\(profileName)\"")
     }
   }
 

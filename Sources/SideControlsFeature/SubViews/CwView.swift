@@ -51,7 +51,7 @@ private struct ButtonsView: View {
         Text("Speed")
         Toggle(isOn: Binding(
           get: { transmit.cwSidetoneEnabled },
-          set: { transmit.setProperty(.cwSidetoneEnabled, $0.as1or0) } )) {Text("Sidetone").frame(width: 55)}
+          set: { transmit.set(.cwSidetoneEnabled, $0.as1or0) } )) {Text("Sidetone").frame(width: 55)}
           .toggleStyle(.button)
         Text("Pan")
       }
@@ -67,19 +67,19 @@ private struct SlidersView: View {
     VStack(spacing: 8) {
       HStack(spacing: 10) {
         Text("\(transmit.cwBreakInDelay)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwBreakInDelay) }, set: { transmit.setProperty(.cwBreakInDelay, String(Int($0))) }), in: 30...2_000, step: 5)
+        Slider(value: Binding(get: { Double(transmit.cwBreakInDelay) }, set: { transmit.set(.cwBreakInDelay, String(Int($0))) }), in: 30...2_000, step: 5)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwSpeed)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwSpeed) }, set: { transmit.setProperty(.cwSpeed, String(Int($0))) }), in: 0...100, step: 1)
+        Slider(value: Binding(get: { Double(transmit.cwSpeed) }, set: { transmit.set(.cwSpeed, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwMonitorGain)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwMonitorGain) }, set: { transmit.setProperty(.cwMonitorGain, String(Int($0))) }), in: 0...100, step: 1)
+        Slider(value: Binding(get: { Double(transmit.cwMonitorGain) }, set: { transmit.set(.cwMonitorGain, String(Int($0))) }), in: 0...100, step: 1)
       }
       HStack(spacing: 10) {
         Text("\(transmit.cwMonitorPan)").frame(width: 35, alignment: .trailing)
-        Slider(value: Binding(get: { Double(transmit.cwMonitorPan) }, set: { transmit.setProperty(.cwMonitorPan, String(Int($0))) }), in: 0...100, step: 1)
+        Slider(value: Binding(get: { Double(transmit.cwMonitorPan) }, set: { transmit.set(.cwMonitorPan, String(Int($0))) }), in: 0...100, step: 1)
       }
     }
   }
@@ -94,23 +94,23 @@ struct BottomButtonsView: View {
       Group {
         Toggle(isOn: Binding(
           get: { transmit.cwBreakInEnabled },
-          set: { transmit.setProperty(.cwBreakInEnabled, $0.as1or0) } ))
+          set: { transmit.set(.cwBreakInEnabled, $0.as1or0) } ))
         {Text("BrkIn").frame(width: 45)}
         
         Toggle(isOn: Binding(
           get: { transmit.cwIambicEnabled },
-          set: { transmit.setProperty(.cwIambicEnabled, $0.as1or0) } ))
+          set: { transmit.set(.cwIambicEnabled, $0.as1or0) } ))
         {Text("Iambic").frame(width: 45)}
       }
       .toggleStyle(.button)
       
       Text("Pitch").frame(width: 35)
       
-      ApiIntView(value: transmit.cwPitch, action: { transmit.setProperty(.cwPitch, $0)}, width: 50)
+      ApiIntView(value: transmit.cwPitch, action: { transmit.set(.cwPitch, $0)}, width: 50)
       
       Stepper("", value: Binding(
         get: { transmit.cwPitch },
-        set: { transmit.setProperty(.cwPitch, String($0)) } ),
+        set: { transmit.set(.cwPitch, String($0)) } ),
               in: 100...6000,
               step: 50)
       .labelsHidden()
@@ -123,7 +123,8 @@ struct BottomButtonsView: View {
 
 #Preview {
   CwView()
-    .environment(ApiModel.shared)
+    
+    .environment(ObjectModel.shared)
     
     .frame(width: 275, height: 210)
 }

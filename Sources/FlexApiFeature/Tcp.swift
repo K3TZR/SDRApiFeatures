@@ -50,7 +50,8 @@ public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(timeout: Double = 0.5) {
+  public init(delegate: TcpProcessor, timeout: Double = 0.5) {
+    _delegate = delegate
     _timeout = timeout
     super.init()
     
@@ -69,6 +70,7 @@ public final class Tcp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
 
+  var _delegate: TcpProcessor
   var _isWan: Bool = false
   let _receiveQ = DispatchQueue(label: "TcpStream.receiveQ")
   var _socket: GCDAsyncSocket!
@@ -159,7 +161,7 @@ extension Tcp: GCDAsyncSocketDelegate {
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
     // remove the EOL
     if let text = String(data: data, encoding: .ascii)?.dropLast() {
-      ApiModel.shared.tcpProcessor( String(text), isInput: true )
+      _delegate.tcpProcessor( String(text), isInput: true )
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

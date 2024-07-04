@@ -18,8 +18,9 @@ public final class Panadapter: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -134,7 +135,8 @@ public final class Panadapter: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
   
   private static let dbmMax: CGFloat = 20
   private static let dbmMin: CGFloat = -180
@@ -202,7 +204,7 @@ public final class Panadapter: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     var adjustedValue = value
     
 //    if property == .rxAnt { adjustedValue = apiModel.stdAntennaName(value) }
@@ -226,7 +228,7 @@ public final class Panadapter: Identifiable {
     case segment
   }
   
-  public func setZoom(_ type: ZoomType) {
+  public func zoom(_ type: ZoomType) {
     
     switch type {
     case .band:
@@ -235,21 +237,21 @@ public final class Panadapter: Identifiable {
     case .minus:
       if bandwidth * 2 > maxBw {
         // TOO Wide, make the bandwidth maximum value
-        setProperty(.bandwidth, maxBw.hzToMhz)
+        set(.bandwidth, maxBw.hzToMhz)
         
       } else {
         // OK, make the bandwidth twice its current value
-        setProperty(.bandwidth, (bandwidth * 2).hzToMhz)
+        set(.bandwidth, (bandwidth * 2).hzToMhz)
       }
     
     case .plus:
       if bandwidth / 2 < minBw {
         // TOO Narrow, make the bandwidth minimum value
-        setProperty(.bandwidth, minBw.hzToMhz)
+        set(.bandwidth, minBw.hzToMhz)
         
       } else {
         // OK, make the bandwidth half its current value
-        setProperty(.bandwidth, (bandwidth / 2).hzToMhz)
+        set(.bandwidth, (bandwidth / 2).hzToMhz)
       }
       
     case .segment:
@@ -265,7 +267,7 @@ public final class Panadapter: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: Property, _ value: String) {
-    ObjectModel.shared.sendTcp("display pan set \(id.hex) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("display pan set \(id.hex) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

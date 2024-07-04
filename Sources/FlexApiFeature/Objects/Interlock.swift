@@ -17,7 +17,9 @@ public final class Interlock {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -99,7 +101,8 @@ public final class Interlock {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -151,7 +154,7 @@ public final class Interlock {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -160,7 +163,7 @@ public final class Interlock {
   // MARK: - Private Send methods
   
   public func send(_ property: Property, _ value: String) {
-    ObjectModel.shared.sendTcp("interlock \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("interlock \(property.rawValue)=\(value)")
   }
     
   /* ----- from FlexApi -----

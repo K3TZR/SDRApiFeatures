@@ -17,7 +17,9 @@ public final class Gps {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -55,6 +57,7 @@ public final class Gps {
   // MARK: - Private properties
   
   public var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods

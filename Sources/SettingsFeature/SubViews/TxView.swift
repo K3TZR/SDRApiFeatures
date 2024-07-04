@@ -27,7 +27,7 @@ struct TxView: View {
 //        Group {
 //          Spacer()
           TxGridView(interlock: objectModel.interlock,
-                     txProfile: objectModel.profiles[id: "tx"] ?? Profile("tx"),
+                     txProfile: objectModel.profiles[id: "tx"] ?? Profile("tx", ObjectModel.shared),
                      transmit: objectModel.transmit
           )
 //          Spacer()
@@ -64,7 +64,7 @@ private struct InterlocksGridView: View {
       GridRow() {
         Picker("RCA", selection: Binding(
           get: { interlockLevels[rcaSelection] },
-          set: { interlock.setProperty(.rcaTxReqEnabled, $0) } )) {
+          set: { interlock.set(.rcaTxReqEnabled, $0) } )) {
             ForEach(interlockLevels, id: \.self) {
               Text($0).tag($0)
             }
@@ -74,7 +74,7 @@ private struct InterlocksGridView: View {
 
         Picker("ACC", selection: Binding(
           get: { interlockLevels[accSelection]  },
-          set: { interlock.setProperty(.accTxReqEnabled, $0) } )) {
+          set: { interlock.set(.accTxReqEnabled, $0) } )) {
             ForEach(interlockLevels, id: \.self) {
               Text($0).tag($0)
             }
@@ -87,14 +87,14 @@ private struct InterlocksGridView: View {
         HStack {
           Toggle("RCA TX1", isOn: Binding(
             get: { interlock.tx1Enabled },
-            set: { interlock.setProperty(.tx1Enabled, $0.as1or0) } ))
+            set: { interlock.set(.tx1Enabled, $0.as1or0) } ))
 //          ApiIntView(hint: "tx1 delay", value: interlock.tx1Delay, action: { interlock.setProperty(.tx1Delay, $0) })
         }
         
         HStack {
           Toggle("ACC TX", isOn: Binding(
             get: { interlock.accTxEnabled },
-            set: { interlock.setProperty(.accTxEnabled, $0.as1or0) } ))
+            set: { interlock.set(.accTxEnabled, $0.as1or0) } ))
 //          ApiIntView(hint: "acc delay", value: interlock.accTxDelay, action: { interlock.setProperty(.accTxDelay, $0) })
         }
       }.frame(width: 180)
@@ -103,7 +103,7 @@ private struct InterlocksGridView: View {
         HStack {
           Toggle("RCA TX2", isOn: Binding(
             get: { interlock.tx2Enabled},
-            set: { interlock.setProperty(.tx2Enabled, $0.as1or0) } ))
+            set: { interlock.set(.tx2Enabled, $0.as1or0) } ))
 //          ApiIntView(hint: "tx2 delay", value: interlock.tx2Delay, action: { interlock.setProperty(.tx2Delay, $0) })
         }
         HStack {
@@ -116,12 +116,12 @@ private struct InterlocksGridView: View {
         HStack {
           Toggle("RCA TX3", isOn: Binding(
             get: { interlock.tx3Enabled},
-            set: { interlock.setProperty(.tx3Enabled, $0.as1or0) } ))
+            set: { interlock.set(.tx3Enabled, $0.as1or0) } ))
 //          ApiIntView(hint: "tx3 delay", value: interlock.tx3Delay, action: { interlock.setProperty(.tx3Delay, $0) } )
         }
         HStack {
           Text("Timeout (min)")
-//          ApiIntView(value: interlock.timeout, action: { interlock.setProperty(.timeout, $0) })
+//          ApiIntView(value: interlock.timeout, action: { interlock.set(.timeout, $0) })
         }
       }.frame(width: 180)
     }
@@ -139,16 +139,16 @@ private struct TxGridView: View {
       GridRow() {
         Toggle("TX Inhibit", isOn: Binding(
           get: { transmit.inhibit },
-          set: { transmit.setProperty(.inhibit, $0.as1or0) } ))
+          set: { transmit.set(.inhibit, $0.as1or0) } ))
         .toggleStyle(.checkbox)
         Toggle("TX in Waterfall", isOn: Binding(
           get: { transmit.txInWaterfallEnabled},
-          set: { transmit.setProperty(.txInWaterfallEnabled, $0.as1or0) } ))
+          set: { transmit.set(.txInWaterfallEnabled, $0.as1or0) } ))
         .toggleStyle(.checkbox)
         Text("Tx Profile")
         Picker("", selection: Binding(
           get: { txProfile.current},
-          set: { txProfile.setProperty("load", $0) })) {
+          set: { txProfile.set("load", $0) })) {
             ForEach(txProfile.list, id: \.self) {
               Text($0).tag($0)
             }
@@ -163,11 +163,11 @@ private struct TxGridView: View {
           Text("\(String(format: "%3d", transmit.maxPowerLevel))")
           Slider(value: Binding(
             get: { Double(transmit.maxPowerLevel) },
-            set: { transmit.setProperty(.maxPowerLevel, String(Int($0))) } ), in: 0...100, step: 1).frame(width: 150)
+            set: { transmit.set(.maxPowerLevel, String(Int($0))) } ), in: 0...100, step: 1).frame(width: 150)
         }.gridCellColumns(2)
         Toggle("Hardware ALC", isOn: Binding(
           get: { transmit.hwAlcEnabled},
-          set: { transmit.setProperty(.hwAlcEnabled, $0.as1or0) } ))
+          set: { transmit.set(.hwAlcEnabled, $0.as1or0) } ))
       }
     }
   }
@@ -177,7 +177,8 @@ private struct TxGridView: View {
   TxView(store: Store(initialState: SettingsCore.State()) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
+  
+  .environment(ObjectModel.shared)
   
   .frame(width: 600, height: 350)
   .padding()

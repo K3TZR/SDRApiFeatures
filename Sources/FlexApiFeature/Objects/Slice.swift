@@ -16,8 +16,9 @@ public final class Slice: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
 
     // set filterLow & filterHigh to default values
     setupDefaultFilters(mode)
@@ -127,7 +128,8 @@ public final class Slice: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -240,13 +242,13 @@ public final class Slice: Identifiable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ObjectModel.shared.sendTcp("slice remove " + " \(id)", replyTo: callback)
+    _objectModel.sendTcp("slice remove " + " \(id)", replyTo: callback)
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Slice.Property, _ value: String) {
+  public func set(_ property: Slice.Property, _ value: String) {
 //    var adjustedValue = value
     
 //    if property == .rxAnt { adjustedValue = apiModel.stdAntennaName(value) }
@@ -262,15 +264,15 @@ public final class Slice: Identifiable {
   private func send(_ property: Slice.Property, _ value: String) {
     switch property {
     case .filterLow, .filterHigh:
-      ObjectModel.shared.sendTcp("filt \(id) \(filterLow) \(filterHigh)")
+      _objectModel.sendTcp("filt \(id) \(filterLow) \(filterHigh)")
     case .frequency:
-      ObjectModel.shared.sendTcp("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
+      _objectModel.sendTcp("slice tune \(id) \(value) " + "autopan" + "=\(autoPan.as1or0)")
     case .locked:
-      ObjectModel.shared.sendTcp("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
+      _objectModel.sendTcp("slice \(value == "0" ? "unlock" : "lock" ) \(id)")
     case .audioGain, .audioLevel:
-      ObjectModel.shared.sendTcp("slice set \(id) audio_level=\(value)")
+      _objectModel.sendTcp("slice set \(id) audio_level=\(value)")
     default:
-      ObjectModel.shared.sendTcp("slice set \(id) \(property.rawValue)=\(value)")
+      _objectModel.sendTcp("slice set \(id) \(property.rawValue)=\(value)")
     }
   }
   

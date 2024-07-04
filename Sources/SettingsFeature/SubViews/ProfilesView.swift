@@ -44,13 +44,13 @@ private struct ProfileView: View {
         ControlGroup {
           Toggle("MIC", isOn: Binding(
             get: { profile.id == ProfileSelection.mic.rawValue},
-            set: {_,_ in profile.setProperty("load", "mic") } ))
+            set: {_,_ in profile.set("load", "mic") } ))
           Toggle("TX", isOn: Binding(
             get: { profile.id == ProfileSelection.tx.rawValue},
-            set: {_,_ in profile.setProperty("load", "tx") } ))
+            set: {_,_ in profile.set("load", "tx") } ))
           Toggle("GLOBAL", isOn: Binding(
             get: { profile.id == ProfileSelection.global.rawValue},
-            set: {_,_ in profile.setProperty("load", "global") } ))
+            set: {_,_ in profile.set("load", "global") } ))
         }
       }
       .font(.title)
@@ -64,11 +64,11 @@ private struct ProfileView: View {
       
       HStack {
         Spacer()
-        Button("New") { profile.setProperty("create", "A New Profile") }
+        Button("New") { profile.set("create", "A New Profile") }
         Group {
-          Button("Delete") { profile.setProperty("delete", selection!) }
-          Button("Reset") { profile.setProperty("reset", selection!) }
-          Button("Load") { profile.setProperty("load", selection!) }
+          Button("Delete") { profile.set("delete", selection!) }
+          Button("Reset") { profile.set("reset", selection!) }
+          Button("Load") { profile.set("load", selection!) }
         }.disabled(selection == nil)
         Spacer()
       }
@@ -83,7 +83,8 @@ private struct ProfileView: View {
   ProfilesView(store: Store(initialState: SettingsCore.State() ) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
+  
+  .environment(ObjectModel.shared)
   
   .frame(width: 600, height: 350)
   .padding()

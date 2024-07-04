@@ -17,8 +17,9 @@ public final class Waterfall: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -49,7 +50,8 @@ public final class Waterfall: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public types
@@ -125,7 +127,7 @@ public final class Waterfall: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Waterfall.Property, _ value: String) {
+  public func set(_ property: Waterfall.Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -134,7 +136,7 @@ public final class Waterfall: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: Waterfall.Property, _ value: String) {
-    ObjectModel.shared.sendTcp("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("display panafall set \(id.toHex()) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

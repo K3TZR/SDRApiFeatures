@@ -16,7 +16,9 @@ public final class Waveform {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -34,6 +36,7 @@ public final class Waveform {
   // MARK: - Private properties
   
   private var _initialized  = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods

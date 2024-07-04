@@ -19,7 +19,15 @@ final public class ObjectModel {
   // MARK: - Singleton
   
   public static var shared = ObjectModel()
-  private init() {}
+  private init() {
+    atu = Atu(self)
+    cwx = Cwx(self)
+    gps = Gps(self)
+    interlock = Interlock(self)
+    transmit = Transmit(self)
+    wan = Wan(self)
+    waveform = Waveform(self)
+  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -29,20 +37,17 @@ final public class ObjectModel {
   public var activeStation: String?
   public internal(set) var boundClientId: String?
   public internal(set) var clientInitialized = false
-//  public var testMode = false
   public var radio: Radio?
   
-//  public var apiModel: ApiModel?
-  
   // single objects
-  public var atu = Atu()
-  public var cwx = Cwx()
-  public var gps = Gps()
-  public var interlock = Interlock()
+  public var atu: Atu!
+  public var cwx: Cwx!
+  public var gps: Gps!
+  public var interlock: Interlock!
   public var remoteRxAudio: RemoteRxAudio?
-  public var transmit = Transmit()
-  public var wan = Wan()
-  public var waveform = Waveform()
+  public var transmit: Transmit!
+  public var wan: Wan!
+  public var waveform: Waveform!
 
   // collection objects
   public var amplifiers = IdentifiedArrayOf<Amplifier>()
@@ -188,7 +193,7 @@ final public class ObjectModel {
     let slices = slices.filter{ $0.panadapterId == panadapter.id }
     if slices.count == 1 {
       let roundedFrequency = clickFrequency - (clickFrequency % slices[0].step)
-      slices[0].setProperty(.frequency, roundedFrequency.hzToMhz)
+      slices[0].set(.frequency, roundedFrequency.hzToMhz)
       
     } else {
       let nearestSlice = slices.min{ a, b in
@@ -196,28 +201,13 @@ final public class ObjectModel {
       }
       if let nearestSlice {
         let roundedFrequency = clickFrequency - (clickFrequency % nearestSlice.step)
-        nearestSlice.setProperty(.frequency, roundedFrequency.hzToMhz)
+        nearestSlice.set(.frequency, roundedFrequency.hzToMhz)
       }
     }
   }
   
-  // ----- Tnf methods -----
-  
-  /// Remove a Tnf
-  /// - Parameters:
-  ///   _ id:                            a TnfId
-  ///   - callback:     ReplyHandler (optional)
-  public func removeTnf(_ id: UInt32, replyTo callback: ReplyHandler? = nil) {
-    sendTcp("tnf remove \(id)", replyTo: callback)
-    
-    // remove it immediately (Tnf does not send status on removal)
-    tnfs.remove(id: id)
-    apiLog.debug("ObjectModel: Tnf removed, id = \(id)")
-  }
-  
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
-  
   
   /// Remove all Radio objects
   func removeAllObjects() {
@@ -268,7 +258,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id) ) }
+        if amplifiers[id: id] == nil { amplifiers.append( Amplifier(id, self) ) }
         // parse the properties
         amplifiers[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -286,7 +276,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id) ) }
+        if bandSettings[id: id] == nil { bandSettings.append( BandSetting(id, self) ) }
         // parse the properties
         bandSettings[id: id]!.parse(Array(properties.dropFirst(1)) )
       } else {
@@ -344,7 +334,7 @@ final public class ObjectModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if equalizers[id: id] == nil { equalizers.append( Equalizer(id) ) }
+      if equalizers[id: id] == nil { equalizers.append( Equalizer(id, self) ) }
       // parse the properties
       equalizers[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -361,7 +351,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if memories[id: id] == nil { memories.append( Memory(id) ) }
+        if memories[id: id] == nil { memories.append( Memory(id, self) ) }
         // parse the properties
         memories[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -399,7 +389,7 @@ final public class ObjectModel {
         // parse the properties
         // YES, add it if not already present
         if panadapters[id: id] == nil {
-          panadapters.append( Panadapter(id) )
+          panadapters.append( Panadapter(id, self) )
         }
         panadapters[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -417,7 +407,7 @@ final public class ObjectModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if profiles[id: id] == nil { profiles.append( Profile(id) ) }
+      if profiles[id: id] == nil { profiles.append( Profile(id, self) ) }
       // parse the properties
       profiles[id: id]!.parse(statusMessage )
       
@@ -454,7 +444,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if slices[id: id] == nil { slices.append(Slice(id)) }
+        if slices[id: id] == nil { slices.append(Slice(id, self)) }
         // parse the properties
         slices[id: id]!.parse(Array(properties.dropFirst(1)) )
         //        if slices[id: id]!.active { activeSlice = slices[id: id] }
@@ -473,7 +463,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if tnfs[id: id] == nil { tnfs.append( Tnf(id) ) }
+        if tnfs[id: id] == nil { tnfs.append( Tnf(id, self) ) }
         // parse the properties
         tnfs[id: id]!.parse(Array(properties.dropFirst(1)) )
         
@@ -491,7 +481,7 @@ final public class ObjectModel {
     // is it in use?
     if inUse {
       // YES, add it if not already present
-      if usbCables[id: id] == nil { usbCables.append( UsbCable(id) ) }
+      if usbCables[id: id] == nil { usbCables.append( UsbCable(id, self) ) }
       // parse the properties
       usbCables[id: id]!.parse(Array(properties.dropFirst(1)) )
       
@@ -509,7 +499,7 @@ final public class ObjectModel {
       if inUse {
         // YES, add it if not already present
         if waterfalls[id: id] == nil {
-          waterfalls.append( Waterfall(id) )
+          waterfalls.append( Waterfall(id, self) )
         }
         // parse the properties
         waterfalls[id: id]!.parse(Array(properties.dropFirst(1)) )
@@ -528,7 +518,7 @@ final public class ObjectModel {
       // is it in use?
       if inUse {
         // YES, add it if not already present
-        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id) ) }
+        if xvtrs[id: id] == nil { xvtrs.append( Xvtr(id, self) ) }
         // parse the properties
         xvtrs[id: id]!.parse(Array(properties.dropFirst(1)) )
         

@@ -17,7 +17,9 @@ public final class Atu {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -53,7 +55,8 @@ public final class Atu {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -89,7 +92,7 @@ public final class Atu {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     guard property == .enabled || property == .memoriesEnabled else { return }
     parse([(property.rawValue, value)])
     send(property, value)
@@ -100,8 +103,8 @@ public final class Atu {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .enabled:            ObjectModel.shared.sendTcp("atu \(value == "1" ? "start": "bypass")")
-    case .memoriesEnabled:    ObjectModel.shared.sendTcp("atu set \(property.rawValue)=\(value)")
+    case .enabled:            _objectModel.sendTcp("atu \(value == "1" ? "start": "bypass")")
+    case .memoriesEnabled:    _objectModel.sendTcp("atu set \(property.rawValue)=\(value)")
     default:                  break
     }
   }

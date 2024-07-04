@@ -27,7 +27,7 @@ public struct FlagAntennaView: View {
         Text("Tx Antenna").frame(alignment: .leading)
         Picker("", selection: Binding(
           get: { slice.txAnt},
-          set: { slice.setProperty(.txAnt, $0) })) {
+          set: { slice.set(.txAnt, $0) })) {
             ForEach(slice.txAntList, id: \.self) {
               Text($0).tag($0)
             }
@@ -39,7 +39,7 @@ public struct FlagAntennaView: View {
         Text("Rx Antenna").frame(alignment: .leading)
         Picker("", selection: Binding(
           get: { slice.rxAnt},
-          set: { slice.setProperty(.rxAnt, $0) })) {
+          set: { slice.set(.rxAnt, $0) })) {
             ForEach(slice.rxAntList, id: \.self) {
               Text($0).tag($0)
             }
@@ -50,14 +50,14 @@ public struct FlagAntennaView: View {
         Spacer()
         Toggle("Loop A", isOn: Binding(
           get: { panadapter.loopAEnabled },
-          set: { panadapter.setProperty(.loopAEnabled, $0.as1or0 ) } ))
+          set: { panadapter.set(.loopAEnabled, $0.as1or0 ) } ))
         .toggleStyle(.button)
       }
       
       HStack {
         Text("Rf Gain")
         Text("\(panadapter.rfGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: Binding(get: { Double(panadapter.rfGain) }, set: { panadapter.setProperty(.rfGain, String(Int($0))) }), in: -10...20, step: 10)
+        Slider(value: Binding(get: { Double(panadapter.rfGain) }, set: { panadapter.set(.rfGain, String(Int($0))) }), in: -10...20, step: 10)
       }
     }
     .padding()
@@ -65,8 +65,9 @@ public struct FlagAntennaView: View {
 }
 
 #Preview {
-  FlagAntennaView(slice: Slice(1))
-    .environment(ApiModel.shared)
+  FlagAntennaView(slice: Slice(1, ObjectModel.shared))
+    
+    .environment(ObjectModel.shared)
   
     .frame(width: 200)
 }

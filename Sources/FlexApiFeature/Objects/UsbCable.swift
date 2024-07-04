@@ -17,8 +17,9 @@ public final class UsbCable: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) {
+  public init(_ id: String, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -83,7 +84,8 @@ public final class UsbCable: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -142,7 +144,7 @@ public final class UsbCable: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func usbCableSetAndSend(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -151,7 +153,7 @@ public final class UsbCable: Identifiable {
   // MARK: - Private Send methods
   
   private func send(_ property: UsbCable.Property, _ value: String) {
-    ObjectModel.shared.sendTcp("usb_cable set \(id) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("usb_cable set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

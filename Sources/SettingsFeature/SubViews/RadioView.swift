@@ -72,7 +72,7 @@ private struct RadioGridView: View {
         Text("Region")
         Picker("", selection: Binding(
           get: { radio.region },
-          set: { radio.setProperty(.region, $0) })) {
+          set: { radio.set(.region, $0) })) {
             ForEach(radio.regionList, id: \.self) {
               Text($0).tag($0)
             }
@@ -84,7 +84,7 @@ private struct RadioGridView: View {
         Text("Screen saver")
         Picker("", selection: Binding(
           get: { radio.radioScreenSaver },
-          set: { radio.setProperty(.screensaver, $0) })) {
+          set: { radio.set(.screensaver, $0) })) {
             ForEach(["Model","Name","Callsign"] , id: \.self) {
               Text($0).tag($0.lowercased())
             }
@@ -95,10 +95,10 @@ private struct RadioGridView: View {
       }
       GridRow() {
         Text("Callsign")
-//        ApiStringView(value: radio.callsign, action: { _ in radio.setProperty(.callsign, radio.callsign) })
+//        ApiStringView(value: radio.callsign, action: { _ in radio.set(.callsign, radio.callsign) })
 //
         Text("Radio Name")
-//        ApiStringView(value: radio.name, action: { _ in radio.setProperty(.name, radio.name) })
+//        ApiStringView(value: radio.name, action: { _ in radio.set(.name, radio.name) })
       }
     }
   }
@@ -114,22 +114,22 @@ private struct ButtonsGridView: View {
       GridRow() {
         Toggle("Remote On", isOn: Binding(
           get: { radio.remoteOnEnabled },
-          set: { radio.setProperty(.remoteOnEnabled, $0.as1or0) } ))
+          set: { radio.set(.remoteOnEnabled, $0.as1or0) } ))
         Toggle("Flex Control", isOn: Binding(
           get: { radio.flexControlEnabled },
-          set: { radio.setProperty(.flexControlEnabled, $0.as1or0) } ))
+          set: { radio.set(.flexControlEnabled, $0.as1or0) } ))
         Toggle("Mute audio (remote)", isOn: Binding(
           get: { radio.muteLocalAudio },
-          set: { radio.setProperty(.muteLocalAudio, $0.as1or0) } ))
+          set: { radio.set(.muteLocalAudio, $0.as1or0) } ))
         Toggle("Binaural audio", isOn: Binding(
           get: { radio.binauralRxEnabled },
-          set: { radio.setProperty(.binauralRxEnabled, $0.as1or0) } ))
+          set: { radio.set(.binauralRxEnabled, $0.as1or0) } ))
       }.frame(width: 150, alignment: .leading)
       
       GridRow() {
         Toggle("Snap to tune step", isOn: Binding(
           get: { radio.snapTuneEnabled},
-          set: { radio.setProperty(.snapTuneEnabled, $0.as1or0) } ))
+          set: { radio.set(.snapTuneEnabled, $0.as1or0) } ))
         Toggle("Single click tune", isOn: $store.singleClickTuneEnabled)
         .disabled(true)
         Toggle("Slices minimized", isOn: $store.sliceMinimizedEnabled)
@@ -152,10 +152,10 @@ private struct CalibrationGridView: View {
         Text("Frequency")
 //        ApiIntView(value: radio.calFreq, formatter: NumberFormatter.dotted, action: { stringFreq in radio.setProperty(.calFreq, stringFreq.toMhz) })
 
-        Button("Calibrate") { radio.setProperty(.calibrate, "") }
+        Button("Calibrate") { radio.set(.calibrate, "") }
         
         Text("Offset (ppb)")
-//        ApiIntView(value: radio.freqErrorPpb, action: { stringFreq in radio.setProperty(.freqErrorPpb, stringFreq) })
+//        ApiIntView(value: radio.freqErrorPpb, action: { stringFreq in radio.set(.freqErrorPpb, stringFreq) })
       }
     }
   }
@@ -165,8 +165,10 @@ private struct CalibrationGridView: View {
   RadioView(store: Store(initialState: SettingsCore.State() ) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
   
+  .environment(ApiModel.shared)
+  .environment(ObjectModel.shared)
+
   .frame(width: 600, height: 350)
   .padding()
 }

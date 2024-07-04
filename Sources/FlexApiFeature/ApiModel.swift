@@ -20,19 +20,17 @@ public final class ApiModel: TcpProcessor {
   // MARK: - Singleton
   
   public static var shared = ApiModel()
-  private init() {}
+  private init() {
+    _tcp = Tcp(delegate: self)
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
 
   public var activeSlice: Slice?
-//  public private(set) var activeStation: String?
-//  public var testMode = false
-  public var testDelegate: TcpProcessor?
-
-
   public internal(set) var connectionHandle: UInt32?
   public internal(set) var hardwareVersion: String?
+  public var testDelegate: TcpProcessor?
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
@@ -44,10 +42,9 @@ public final class ApiModel: TcpProcessor {
   private var _guiClientId: String?
   private var _pinger: Pinger?
   private var _replyDictionary = ReplyDictionary()
-  private var _wanHandle = ""
-
-  private var _tcp = Tcp()
+  private var _tcp: Tcp!
   private var _udp = Udp()
+  private var _wanHandle = ""
   
   // ----------------------------------------------------------------------------
   // MARK: - Public Connection methods
@@ -66,7 +63,6 @@ public final class ApiModel: TcpProcessor {
     
     if let packet, let station {
       Task { await MainActor.run {
-//        MessagesModel.shared.startTime = Date()
         ObjectModel.shared.activePacket = packet
         ObjectModel.shared.activeStation = station
       }}
@@ -76,7 +72,6 @@ public final class ApiModel: TcpProcessor {
         ObjectModel.shared.radio = Radio(packet, isGui)
         guard ObjectModel.shared.radio != nil else { throw ApiError.instantiation }
       }
-//      log("ApiModel: Radio instantiated for \(packet.nickname), \(packet.source)", .debug, #function, #file, #line)
       apiLog.debug("ApiModel: Radio instantiated \(packet.nickname), \(packet.source.rawValue)")
 
       guard connect(using: packet) else { throw ApiError.connection }
@@ -477,14 +472,14 @@ public final class ApiModel: TcpProcessor {
 // FIXME: Remove when no longer needed
 
 
-extension Thread {
-  public var threadName: String {
-    if isMainThread {
-      return "main"
-    } else if let threadName = Thread.current.name, !threadName.isEmpty {
-      return threadName
-    } else {
-      return description
-    }
-  }
-}
+//extension Thread {
+//  public var threadName: String {
+//    if isMainThread {
+//      return "main"
+//    } else if let threadName = Thread.current.name, !threadName.isEmpty {
+//      return threadName
+//    } else {
+//      return description
+//    }
+//  }
+//}

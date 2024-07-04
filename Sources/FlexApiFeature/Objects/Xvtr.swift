@@ -16,8 +16,9 @@ public final class Xvtr: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -60,6 +61,7 @@ public final class Xvtr: Identifiable {
   // MARK: - Private properties
   
   private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -115,9 +117,9 @@ public final class Xvtr: Identifiable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .create:     ObjectModel.shared.sendTcp("xvtr create")
-    case .remove:     ObjectModel.shared.sendTcp("xvtr remove \(id.hex)")
-    default:          ObjectModel.shared.sendTcp("xvtr set \(id.hex) \(property.rawValue)=\(value)")
+    case .create:     _objectModel.sendTcp("xvtr create")
+    case .remove:     _objectModel.sendTcp("xvtr remove \(id.hex)")
+    default:          _objectModel.sendTcp("xvtr set \(id.hex) \(property.rawValue)=\(value)")
     }
   }
   

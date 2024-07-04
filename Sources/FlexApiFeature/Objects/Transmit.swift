@@ -17,7 +17,9 @@ public final class Transmit {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -143,7 +145,8 @@ public final class Transmit {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -222,7 +225,7 @@ public final class Transmit {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Transmit.Property, _ value: String) {
+  public func set(_ property: Transmit.Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -241,21 +244,21 @@ public final class Transmit {
     
     switch property {
     case .mox:
-      ObjectModel.shared.sendTcp("xmit \(value)")
-      
+      _objectModel.sendTcp("xmit \(value)")
+
     case .cwBreakInEnabled, .cwBreakInDelay, .cwlEnabled, .cwIambicEnabled,
         .cwPitch, .cwSidetoneEnabled, .cwSyncCwxEnabled, .cwIambicMode,
         .cwSwapPaddles, .cwSpeed:
-      ObjectModel.shared.sendTcp("cw \(rawProperty) \(value)")
-      
+      _objectModel.sendTcp("cw \(rawProperty) \(value)")
+
     case .micBiasEnabled, .micBoostEnabled, .micSelection, .micAccEnabled:
-      ObjectModel.shared.sendTcp("mic \(rawProperty) \(value)")
-      
+      _objectModel.sendTcp("mic \(rawProperty) \(value)")
+
     case .tune:
-      ObjectModel.shared.sendTcp("transmit \(rawProperty) \(value)")
-      
+      _objectModel.sendTcp("transmit \(rawProperty) \(value)")
+
     default:
-      ObjectModel.shared.sendTcp("transmit set \(rawProperty)=\(value)")
+      _objectModel.sendTcp("transmit set \(rawProperty)=\(value)")
     }
   }
 

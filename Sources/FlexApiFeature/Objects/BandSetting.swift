@@ -17,10 +17,10 @@ public final class BandSetting: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
-
   // ------------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -59,6 +59,7 @@ public final class BandSetting: Identifiable {
   // MARK: - Private properties
   
   public var _initialized = false
+  public let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -101,7 +102,7 @@ public final class BandSetting: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(id, property, value)
   }
@@ -112,9 +113,9 @@ public final class BandSetting: Identifiable {
   private func send(_ id: UInt32, _ property: Property, _ value: String) {
     switch property {
     case .inhibit, .hwAlcEnabled, .rfPower, .tunePower:
-      ObjectModel.shared.sendTcp("transmit bandset \(id) \(property.rawValue)=\(value)")
+      _objectModel.sendTcp("transmit bandset \(id) \(property.rawValue)=\(value)")
     case .accTxEnabled, .accTxReqEnabled, .rcaTxReqEnabled, .tx1Enabled, .tx2Enabled, .tx3Enabled:
-      ObjectModel.shared.sendTcp("interlock bandset \(id) \(property.rawValue)=\(value)")
+      _objectModel.sendTcp("interlock bandset \(id) \(property.rawValue)=\(value)")
     case .name:
       break
     }

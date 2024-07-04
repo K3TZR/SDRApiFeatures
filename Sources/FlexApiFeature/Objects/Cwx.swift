@@ -22,7 +22,8 @@ public final class Cwx {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init() {
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
     macros = [String](repeating: "", count: kMaxNumberOfMacros)
   }
   
@@ -54,7 +55,8 @@ public final class Cwx {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -284,7 +286,7 @@ public final class Cwx {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Cwx.Property, _ value: String) {
+  public func set(_ property: Cwx.Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -293,7 +295,7 @@ public final class Cwx {
   // MARK: - Private Send methods
   
   private func send(_ property: Cwx.Property, _ value: String) {
-    ObjectModel.shared.sendTcp("cwx \(property.rawValue) \(value)")
+    _objectModel.sendTcp("cwx \(property.rawValue) \(value)")
   }
   
   /*

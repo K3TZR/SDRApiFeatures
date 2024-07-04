@@ -141,7 +141,7 @@ private struct Line1View: View {
         Text("TX")
           .font(.title3)
           .foregroundColor(slice.txEnabled ? .red : nil)
-          .onTapGesture { slice.setProperty(.txEnabled, (!slice.txEnabled).as1or0) }
+          .onTapGesture { slice.set(.txEnabled, (!slice.txEnabled).as1or0) }
         Text(slice.sliceLetter ?? "??")
           .font(.title3)
           .foregroundColor(slice.active ? sliceActive : sliceInactive)
@@ -160,13 +160,13 @@ private struct Line2View: View {
     HStack {
       Image(systemName: slice.locked ? "lock" : "lock.open")
         .onTapGesture {
-          slice.setProperty(.locked, (!slice.locked).as1or0)
+          slice.set(.locked, (!slice.locked).as1or0)
         }
       
       Group {
         Toggle(isOn: Binding(
           get: { slice.nbEnabled },
-          set: { slice.setProperty(.nbEnabled, ($0).as1or0) })) { Text("NB") }
+          set: { slice.set(.nbEnabled, ($0).as1or0) })) { Text("NB") }
         Toggle(isOn: Binding(
           get: { slice.nrEnabled },
           set: { slice.setProperty(.nrEnabled, ($0).as1or0) })) { Text("NR") }
@@ -292,7 +292,7 @@ private struct Line1SmallView: View {
             .onTapGesture {  } // FIXME:
           Text("TX")
             .foregroundColor(slice.txEnabled ? .red : nil)
-            .onTapGesture { slice.setProperty(.txEnabled, (!slice.txEnabled).as1or0) }
+            .onTapGesture { slice.set(.txEnabled, (!slice.txEnabled).as1or0) }
           Text("A")
             .foregroundColor(slice.active ? sliceActive : sliceInactive)
             .onTapGesture { smallFlag.toggle() }
@@ -309,13 +309,13 @@ private struct Line2SmallView: View {
     HStack {
       Image(systemName: slice.locked ? "lock" : "lock.open")
         .onTapGesture {
-          slice.setProperty(.locked, (!slice.locked).as1or0)
+          slice.set(.locked, (!slice.locked).as1or0)
         }
       
       ApiIntView(hint: "frequency",
                  value: slice.frequency,
                  formatter: NumberFormatter.dotted,
-                 action: { slice.setProperty(.frequency, $0.toMhz) },
+                 action: { slice.set(.frequency, $0.toMhz) },
                  isValid: { $0.isValidFrequency },
                  width: 90
       )
@@ -327,8 +327,10 @@ private struct Line2SmallView: View {
 // MARK: - Preview(s)
 
 #Preview {
-  FlagView(slice: Slice(1), isSliceFlag: false, smallFlag: .constant(false))
+  FlagView(slice: Slice(1, ObjectModel.shared), isSliceFlag: false, smallFlag: .constant(false))
+    
     .environment(ApiModel.shared)
-  
+    .environment(ObjectModel.shared)
+
     .frame(width: 275)
 }

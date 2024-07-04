@@ -10,7 +10,6 @@ import Foundation
 
 import SharedFeature
 
-
 @MainActor
 @Observable
 public final class Tnf: Identifiable, Equatable, Comparable {
@@ -25,8 +24,9 @@ public final class Tnf: Identifiable, Equatable, Comparable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
 
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -59,6 +59,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
   // MARK: - Private properties
   
   private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -92,26 +93,19 @@ public final class Tnf: Identifiable, Equatable, Comparable {
   }
   
   public func remove(callback: ReplyHandler? = nil) {
-    ObjectModel.shared.sendTcp("tnf remove " + " \(id)", replyTo: callback)
+    _objectModel.sendTcp("tnf remove " + " \(id)", replyTo: callback)
 
     // remove it immediately (Tnf does not send status on removal)
-    ObjectModel.shared.tnfs.remove(id: id)
+    _objectModel.tnfs.remove(id: id)
     apiLog.debug("Tnf, removed: id = \(self.id)")
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Tnf.Property, _ value: String) {
+  public func set(_ property: Tnf.Property, _ value: String) {
     parse([(property.rawValue, value)])
-    send(property, value)
-  }
- 
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Send methods
-  
-  private func send(_ property: Tnf.Property, _ value: String) {
-    ObjectModel.shared.sendTcp("tnf set \(id) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("tnf set \(id) \(property.rawValue)=\(value)")
   }
 
   /* ----- from FlexApi -----

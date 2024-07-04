@@ -64,14 +64,14 @@ private struct SliderView: View {
           Spacer()
           Text("+10dB")
         }
-        Slider(value: Binding(get: { Double(eq.hz63)}, set: { eq.setProperty(.hz63, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz125)}, set: { eq.setProperty(.hz125, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz250)}, set: { eq.setProperty(.hz250, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz500)}, set: { eq.setProperty(.hz500, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz1000)}, set: { eq.setProperty(.hz1000, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz2000)}, set: { eq.setProperty(.hz2000, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz4000)}, set: { eq.setProperty(.hz4000, String(Int($0))) }), in: -10...10, step: 1)
-        Slider(value: Binding(get: { Double(eq.hz8000)}, set: { eq.setProperty(.hz8000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz63)}, set: { eq.set(.hz63, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz125)}, set: { eq.set(.hz125, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz250)}, set: { eq.set(.hz250, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz500)}, set: { eq.set(.hz500, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz1000)}, set: { eq.set(.hz1000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz2000)}, set: { eq.set(.hz2000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz4000)}, set: { eq.set(.hz4000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(eq.hz8000)}, set: { eq.set(.hz8000, String(Int($0))) }), in: -10...10, step: 1)
       }
       VStack(alignment: .trailing, spacing: 12) {
         Group {
@@ -97,7 +97,7 @@ private struct FooterView: View {
   var body: some View {
     
     HStack(alignment: .center, spacing: 25) {
-      Toggle("Enabled", isOn: Binding(get: {eq.eqEnabled}, set: {eq.setProperty(.eqEnabled, $0.as1or0)}) )
+      Toggle("Enabled", isOn: Binding(get: {eq.eqEnabled}, set: {eq.set(.eqEnabled, $0.as1or0)}) )
       ControlGroup {
         Toggle("Rx", isOn: $store.rxEqualizerIsDisplayed)
         Toggle("Tx", isOn: $store.rxEqualizerIsDisplayed.not)
@@ -176,7 +176,8 @@ private struct DisabledFooterView: View {
   EqView(store: Store(initialState: SideControlsFeature.State()) {
     SideControlsFeature()
   })
-  .environment(ApiModel.shared)
+  
+  .environment(ObjectModel.shared)
   
   .frame(width: 275, height: 250)
   .padding()

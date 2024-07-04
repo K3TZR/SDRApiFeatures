@@ -97,7 +97,6 @@ public struct SettingsView: View {
   SettingsView(store: Store(initialState: SettingsCore.State() ) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
   
   .frame(width: 600, height: 390)
   .padding()

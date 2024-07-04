@@ -17,8 +17,9 @@ public final class Memory: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -79,7 +80,8 @@ public final class Memory: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -134,7 +136,7 @@ public final class Memory: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
@@ -144,11 +146,11 @@ public final class Memory: Identifiable {
   
   private func send(_ property: Property, _ value: String) {
     switch property {
-    case .apply, .remove:   ObjectModel.shared.sendTcp("memory \(property.rawValue) \(id)")
-    case .create:           ObjectModel.shared.sendTcp("memory create")
-    default:                ObjectModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
+    case .apply, .remove:   _objectModel.sendTcp("memory \(property.rawValue) \(id)")
+    case .create:           _objectModel.sendTcp("memory create")
+    default:                _objectModel.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
     }
-    ObjectModel.shared.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("memory set \(id) \(property.rawValue)=\(value)")
   }
   
   /* ----- from FlexApi -----

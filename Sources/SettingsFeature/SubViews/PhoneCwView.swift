@@ -60,13 +60,13 @@ private struct MicGridView: View {
       GridRow() {
         Toggle("Microphone bias", isOn: Binding(
           get: { transmit.micBiasEnabled },
-          set: { transmit.setProperty(.micBiasEnabled, $0.as1or0) } ))
+          set: { transmit.set(.micBiasEnabled, $0.as1or0) } ))
         Toggle("Mic level during receive", isOn: Binding(
           get: { transmit.meterInRxEnabled },
-          set: { transmit.setProperty(.meterInRxEnabled, $0.as1or0) } ))
+          set: { transmit.set(.meterInRxEnabled, $0.as1or0) } ))
         Toggle("+20 db Mic gain", isOn: Binding(
           get: { transmit.micBoostEnabled },
-          set: { transmit.setProperty(.micBoostEnabled, $0.as1or0) } ))
+          set: { transmit.set(.micBoostEnabled, $0.as1or0) } ))
       }
     }
   }
@@ -83,11 +83,11 @@ private struct CwGridView: View {
       GridRow() {
         Toggle("Iambic", isOn: Binding(
           get: { transmit.cwIambicEnabled },
-          set: { transmit.setProperty(.cwIambicEnabled, $0.as1or0) } ))
+          set: { transmit.set(.cwIambicEnabled, $0.as1or0) } ))
 
         Picker("", selection: Binding(
           get: { transmit.cwIambicMode ? "B" : "A"},
-          set: { transmit.setProperty(.cwIambicMode, ($0 == "B").as1or0) } )) {
+          set: { transmit.set(.cwIambicMode, ($0 == "B").as1or0) } )) {
             ForEach(iambicModes, id: \.self) {
               Text($0).tag($0)
             }
@@ -98,18 +98,18 @@ private struct CwGridView: View {
 
         Toggle("Swap dot / dash", isOn: Binding(
           get: { transmit.cwSwapPaddles },
-          set: { transmit.setProperty(.cwSwapPaddles, $0.as1or0) } ))
+          set: { transmit.set(.cwSwapPaddles, $0.as1or0) } ))
 
         Toggle("CWX sync", isOn: Binding(
           get: { transmit.cwSyncCwxEnabled },
-          set: { transmit.setProperty(.cwSyncCwxEnabled, $0.as1or0) } ))
+          set: { transmit.set(.cwSyncCwxEnabled, $0.as1or0) } ))
       }
 
       GridRow {
         Text("CW Sideband")
         Picker("", selection: Binding(
           get: { transmit.cwlEnabled ? "Lower" : "Upper" },
-          set: { transmit.setProperty(.cwlEnabled, ($0 == "Lower").as1or0) } )) {
+          set: { transmit.set(.cwlEnabled, ($0 == "Lower").as1or0) } )) {
             ForEach(cwSidebands, id: \.self) {
               Text($0).tag($0)
             }
@@ -132,30 +132,30 @@ private struct FiltersGridView: View {
         Text(radio.filterVoiceLevel, format: .number).frame(width: 20).multilineTextAlignment(.trailing)
         Slider(value: Binding(
           get: {  Double(radio.filterVoiceLevel) },
-          set: { radio.setFilterProperty(.voice, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
+          set: { radio.setFilter(.voice, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: Binding(
           get: { radio.filterVoiceAutoEnabled },
-          set: { radio.setFilterProperty(.voice, .autoLevel, $0.as1or0) }))
+          set: { radio.setFilter(.voice, .autoLevel, $0.as1or0) }))
       }
       GridRow() {
         Text("CW")
         Text(radio.filterCwLevel, format: .number).frame(width: 20).multilineTextAlignment(.trailing)
         Slider(value: Binding(
           get: { Double(radio.filterCwLevel) },
-          set: { radio.setFilterProperty(.cw, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
+          set: { radio.setFilter(.cw, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: Binding(
           get: { radio.filterCwAutoEnabled },
-          set: { radio.setFilterProperty(.cw, .autoLevel, $0.as1or0) }))
+          set: { radio.setFilter(.cw, .autoLevel, $0.as1or0) }))
       }
       GridRow() {
         Text("Digital")
         Text(radio.filterDigitalLevel, format: .number).frame(width: 20).multilineTextAlignment(.trailing)
         Slider(value: Binding(
           get: { Double(radio.filterDigitalLevel) },
-          set: { radio.setFilterProperty(.digital, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
+          set: { radio.setFilter(.digital, .level, String(Int($0))) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: Binding(
           get: { radio.filterDigitalAutoEnabled },
-          set: { radio.setFilterProperty(.digital, .autoLevel, $0.as1or0) }))
+          set: { radio.setFilter(.digital, .autoLevel, $0.as1or0) }))
       }
     }
   }
@@ -168,7 +168,7 @@ private struct RttyGridView: View {
     Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
       GridRow() {
         Text("RTTY Mark default").frame(width: 115, alignment: .leading)
-//        ApiIntView(value: radio.rttyMark, action: { _ in radio.setProperty(.rttyMark, String(radio.rttyMark)) } )
+//        ApiIntView(value: radio.rttyMark, action: { _ in radio.set(.rttyMark, String(radio.rttyMark)) } )
       }
     }
   }
@@ -178,7 +178,8 @@ private struct RttyGridView: View {
   PhoneCwView(store: Store(initialState: SettingsCore.State()) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
+  
+  .environment(ObjectModel.shared)
   
   .frame(width: 600, height: 350)
   .padding()

@@ -81,7 +81,7 @@ private struct CurrentAddressView: View {
       
       Toggle("Enforce Private IP", isOn: Binding(
         get: { radio.enforcePrivateIpEnabled },
-        set: { radio.setProperty(.enforcePrivateIpEnabled, $0.as1or0) } ))
+        set: { radio.set(.enforcePrivateIpEnabled, $0.as1or0) } ))
       .gridCellColumns(2)
     }
   }
@@ -117,7 +117,8 @@ private struct StaticAddressView: View {
   NetworkView(store: Store(initialState: SettingsCore.State()) {
     SettingsCore()
   })
-  .environment(ApiModel.shared)
+  
+  .environment(ObjectModel.shared)
   
   .frame(width: 600, height: 350)
   .padding()

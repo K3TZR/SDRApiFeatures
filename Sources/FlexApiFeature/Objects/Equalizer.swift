@@ -10,15 +10,15 @@ import Foundation
 
 import SharedFeature
 
-
 @MainActor
 @Observable
 public final class Equalizer: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: String) {
+  public init(_ id: String, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
 
   // ----------------------------------------------------------------------------
@@ -72,7 +72,8 @@ public final class Equalizer: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  public var _initialized = false
+  private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
@@ -114,20 +115,20 @@ public final class Equalizer: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public set property methods
   
-  public func setProperty(_ property: Property, _ value: String) {
+  public func set(_ property: Property, _ value: String) {
     parse([(property.rawValue, value)])
     send(property, value)
   }
   
   public func flat() {
-    setProperty(.hz63, "0")
-    setProperty(.hz125, "0")
-    setProperty(.hz250, "0")
-    setProperty(.hz500, "0")
-    setProperty(.hz1000, "0")
-    setProperty(.hz2000, "0")
-    setProperty(.hz4000, "0")
-    setProperty(.hz8000, "0")
+    set(.hz63, "0")
+    set(.hz125, "0")
+    set(.hz250, "0")
+    set(.hz500, "0")
+    set(.hz1000, "0")
+    set(.hz2000, "0")
+    set(.hz4000, "0")
+    set(.hz8000, "0")
   }
 
   // ----------------------------------------------------------------------------
@@ -141,7 +142,7 @@ public final class Equalizer: Identifiable {
       // YES
       rawProperty = altValue
     }
-    ObjectModel.shared.sendTcp("eq \(id) \(rawProperty)=\(value)")
+    _objectModel.sendTcp("eq \(id) \(rawProperty)=\(value)")
   }
 
   /* ----- from FlexApi -----
