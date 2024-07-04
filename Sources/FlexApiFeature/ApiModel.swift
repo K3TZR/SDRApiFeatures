@@ -13,7 +13,7 @@ import ListenerFeature
 import SharedFeature
 import VitaFeature
 
-
+@MainActor
 @Observable
 public final class ApiModel: TcpProcessor {
   // ----------------------------------------------------------------------------
@@ -59,13 +59,15 @@ public final class ApiModel: TcpProcessor {
   ///   - mtuValue: max transport unit
   ///   - lowBandwidthDax: true = use low bw DAX
   ///   - lowBandwidthConnect: true = minimize connection bandwidth
-  public func connect(packet: Packet?, station: String?, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false) async throws {
+  public func connect(packet: Packet?, station: String?, isGui: Bool, disconnectHandle: UInt32?, programName: String, mtuValue: Int, lowBandwidthDax: Bool = false, lowBandwidthConnect: Bool = false, testDelegate: TcpProcessor? = nil) async throws {
+    
+    self.testDelegate = testDelegate
     
     if let packet, let station {
-      Task { await MainActor.run {
+//      Task { await MainActor.run {
         ObjectModel.shared.activePacket = packet
         ObjectModel.shared.activeStation = station
-      }}
+//      }}
       
       // Instantiate a Radio
       try await MainActor.run{
@@ -168,13 +170,13 @@ public final class ApiModel: TcpProcessor {
     
     _tcp.disconnect()
     
-    Task { await MainActor.run {
+//    Task { await MainActor.run {
       ObjectModel.shared.activePacket = nil
       ObjectModel.shared.activeStation = nil
-    }
-    }
+//    }
+//    }
+    ObjectModel.shared.removeAllObjects()
     Task {
-      await ObjectModel.shared.removeAllObjects()
       await _replyDictionary.removeAll()
     }
     apiLog.debug("ApiModel: Disconnect, Objects removed")
@@ -399,7 +401,8 @@ public final class ApiModel: TcpProcessor {
      let properties = keyValues
 
     // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-    Task { await ObjectModel.shared.radio?.parse(properties) }
+//    Task { await ObjectModel.shared.radio?.parse(properties) }
+    ObjectModel.shared.radio?.parse(properties)
   }
 
   private func ipReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
@@ -464,7 +467,8 @@ public final class ApiModel: TcpProcessor {
     }
 
     // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-    Task { await ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle) }
+//    Task { await ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle) }
+    ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle)
   }
 }
 

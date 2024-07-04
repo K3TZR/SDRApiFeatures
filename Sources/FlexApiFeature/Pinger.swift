@@ -61,9 +61,11 @@ public final class Pinger {
         stopPinging()
         
       } else {
-        _apiModel.sendTcp("ping", replyTo: self.pingReplyHandler) }
+        Task { await MainActor.run {
+          _apiModel.sendTcp("ping", replyTo: self.pingReplyHandler)
+        }}
       }
-    )
+    })
     // start the timer
     _pingTimer.resume()
   }

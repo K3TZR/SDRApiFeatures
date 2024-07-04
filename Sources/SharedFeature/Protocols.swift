@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol TcpProcessor: AnyObject {
-  func tcpProcessor(_ text: String , isInput: Bool)
+  @MainActor func tcpProcessor(_ text: String , isInput: Bool)
 }
 
 /// UDP Stream handler protocol

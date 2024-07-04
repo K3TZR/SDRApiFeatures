@@ -229,7 +229,9 @@ final public actor StreamModel: StreamProcessor {
   public func daxRxAudioStop(_ channel: Int)  {
     daxAudioOutputs[channel]?.stop()
     if let streamId = daxAudioOutputs[channel]?.streamId {
-      ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+      Task { await MainActor.run {
+        ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+      }}
     }
     daxAudioOutputs[channel] = nil
   }
@@ -242,7 +244,9 @@ final public actor StreamModel: StreamProcessor {
   public func remoteRxAudioStop()  {
     rxAudioOutput?.stop()
     if let streamId = rxAudioOutput?.streamId {
-      ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+      Task { await MainActor.run {
+        ApiModel.shared.sendTcp("stream remove \(streamId.hex)")
+      }}
     }
     rxAudioOutput = nil
   }

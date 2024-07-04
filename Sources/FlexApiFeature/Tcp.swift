@@ -161,7 +161,9 @@ extension Tcp: GCDAsyncSocketDelegate {
   public func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
     // remove the EOL
     if let text = String(data: data, encoding: .ascii)?.dropLast() {
-      _delegate.tcpProcessor( String(text), isInput: true )
+      Task {
+        await _delegate.tcpProcessor( String(text), isInput: true )
+      }
     }
     // trigger the next read
     _socket.readData(to: GCDAsyncSocket.lfData(), withTimeout: -1, tag: 0)

@@ -157,8 +157,11 @@ public final class DaxTxAudioStream: Identifiable {
         
         // FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { ApiModel.shared.sendUdp(vitaData ) }
-        
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
+          Task { await  MainActor.run {
+            ApiModel.shared.sendUdp(vitaData)
+          }}
+        }
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16
         
@@ -202,8 +205,11 @@ public final class DaxTxAudioStream: Identifiable {
         
 //         FIXME: need sequence number ???
         
-        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) { ApiModel.shared.sendUdp(vitaData ) }
-        
+        if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
+          Task { await  MainActor.run {
+            ApiModel.shared.sendUdp(vitaData)
+          }}
+        }
         // increment the sequence number (mod 16)
         _txSequenceNumber = (_txSequenceNumber + 1) % 16
         
@@ -223,7 +229,7 @@ public final class DaxTxAudioStream: Identifiable {
   ///   - id:         a DaxTxAudioStream Id
   ///   - property:   an DaxTxAudioStream Token
   ///   - value:      the new value
-  public static func setProperty(radio: Radio, _ id: UInt32, property: Property, value: Any) {
+  public static func set(radio: Radio, _ id: UInt32, property: Property, value: Any) {
     // FIXME: add commands
   }
 
