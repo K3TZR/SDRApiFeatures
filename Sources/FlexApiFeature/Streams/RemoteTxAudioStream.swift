@@ -21,7 +21,10 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id }
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
+    self.id = id
+    _objectModel = objectModel
+  }
   
   // ------------------------------------------------------------------------------
   // MARK: - Public properties
@@ -45,6 +48,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
   // MARK: - Private properties
   
   private var _initialized = false
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Instance methods
@@ -111,7 +115,7 @@ public final class RemoteTxAudioStream: Identifiable, AudioStreamHandler {
       
       if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: 0x00) { 
         Task { await  MainActor.run {
-          ObjectModel.shared.sendUdp(vitaData)
+          _objectModel.sendUdp(vitaData)
         }}
       }
       // increment the sequence number (mod 16)

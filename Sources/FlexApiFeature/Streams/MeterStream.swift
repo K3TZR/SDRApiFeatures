@@ -20,8 +20,9 @@ public final class MeterStream: Identifiable, StreamProcessor{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
     apiLog.debug("MeterStream \(id.hex) ADDED")
   }
   
@@ -29,6 +30,11 @@ public final class MeterStream: Identifiable, StreamProcessor{
   // MARK: - Public properties
   
   public let id: UInt32
+  
+  // ------------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private let _objectModel: ObjectModel
 
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -73,7 +79,7 @@ public final class MeterStream: Identifiable, StreamProcessor{
           // find the meter (if present) & update it
           // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
           Task {
-            if let meter = await ObjectModel.shared.meters[id: id] {
+            if let meter = await _objectModel.meters[id: id] {
               //          meter.streamHandler( value)
               let newValue = Int16(bitPattern: value)
               let previousValue = await meter.value
@@ -95,7 +101,7 @@ public final class MeterStream: Identifiable, StreamProcessor{
               // did it change?
               if adjNewValue != previousValue {
                 let value = adjNewValue
-                await ObjectModel.shared.meters[id: id]?.setValue(value)
+                await _objectModel.meters[id: id]?.setValue(value)
               }
             }
           }

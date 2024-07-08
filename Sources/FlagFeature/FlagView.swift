@@ -330,7 +330,7 @@ private struct Line2SmallView: View {
   FlagView(slice: Slice(1, ObjectModel.shared), isSliceFlag: false, smallFlag: .constant(false))
     
     .environment(ApiModel.shared)
-    .environment(ObjectModel.shared)
+    .environment(ObjectModel())
 
     .frame(width: 275)
 }

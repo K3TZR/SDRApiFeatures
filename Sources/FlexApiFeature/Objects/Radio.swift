@@ -16,9 +16,10 @@ public final class Radio {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization & Dependencies
   
-  public init(_ packet: Packet, _ isGui: Bool = true) {
+  public init(_ packet: Packet, _ isGui: Bool = true, _ objectModel: ObjectModel) {
     self.packet = packet
     self.isGui = isGui
+    _objectModel = objectModel
   }
   
   // ----------------------------------------------------------------------------
@@ -217,6 +218,7 @@ public final class Radio {
   private var _cw = false
   private var _digital = false
   private var _initialized = false
+  private let _objectModel: ObjectModel
   private var _voice = false
 
   // ----------------------------------------------------------------------------
@@ -349,7 +351,7 @@ public final class Radio {
     guard type == .cw || type == .voice || type == .digital else { return }
     parse([(type.rawValue, "")])
     parse([(property.rawValue, value)])
-    ObjectModel.shared.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
+    _objectModel.sendTcp("radio filter_sharpness \(type.rawValue) \(property.rawValue)=\(value)")
   }
   
   // ----------------------------------------------------------------------------
@@ -359,13 +361,13 @@ public final class Radio {
     switch property {
     case .binauralRxEnabled, .calFreq, .enforcePrivateIpEnabled, .freqErrorPpb, .fullDuplexEnabled,
         .multiflexEnabled, .muteLocalAudio, .remoteOnEnabled, .rttyMark, .snapTuneEnabled, .tnfsEnabled:
-      ObjectModel.shared.sendTcp("radio set \(property.rawValue)=\(value)")
+      _objectModel.sendTcp("radio set \(property.rawValue)=\(value)")
     case .backlight, .callsign, .gps, .name, .reboot, .screensaver:
-      ObjectModel.shared.sendTcp("radio \(property.rawValue) \(value)")
+      _objectModel.sendTcp("radio \(property.rawValue) \(value)")
     case .calibrate:
-      ObjectModel.shared.sendTcp("radio pll_start")
+      _objectModel.sendTcp("radio pll_start")
     case .lineoutgain, .lineoutmute, .headphonegain, .headphonemute:
-      ObjectModel.shared.sendTcp("mixer \(property.rawValue) \(value)")
+      _objectModel.sendTcp("mixer \(property.rawValue) \(value)")
     case .addressType:
       break   // FIXME:
       

@@ -84,7 +84,7 @@ private struct ProfileView: View {
     SettingsCore()
   })
   
-  .environment(ObjectModel.shared)
+  .environment(ObjectModel())
   
   .frame(width: 600, height: 350)
   .padding()

@@ -23,8 +23,9 @@ public final class RemoteRxAudio: Identifiable {
   // ------------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) {
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
     self.id = id
+    _objectModel = objectModel
   }
   
   // ----------------------------------------------------------------------------
@@ -36,6 +37,11 @@ public final class RemoteRxAudio: Identifiable {
   public var compression = ""
   public var ip = ""
 
+  
+  public var rxAudioOutput: RxAudioPlayer?
+
+  
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -54,6 +60,7 @@ public final class RemoteRxAudio: Identifiable {
   // MARK: - Private properties
   
   private var _initialized = false
+  private let _objectModel: ObjectModel
   private var _rxLostPacketCount = 0
   private var _rxPacketCount = 0
   private var _rxSequenceNumber = -1
@@ -86,5 +93,29 @@ public final class RemoteRxAudio: Identifiable {
       _initialized = true
       apiLog.debug("RemoteRxAudio \(self.id.hex) ADDED: compression = \(self.compression), handle = \(self.clientHandle.hex)")
     }
+  }
+  
+//  public func replyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+//    if let streamId = reply.streamId {
+//      rxAudioOutput = RxAudioPlayer(streamId)
+//      rxAudioOutput?.start()
+//    }
+//  }
+
+  
+  
+  public func start(_ streamId: UInt32)  {
+    rxAudioOutput = RxAudioPlayer(streamId)
+    rxAudioOutput?.start()
+  }
+  
+  public func stop()  {
+    rxAudioOutput?.stop()
+    if let streamId = rxAudioOutput?.streamId {
+      Task { await MainActor.run {
+        _objectModel.sendTcp("stream remove \(streamId.hex)")
+      }}
+    }
+    rxAudioOutput = nil
   }
 }

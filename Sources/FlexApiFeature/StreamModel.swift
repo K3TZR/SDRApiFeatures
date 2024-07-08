@@ -65,9 +65,12 @@ final public actor StreamModel: StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
-  public static var shared = StreamModel()
-  private init() {}
-  
+//  public static var shared = StreamModel()
+//  private init() {}
+  public init(_ objectModel: ObjectModel) {
+    _objectModel = objectModel
+  }
+
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -87,6 +90,11 @@ final public actor StreamModel: StreamProcessor {
   public var rxAudioOutput: RxAudioPlayer?
   public var daxAudioOutputs: [DaxAudioPlayer?] = Array(repeating: nil, count: 5)
 
+  // ----------------------------------------------------------------------------
+  // MARK: - Private properties
+  
+  private let _objectModel: ObjectModel
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
@@ -120,12 +128,12 @@ final public actor StreamModel: StreamProcessor {
 //      }
       
     case .meter:
-      if meterStream == nil { meterStream = MeterStream(vita.streamId) }
+      if meterStream == nil { meterStream = MeterStream(vita.streamId, _objectModel) }
       meterStream?.streamProcessor(vita)
       
     case .opus:
-      rxAudioOutput?.audioProcessor(vita)
-//      print("count ", vita.payloadData.count)
+//      _objectModel.rxAudioOutput?.audioProcessor(vita)
+      print("count ", vita.payloadData.count)
       
     default:
 //      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
@@ -230,7 +238,7 @@ final public actor StreamModel: StreamProcessor {
     daxAudioOutputs[channel]?.stop()
     if let streamId = daxAudioOutputs[channel]?.streamId {
       Task { await MainActor.run {
-        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
+        _objectModel.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     daxAudioOutputs[channel] = nil
@@ -245,7 +253,7 @@ final public actor StreamModel: StreamProcessor {
     rxAudioOutput?.stop()
     if let streamId = rxAudioOutput?.streamId {
       Task { await MainActor.run {
-        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
+        _objectModel.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     rxAudioOutput = nil

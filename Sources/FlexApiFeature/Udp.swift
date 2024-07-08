@@ -45,10 +45,10 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(receivePort: UInt16 = 4991) {
+  public init(delegate: StreamProcessor, receivePort: UInt16 = 4991) {
+    _delegate = delegate
     self._receivePort = receivePort
     
-    _streamModel = StreamModel.shared
     super.init()
     
     // get an IPV4 socket
@@ -68,7 +68,7 @@ public final class Udp: NSObject {
 
   private var _statusStream: (UdpStatus) -> Void = { _ in }
   
-  private var _streamModel: StreamModel
+  private var _delegate: StreamProcessor
   
   // ----------------------------------------------------------------------------
   // MARK: - Internal properties
@@ -206,7 +206,7 @@ extension Udp: GCDAsyncUdpSocketDelegate {
   public func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
     if let vita = Vita.decode(from: data) {
       Task {
-        await _streamModel.streamProcessor(vita)
+        await _delegate.streamProcessor(vita)
       }
     }
   }

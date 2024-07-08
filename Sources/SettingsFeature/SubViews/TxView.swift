@@ -27,7 +27,7 @@ struct TxView: View {
 //        Group {
 //          Spacer()
           TxGridView(interlock: objectModel.interlock,
-                     txProfile: objectModel.profiles[id: "tx"] ?? Profile("tx", ObjectModel.shared),
+                     txProfile: objectModel.profiles[id: "tx"] ?? Profile("tx", ObjectModel()),
                      transmit: objectModel.transmit
           )
 //          Spacer()
@@ -178,7 +178,7 @@ private struct TxGridView: View {
     SettingsCore()
   })
   
-  .environment(ObjectModel.shared)
+  .environment(ObjectModel())
   
   .frame(width: 600, height: 350)
   .padding()

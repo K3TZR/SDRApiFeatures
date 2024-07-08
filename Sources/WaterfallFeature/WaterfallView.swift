@@ -76,7 +76,7 @@ private struct MetalView: NSViewRepresentable {
 #Preview {
   WaterfallView(panadapter: Panadapter(0x49999990), leftWidth: 0)
     
-    .environment(ObjectModel.shared)
+    .environment(ObjectModel())
   
     .frame(width:800, height: 600)
 }

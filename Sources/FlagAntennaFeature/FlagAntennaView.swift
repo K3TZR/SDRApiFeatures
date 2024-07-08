@@ -67,7 +67,7 @@ public struct FlagAntennaView: View {
 #Preview {
   FlagAntennaView(slice: Slice(1, ObjectModel.shared))
     
-    .environment(ObjectModel.shared)
+    .environment(ObjectModel())
   
     .frame(width: 200)
 }

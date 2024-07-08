@@ -22,7 +22,10 @@ public final class DaxTxAudioStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32) { self.id = id  }
+  public init(_ id: UInt32, _ objectModel: ObjectModel) {
+    self.id = id
+    _objectModel = objectModel
+  }
   
   // ------------------------------------------------------------------------------
   // MARK: - Public properties
@@ -60,6 +63,7 @@ public final class DaxTxAudioStream: Identifiable {
   // MARK: - Private properties
   
   private var _initialized = false
+  private let _objectModel: ObjectModel
   private var _txSequenceNumber: UInt8 = 0
   private var _vita: Vita?
 
@@ -159,7 +163,7 @@ public final class DaxTxAudioStream: Identifiable {
         
         if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
           Task { await  MainActor.run {
-            ObjectModel.shared.sendUdp(vitaData)
+            _objectModel.sendUdp(vitaData)
           }}
         }
         // increment the sequence number (mod 16)
@@ -207,7 +211,7 @@ public final class DaxTxAudioStream: Identifiable {
         
         if let vitaData = Vita.encodeAsData(_vita!, sequenceNumber: _txSequenceNumber) {
           Task { await  MainActor.run {
-            ObjectModel.shared.sendUdp(vitaData)
+            _objectModel.sendUdp(vitaData)
           }}
         }
         // increment the sequence number (mod 16)

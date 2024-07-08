@@ -18,9 +18,11 @@ final public class ObjectModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
-  public static var shared = ObjectModel()
-  private init() {
+//  public static var shared = ObjectModel()
+//  private init() {
+  public init() {
     _tcp = Tcp(delegate: self)
+    _udp = Udp(delegate: StreamModel(self) )
     atu = Atu(self)
     cwx = Cwx(self)
     gps = Gps(self)
@@ -33,14 +35,14 @@ final public class ObjectModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
     
-  public var activePacket: Packet?
-  public var activeSlice: Slice?
-  public var activeStation: String?
+  public internal(set) var activePacket: Packet?
+  public internal(set) var activeSlice: Slice?
+  public internal(set) var activeStation: String?
   public internal(set) var boundClientId: String?
   public internal(set) var clientInitialized = false
   public internal(set) var connectionHandle: UInt32?
   public internal(set) var hardwareVersion: String?
-  public var radio: Radio?
+  public internal(set) var radio: Radio?
   public var testDelegate: TcpProcessor?
 
   // single objects
@@ -119,7 +121,7 @@ final public class ObjectModel: TcpProcessor {
   private var _pinger: Pinger?
   private var _replyDictionary = ReplyDictionary()
   private var _tcp: Tcp!
-  private var _udp = Udp()
+  private var _udp: Udp!
   private var _wanHandle = ""
   
   // ----------------------------------------------------------------------------
@@ -144,7 +146,7 @@ final public class ObjectModel: TcpProcessor {
       activeStation = station
       
       // Instantiate a Radio
-      radio = Radio(packet, isGui)
+      radio = Radio(packet, isGui, self)
       guard radio != nil else { throw ApiError.instantiation }
       apiLog.debug("ApiModel: Radio instantiated \(packet.nickname), \(packet.source.rawValue)")
       
@@ -313,6 +315,24 @@ final public class ObjectModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
+  
+  
+  
+  
+  public func remoteRxAudioReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+    if let streamId = reply.streamId {
+//      Task {
+        remoteRxAudio?.start(streamId)
+//      }
+    }
+  }
+
+  
+  
+  
+  
+  
+  
   public func clientInitialized(_ state: Bool) {
     clientInitialized = state
   }
@@ -402,7 +422,7 @@ final public class ObjectModel: TcpProcessor {
       }
     }
   }
-  
+
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
   
@@ -619,7 +639,7 @@ final public class ObjectModel: TcpProcessor {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if remoteRxAudio == nil { remoteRxAudio = RemoteRxAudio(id) }
+      if remoteRxAudio == nil { remoteRxAudio = RemoteRxAudio(id, self) }
       // parse the properties
       remoteRxAudio?.parse( Array(properties.dropFirst(2)) )
     }
@@ -1185,9 +1205,7 @@ final public class ObjectModel: TcpProcessor {
       _awaitFirstStatusMessage!.resume()
     }
     
-    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-    //    Task { await ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle) }
-    ObjectModel.shared.parse(statusType, statusMessage, self.connectionHandle)
+    parse(statusType, statusMessage, self.connectionHandle)
   }
   
   
