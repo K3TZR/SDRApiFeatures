@@ -16,7 +16,7 @@ import VitaFeature
 //      processing of a UDP stream of Meter data from the Radio to the client. A MeterStream
 //      is added by the first incoming TCP Meter message.
 @Observable
-public final class MeterStream: Identifiable, StreamProcessor{
+public final class MeterStream: Identifiable, StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   

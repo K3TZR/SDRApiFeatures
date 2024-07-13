@@ -177,7 +177,7 @@ private struct DisabledFooterView: View {
     SideControlsFeature()
   })
   
-  .environment(ObjectModel())
+  .environment(ObjectModel.shared)
   
   .frame(width: 275, height: 250)
   .padding()

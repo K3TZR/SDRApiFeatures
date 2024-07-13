@@ -12,7 +12,6 @@ import Foundation
 import SharedFeature
 import VitaFeature
 
-
 //  DATA FLOW (Opus compressed)
 //
 //  Audio Processor  ->  OpusProcessor ->  Ring Buffer   ->  Output device
@@ -35,9 +34,7 @@ import VitaFeature
 //                   2 channels        2 channels        2 channels
 //                   interleaved       non-interleaved   non-interleaved
 
-//@Observable
 public final class RxAudioPlayer: AudioProcessor {
-//public final actor RxAudioPlayer {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -138,33 +135,11 @@ public final class RxAudioPlayer: AudioProcessor {
     
     if vita.classCode == .opus {
       // OPUS Compressed RemoteRxAudio
-//      Task { await _opusProcessor.process(vita.payloadData) }
-      _opusProcessor.process(vita.payloadData)
+      Task { await _opusProcessor.process(vita.payloadData) }
 
     } else {
       // UN-Compressed RemoteRxAudio
-//      Task { await _pcmProcessor.process(vita.payloadData) }
-      _pcmProcessor.process(vita.payloadData)
+      Task { await _pcmProcessor.process(vita.payloadData) }
     }
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Public Stream reply handler
-  
-//  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
-//    if responseValue == kNoError  {
-//      if let streamId = reply.streamId {
-//        self.streamId = streamId
-//        
-//        // add the stream to the collection
-//        StreamModel.shared.remoteRxAudioStreams.append( RemoteRxAudioStream(streamId) )
-//        
-//        // set this player as it's delegate
-////        StreamModel.shared.remoteRxAudioStreams[id: streamId]!.delegate = self
-//        
-//        // start processing audio
-//        start()
-//      }
-//    }
-//  }
 }

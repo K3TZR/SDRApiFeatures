@@ -12,8 +12,8 @@ import Foundation
 import SharedFeature
 
 
-//final public actor OpusProcessor {
-final public class OpusProcessor {
+final public actor OpusProcessor {
+//final public class OpusProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
@@ -26,7 +26,7 @@ final public class OpusProcessor {
     opusBuffer = AVAudioCompressedBuffer(format: AVAudioFormat(streamDescription: &self.opusAsbd)!, packetCapacity: 1, maximumPacketSize: RxAudioPlayer.frameCountOpus)
     
     // PCM Float32, Host, 2 Channel, interleaved
-    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.interleavedAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountOpus))!
+    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.interleavedAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountOpus * RxAudioPlayer.channelCount))!
     interleavedBuffer.frameLength = interleavedBuffer.frameCapacity
 
     // PCM Float32, Host, 2 Channel, non-interleaved
@@ -87,7 +87,7 @@ final public class OpusProcessor {
       memcpy(opusBuffer.data, payload, payload.count)
       opusBuffer.byteLength = UInt32(payload.count)
       opusBuffer.packetCount = AVAudioPacketCount(1)
-      opusBuffer.packetDescriptions![0].mDataByteSize = UInt32(payload.count)
+      opusBuffer.packetDescriptions![0].mDataByteSize = opusBuffer.byteLength
     } else {
       // Missed packet: create an empty frame
       opusBuffer.byteLength = UInt32(payload.count)
@@ -98,7 +98,7 @@ final public class OpusProcessor {
     // Convert Opus UInt8 -> PCM Float32, Host, 2 channel, interleaved
     var error: NSError?
     _ = opusConverter.convert(to: interleavedBuffer, error: &error, withInputFrom: { (_, outputStatus) -> AVAudioBuffer? in
-      outputStatus.pointee = .haveData
+     outputStatus.pointee = .haveData
       return self.opusBuffer
     })
     

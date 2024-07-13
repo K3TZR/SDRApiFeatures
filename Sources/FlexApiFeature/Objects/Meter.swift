@@ -13,21 +13,21 @@ import VitaFeature
 
 
 @MainActor
-public final class Meter: ObservableObject, Identifiable {  
+public final class Meter: ObservableObject, Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
   public init(_ id: UInt32) {
     self.id = id
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
   public let id: UInt32
   
   @Published public var value: Float = 0    // uses ObservableObject to facilitate throttling
-
+  
   public var desc: String = ""
   public var fps: Int = 0
   public var high: Float = 0
@@ -40,7 +40,7 @@ public final class Meter: ObservableObject, Identifiable {
   
   public static var streamId: UInt32?
   public static var isStreaming = false
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public types
   
@@ -88,12 +88,12 @@ public final class Meter: ObservableObject, Identifiable {
     case source     = "src"
     case units      = "unit"
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
   public var _initialized = false
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Public Parse methods
   
@@ -140,5 +140,5 @@ public final class Meter: ObservableObject, Identifiable {
   
   public func setValue(_ value: Float) {
     self.value = value
-  }
+  }  
 }

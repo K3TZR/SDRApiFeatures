@@ -179,7 +179,7 @@ private struct RttyGridView: View {
     SettingsCore()
   })
   
-  .environment(ObjectModel())
+  .environment(ObjectModel.shared)
   
   .frame(width: 600, height: 350)
   .padding()

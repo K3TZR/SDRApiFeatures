@@ -59,17 +59,16 @@ final public class StreamStatistics {
   ]
 }
 
-//@Observable
-//@MainActor
-final public actor StreamModel: StreamProcessor {
+@Observable
+final public class StreamModel: StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
-//  public static var shared = StreamModel()
-//  private init() {}
-  public init(_ objectModel: ObjectModel) {
-    _objectModel = objectModel
-  }
+  public static var shared = StreamModel()
+  private init() {}
+//  public init(_ objectModel: ObjectModel) {
+//    _objectModel = objectModel
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -78,7 +77,7 @@ final public actor StreamModel: StreamProcessor {
 //  public var daxMicAudioStream: DaxMicAudioStream?
 //  public var daxTxAudioStream: DaxTxAudioStream?
   public var meterStream: MeterStream?
-//  public var remoteRxAudioStream: RemoteRxAudioStream?
+  public var remoteRxAudioStream: RemoteRxAudioStream?
 //  public var remoteTxAudioStream: RemoteTxAudioStream?
 //
 //  // collection streams
@@ -93,7 +92,7 @@ final public actor StreamModel: StreamProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
-  private let _objectModel: ObjectModel
+//  private let _objectModel: ObjectModel
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -128,12 +127,13 @@ final public actor StreamModel: StreamProcessor {
 //      }
       
     case .meter:
-      if meterStream == nil { meterStream = MeterStream(vita.streamId, _objectModel) }
+//      if meterStream == nil { meterStream = MeterStream(vita.streamId, _objectModel) }
       meterStream?.streamProcessor(vita)
-      
+//      ObjectModel.shared.streamProcessor(vita)
+
     case .opus:
-//      _objectModel.rxAudioOutput?.audioProcessor(vita)
-      print("count ", vita.payloadData.count)
+//      print(vita.payloadData.count)
+      rxAudioOutput?.audioProcessor(vita)
       
     default:
 //      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
@@ -238,7 +238,7 @@ final public actor StreamModel: StreamProcessor {
     daxAudioOutputs[channel]?.stop()
     if let streamId = daxAudioOutputs[channel]?.streamId {
       Task { await MainActor.run {
-        _objectModel.sendTcp("stream remove \(streamId.hex)")
+        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     daxAudioOutputs[channel] = nil
@@ -253,7 +253,7 @@ final public actor StreamModel: StreamProcessor {
     rxAudioOutput?.stop()
     if let streamId = rxAudioOutput?.streamId {
       Task { await MainActor.run {
-        _objectModel.sendTcp("stream remove \(streamId.hex)")
+        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
       }}
     }
     rxAudioOutput = nil

@@ -7,16 +7,16 @@
 
 import Foundation
 
-public typealias ReplyHandler = (_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) -> Void
-public typealias ReplyTuple = (replyTo: ReplyHandler?, command: String)
+public typealias ReplyHandler = (_ command: String, _ reply: String) -> Void
+public typealias ReplyTuple = (command: String, callback: ReplyHandler? )
 
 final public actor ReplyDictionary {
   private var replyHandlers = [Int: ReplyTuple]()
   private var sequenceNumber: Int = 0
   
-  public func add(_ tuple: ReplyTuple) -> Int {
+  public func add(_ command: String, callback: ReplyHandler?) -> Int {
     sequenceNumber += 1
-    replyHandlers[sequenceNumber] = tuple
+    replyHandlers[sequenceNumber] = (command, callback)
     return sequenceNumber
   }
   

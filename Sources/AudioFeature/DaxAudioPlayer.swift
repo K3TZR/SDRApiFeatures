@@ -213,33 +213,11 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
     
     if vita.classCode == .daxAudioReducedBw {
       // Reduced Bandwidth DaxRxAudio
-//      Task { await _pcmProcessor.process(vita.payloadData, reducedBandwidth: true) }
-      _pcmProcessor.process(vita.payloadData, reducedBandwidth: true)
+      Task { await _pcmProcessor.process(vita.payloadData, reducedBandwidth: true) }
 
     } else {
       // Full Bandwidth DaxRxAudio
-//      Task { await _pcmProcessor.process(vita.payloadData) }
-      _pcmProcessor.process(vita.payloadData)
+      Task { await _pcmProcessor.process(vita.payloadData) }
     }
   }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Stream reply handler
-  
-//  public func streamReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
-//    if responseValue == kNoError {
-//      if let streamId = reply.streamId {
-//        self.streamId = streamId
-//        
-//        // add the stream to the collection
-//        StreamModel.shared.daxRxAudioStreams.append( DaxRxAudioStream(streamId) )
-//
-//        // set this player as it's delegate
-//        StreamModel.shared.daxRxAudioStreams[id: streamId]?.delegate = self
-//
-//        // start processing audio
-//        start()
-//      }
-//    }
-//  }
 }

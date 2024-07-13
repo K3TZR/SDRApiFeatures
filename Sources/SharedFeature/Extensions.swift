@@ -12,7 +12,6 @@ import SwiftUI
 public typealias KeyValuesArray = [(key:String, value:String)]
 public typealias ValuesArray = [String]
 
-
 // ----------------------------------------------------------------------------
 // MARK: - Functions
 

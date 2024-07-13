@@ -12,8 +12,8 @@ import Foundation
 import SharedFeature
 
 
-//final public actor PcmProcessor {
-final public class PcmProcessor {
+final public actor PcmProcessor {
+//final public class PcmProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   

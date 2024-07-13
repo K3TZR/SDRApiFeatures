@@ -38,7 +38,7 @@ public final class Pinger {
     _pingTimer?.cancel()
   }
   
-  public func pingReplyHandler(_ command: String, seqNum: Int, responseValue: String, reply: String) {
+  public func pingReplyHandler(_ command: String, _ reply: String) {
     _lastPingRxTime = Date()
   }
   

@@ -10,7 +10,7 @@ import Foundation
 
 import ListenerFeature
 import SharedFeature
-
+import VitaFeature
 
 @MainActor
 @Observable
@@ -18,11 +18,11 @@ final public class ObjectModel: TcpProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
   
-//  public static var shared = ObjectModel()
-//  private init() {
-  public init() {
+  public static var shared = ObjectModel()
+    private init() {
+//  public init() {
     _tcp = Tcp(delegate: self)
-    _udp = Udp(delegate: StreamModel(self) )
+    _udp = Udp(delegate: StreamModel.shared)
     atu = Atu(self)
     cwx = Cwx(self)
     gps = Gps(self)
@@ -34,7 +34,7 @@ final public class ObjectModel: TcpProcessor {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
-    
+  
   public internal(set) var activePacket: Packet?
   public internal(set) var activeSlice: Slice?
   public internal(set) var activeStation: String?
@@ -44,7 +44,7 @@ final public class ObjectModel: TcpProcessor {
   public internal(set) var hardwareVersion: String?
   public internal(set) var radio: Radio?
   public var testDelegate: TcpProcessor?
-
+  
   // single objects
   public var atu: Atu!
   public var cwx: Cwx!
@@ -280,10 +280,28 @@ final public class ObjectModel: TcpProcessor {
   ///   - command:        a Command String
   ///   - diagnostic:     use "D"iagnostic form
   ///   - replyTo:       a callback function (if any)
+  public func sendTcpAwaitReply(_ cmd: String, diagnostic: Bool = false) async -> (command:String, reply:String) {
+    let reply = await withCheckedContinuation { continuation in
+      _sendTcpReplyContinuation = continuation
+      sendTcp(cmd, diagnostic: diagnostic, replyTo: sendTcpReplyHandler)
+    }
+    return (cmd, reply)
+  }
+  private var _sendTcpReplyContinuation: CheckedContinuation<String, Never>?
+  
+  private func sendTcpReplyHandler(_ command: String, _ reply: String) {
+    _sendTcpReplyContinuation?.resume(returning: reply)
+  }
+  
+  /// Send a command to the Radio (hardware) via TCP
+  /// - Parameters:
+  ///   - command:        a Command String
+  ///   - diagnostic:     use "D"iagnostic form
+  ///   - replyTo:       a callback function (if any)
   public func sendTcp(_ cmd: String, diagnostic: Bool = false, replyTo callback: ReplyHandler? = nil) {
     Task {
       // assign sequenceNumber & register to be notified when reply received
-      let sequenceNumber = await _replyDictionary.add((replyTo: callback, command: cmd))
+      let sequenceNumber = await _replyDictionary.add(cmd, callback: callback)
       
       // assemble the command
       let command =  "C" + "\(diagnostic ? "D" : "")" + "\(sequenceNumber)|" + cmd
@@ -291,7 +309,7 @@ final public class ObjectModel: TcpProcessor {
       // tell TCP to send it
       _tcp.send(command + "\n", sequenceNumber)
       
-      // sent messages sent to the Tester
+      // sent messages provided to the Tester (if Tester exists)
       testDelegate?.tcpProcessor(command, isInput: true)
     }
   }
@@ -319,14 +337,14 @@ final public class ObjectModel: TcpProcessor {
   
   
   
-  public func remoteRxAudioReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+  public func remoteRxAudioReplyHandler(_ command: String, _ reply: String) {
     if let streamId = reply.streamId {
-//      Task {
-        remoteRxAudio?.start(streamId)
-//      }
+      //      Task {
+      remoteRxAudio?.start(streamId)
+      //      }
     }
   }
-
+  
   
   
   
@@ -422,7 +440,7 @@ final public class ObjectModel: TcpProcessor {
       }
     }
   }
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - Internal methods
   
@@ -1080,19 +1098,19 @@ final public class ObjectModel: TcpProcessor {
   /// Parse Replies
   /// - Parameters:
   ///   - commandSuffix:      a Reply Suffix
-  private func defaultReplyProcessor(_ replySuffix: Substring) {
+  private func defaultReplyProcessor(_ reply: Substring) {
     
     // separate it into its components
-    let components = replySuffix.components(separatedBy: "|")
+    let components = reply.components(separatedBy: "|")
     // ignore incorrectly formatted replies
     if components.count < 2 {
-      apiLog.warning("ApiModel: incomplete reply, r\(replySuffix)")
+      apiLog.warning("ApiModel: incomplete reply, r\(reply)")
       return
     }
     
     // get the sequence number, reply and any additional data
     let seqNum = components[0].sequenceNumber
-    let reply = components[1]
+    let replyValue = components[1]
     let suffix = components.count < 3 ? "" : components[2]
     
     // is the sequence number in the reply handlers?
@@ -1109,47 +1127,60 @@ final public class ObjectModel: TcpProcessor {
         
         // Anything other than kNoError is an error, log it
         // ignore non-zero reply from "client program" command
-        if reply != kNoError && !command.hasPrefix("client program ") {
-          apiLog.error("ApiModel: reply >\(reply)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: reply)), \(suffix)")
+        if replyValue != kNoError && !command.hasPrefix("client program ") {
+          apiLog.error("ApiModel: replyValue >\(replyValue)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: replyValue)), \(suffix)")
         }
         // did the replyTuple include a callback?
-        if let handler = replyTuple.replyTo {
+        if let callback = replyTuple.callback{
           // YES, call the sender's Handler
-          handler(command, seqNum, reply, suffix)
+          callback(command, String(reply))
         }
       } else {
-        apiLog.error("ApiModel: \(replySuffix) reply >\(reply)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: reply)), \(suffix)")
+        apiLog.error("ApiModel: \(reply) replyValue >\(replyValue)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: replyValue)), \(suffix)")
       }
     }
   }
   
-  private func initialCommandsReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+  private func initialCommandsReplyHandler(_ command: String, _ reply: String) {
     var keyValues: KeyValuesArray
-    let adjReply = reply.replacingOccurrences(of: "\"", with: "")
+    
+    // separate it into its components
+    let components = reply.components(separatedBy: "|")
+    // ignore incorrectly formatted replies
+    if components.count < 2 {
+      apiLog.warning("ApiModel: incomplete reply, r\(reply)")
+      return
+    }
+    
+    // get the sequence number, reply and any additional data
+    //    let seqNum = components[0].sequenceNumber
+    let replyValue = components[1]
+    //    let suffix = components.count < 3 ? "" : components[2]
+    
+    let adjReplyValue = replyValue.replacingOccurrences(of: "\"", with: "")
     
     // process replies to the internal "sendCommands"?
     switch command {
-    case "radio uptime":  keyValues = "uptime=\(adjReply)".keyValuesArray()
-    case "version":       keyValues = adjReply.keyValuesArray(delimiter: "#")
-    case "ant list":      keyValues = "ant_list=\(adjReply)".keyValuesArray()
-    case "mic list":      keyValues = "mic_list=\(adjReply)".keyValuesArray()
-    case "info":          keyValues = adjReply.keyValuesArray(delimiter: ",")
+    case "radio uptime":  keyValues = "uptime=\(adjReplyValue)".keyValuesArray()
+    case "version":       keyValues = adjReplyValue.keyValuesArray(delimiter: "#")
+    case "ant list":      keyValues = "ant_list=\(adjReplyValue)".keyValuesArray()
+    case "mic list":      keyValues = "mic_list=\(adjReplyValue)".keyValuesArray()
+    case "info":          keyValues = adjReplyValue.keyValuesArray(delimiter: ",")
     default: return
     }
     
-    let properties = keyValues
+    //    let properties = keyValues
     
-    // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-    //    Task { await ObjectModel.shared.radio?.parse(properties) }
-    radio?.parse(properties)
+    //    radio?.parse(properties)
+    radio?.parse(keyValues)
   }
   
-  private func ipReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+  private func ipReplyHandler(_ command: String, _ reply: String) {
     // YES, resume it
     _awaitClientIpValidation?.resume(returning: reply)
   }
   
-  private func wanValidationReplyHandler(_ command: String, _ seqNumber: Int, _ responseValue: String, _ reply: String) {
+  private func wanValidationReplyHandler(_ command: String, _ reply: String) {
     // YES, resume it
     _awaitWanValidation?.resume(returning: reply)
   }
@@ -1276,6 +1307,105 @@ final public class ObjectModel: TcpProcessor {
     }
     return false
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  /// Process the Vita struct containing Meter data
+  /// - Parameters:
+  ///   - vita:        a Vita struct
+  public nonisolated func streamProcessor(_ vita: Vita) {
+    let kDbDbmDbfsSwrDenom: Float = 128.0   // denominator for Db, Dbm, Dbfs, Swr
+    let kDegDenom: Float = 64.0             // denominator for Degc, Degf
+    
+    var meterIds = [UInt32]()
+    
+    //    if isStreaming == false {
+    //      isStreaming = true
+    //      streamId = vita.streamId
+    //      // log the start of the stream
+    //      log("Meter \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
+    //    }
+    
+    // NOTE:  there is a bug in the Radio (as of v2.2.8) that sends
+    //        multiple copies of meters, this code ignores the duplicates
+    
+    vita.payloadData.withUnsafeBytes { payloadPtr in
+      // four bytes per Meter
+      let numberOfMeters = Int(vita.payloadSize / 4)
+      
+      // pointer to the first Meter number / Meter value pair
+      let ptr16 = payloadPtr.bindMemory(to: UInt16.self)
+      
+      // for each meter in the Meters packet
+      for i in 0..<numberOfMeters {
+        // get the Meter id and the Meter value
+        let id: UInt32 = UInt32(CFSwapInt16BigToHost(ptr16[2 * i]))
+        let value: UInt16 = CFSwapInt16BigToHost(ptr16[(2 * i) + 1])
+        
+        // is this a duplicate?
+        if !meterIds.contains(id) {
+          // NO, add it to the list
+          meterIds.append(id)
+          
+          // find the meter (if present) & update it
+          // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
+          Task {
+            if let meter = await meters[id: id] {
+              //          meter.streamHandler( value)
+              let newValue = Int16(bitPattern: value)
+              let previousValue = await meter.value
+              
+              // check for unknown Units
+              guard let token = await MeterUnits(rawValue: meter.units) else {
+                //      // log it and ignore it
+                //      log("Meter \(desc) \(description) \(group) \(name) \(source): unknown units - \(units))", .warning, #function, #file, #line)
+                return
+              }
+              var adjNewValue: Float = 0.0
+              switch token {
+                
+              case .db, .dbm, .dbfs, .swr:        adjNewValue = Float(exactly: newValue)! / kDbDbmDbfsSwrDenom
+              case .volts, .amps:                 adjNewValue = Float(exactly: newValue)! / 256.0
+              case .degc, .degf:                  adjNewValue = Float(exactly: newValue)! / kDegDenom
+              case .rpm, .watts, .percent, .none: adjNewValue = Float(exactly: newValue)!
+              }
+              // did it change?
+              if adjNewValue != previousValue {
+                let value = adjNewValue
+                await meter.setValue(value)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
 
 //  public func altAntennaName(for stdName: String) -> String {

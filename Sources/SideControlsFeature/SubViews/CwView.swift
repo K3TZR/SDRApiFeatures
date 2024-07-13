@@ -124,7 +124,7 @@ struct BottomButtonsView: View {
 #Preview {
   CwView()
     
-    .environment(ObjectModel())
+    .environment(ObjectModel.shared)
     
     .frame(width: 275, height: 210)
 }
