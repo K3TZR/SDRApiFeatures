@@ -14,7 +14,8 @@ import RingBufferFeature
 // AudioBufferList is protected by TPCircularBuffer logic
 extension UnsafeMutablePointer<AudioBufferList> : @unchecked Sendable { }
 
-final public actor RingBuffer{
+final public class RingBuffer {
+// public actor RingBuffer{
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   

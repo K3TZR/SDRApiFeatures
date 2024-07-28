@@ -94,6 +94,6 @@ final public actor PcmProcessor {
       }
     }
     // append the data to the Ring buffer
-    Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountPcm))  }
+    ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountPcm))
   }
 }

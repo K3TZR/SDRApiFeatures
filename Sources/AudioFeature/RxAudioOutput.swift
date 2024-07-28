@@ -86,8 +86,8 @@ public actor RxAudioOutput {
   public func start() {
     
     // empty the Ring Buffer
-    Task { 
-      await self._ringBuffer.clear()
+//    Task {
+      self._ringBuffer.clear()
       
       //    Task {
       //      let availableFrames = await _ringBuffer.availableFrames()
@@ -97,13 +97,13 @@ public actor RxAudioOutput {
       // create the Audio Source for the Engine (i.e. data from the Ring Buffer)
       _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
         // retrieve the requested number of frames
-        Task { await self._ringBuffer.deque(audioBufferList, frameCount) }
+        self._ringBuffer.deque(audioBufferList, frameCount)
         return noErr
       }
       
       // setup the Engine
       _engine.attach(_srcNode)
-      _engine.connect(_srcNode, 
+      _engine.connect(_srcNode,
                       to: _engine.mainMixerNode,
                       format: AVAudioFormat(commonFormat: .pcmFormatFloat32,
                                             sampleRate: RxAudioOutput.sampleRate,
@@ -120,7 +120,7 @@ public actor RxAudioOutput {
         apiLog.error("RxAudioPlayer: Failed to start, error = \(error)")
       }
     }
-  }
+//  }
   
   public func stop() {
     // stop processing

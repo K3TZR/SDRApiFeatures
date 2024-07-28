@@ -80,12 +80,6 @@ final public actor OpusProcessor {
   // MARK: - Public methods
   
   public func process(_ payload: [UInt8]) {
-  
-    
-     
-     print(payload.count)
-     
-     
     // copy the payload data into an AVAudioCompressedBuffer
     if payload.count != 0 {
       // Valid packet: copy the data and save the count
@@ -113,7 +107,7 @@ final public actor OpusProcessor {
     do {
       try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       // append the data to the Ring buffer
-      Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountOpus))  }
+      ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountOpus))
     } catch {
       apiLog.error("OpusProcessor: Interleave conversion error = \(error)")
     }

@@ -59,17 +59,12 @@ final public class StreamStatistics {
   ]
 }
 
-//@Observable
-//final public class StreamModel: StreamProcessor {
 public actor StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
   public static var shared = StreamModel()
   private init() {}
-//  public init(_ objectModel: ObjectModel) {
-//    _objectModel = objectModel
-//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -78,7 +73,7 @@ public actor StreamModel {
 //  public var daxMicAudioStream: DaxMicAudioStream?
 //  public var daxTxAudioStream: DaxTxAudioStream?
   public var meterStream: MeterStream?
-//  public var remoteRxAudioStream: RemoteRxAudioStream?
+  public var remoteRxAudioStream: RemoteRxAudioStream?
 //  public var remoteTxAudioStream: RemoteTxAudioStream?
 //
 //  // collection streams
@@ -131,11 +126,14 @@ public actor StreamModel {
       
     case .meter:
       if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-      meterStream?.streamProcessor(vita)
+      Task {
+        await meterStream?.streamProcessor(vita)
+      }
 
     case .opus:
+      if remoteRxAudioStream == nil { remoteRxAudioStream = RemoteRxAudioStream(vita.streamId) }
       Task {
-       await rxAudioOutput?.audioProcessor(vita)
+       await remoteRxAudioStream?.streamProcessor(vita)
       }
       
     default:
@@ -257,24 +255,6 @@ public actor StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: Public Remote Rx methods
   
-  public func remoteRxAudioStart(_ streamId: UInt32)  {
-    Task {
-      rxAudioOutput = RxAudioOutput(streamId)
-      await rxAudioOutput?.start()
-    }
-  }
-  
-  public func remoteRxAudioStop()  {
-    Task {
-      await rxAudioOutput?.stop()
-      if let streamId = await rxAudioOutput?.streamId {
-        await MainActor.run {
-          ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
-        }
-      }
-      rxAudioOutput = nil
-    }
-  }
 
 //  public func remove(_ streamId: UInt32?)  {
 //    if let streamId {

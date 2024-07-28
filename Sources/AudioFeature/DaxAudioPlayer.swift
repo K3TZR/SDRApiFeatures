@@ -93,7 +93,7 @@ public actor DaxAudioPlayer {
     
     _srcNode = AVAudioSourceNode { [self] _, _, frameCount, audioBufferList -> OSStatus in
       // retrieve the requested number of frames
-      Task { await self._ringBuffer.deque(audioBufferList, frameCount) }
+      self._ringBuffer.deque(audioBufferList, frameCount)
       return noErr
     }
     
@@ -108,7 +108,7 @@ public actor DaxAudioPlayer {
     active = true
     
     // empty the ring buffer
-    Task { await self._ringBuffer.clear() }
+    _ringBuffer.clear()
     
     do {
       try _engine.start()
