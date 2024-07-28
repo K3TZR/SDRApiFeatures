@@ -363,7 +363,7 @@ public extension String {
           if valuesToLower { kv[1] = kv[1].lowercased() }
           
           // remove leading & trailing whitespace
-          kvArray.append( (kv[0].trimmingCharacters(in: NSCharacterSet.whitespaces),kv[1].trimmingCharacters(in: NSCharacterSet.whitespaces)) )
+          kvArray.append( (kv[0].trimmingCharacters(in: NSCharacterSet.whitespaces), kv[1].trimmingCharacters(in: NSCharacterSet.whitespaces)) )
         }
       }
     }

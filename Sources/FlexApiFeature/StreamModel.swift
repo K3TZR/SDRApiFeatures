@@ -59,8 +59,9 @@ final public class StreamStatistics {
   ]
 }
 
-@Observable
-final public class StreamModel: StreamProcessor {
+//@Observable
+//final public class StreamModel: StreamProcessor {
+public actor StreamModel {
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
@@ -77,7 +78,7 @@ final public class StreamModel: StreamProcessor {
 //  public var daxMicAudioStream: DaxMicAudioStream?
 //  public var daxTxAudioStream: DaxTxAudioStream?
   public var meterStream: MeterStream?
-  public var remoteRxAudioStream: RemoteRxAudioStream?
+//  public var remoteRxAudioStream: RemoteRxAudioStream?
 //  public var remoteTxAudioStream: RemoteTxAudioStream?
 //
 //  // collection streams
@@ -86,7 +87,7 @@ final public class StreamModel: StreamProcessor {
 //  public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
 //  public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
   
-  public var rxAudioOutput: RxAudioPlayer?
+  public var rxAudioOutput: RxAudioOutput?
   public var daxAudioOutputs: [DaxAudioPlayer?] = Array(repeating: nil, count: 5)
 
   // ----------------------------------------------------------------------------
@@ -115,25 +116,27 @@ final public class StreamModel: StreamProcessor {
 //      if let object = daxIqStreams[id: vita.streamId] { object.streamProcessor(vita) }
       
     case .daxAudio, .daxAudioReducedBw:
-      for output in daxAudioOutputs where output?.streamId == vita.streamId {
-        output?.audioProcessor(vita)
+      Task {
+        for output in daxAudioOutputs where await output?.streamId == vita.streamId {
+          await output?.audioProcessor(vita)
+        }
+//        if let object = daxRxAudioStreams[id: vita.streamId] {
+//          object.streamProcessor(vita)
+//        } else if daxMicAudioStream?.id == vita.streamId {
+//          daxMicAudioStream?.streamProcessor(vita)
+//        } else {
+//          remoteRxAudioStream?.streamProcessor(vita)
+//        }
       }
-//      if let object = daxRxAudioStreams[id: vita.streamId] {
-//        object.streamProcessor(vita)
-//      } else if daxMicAudioStream?.id == vita.streamId {
-//        daxMicAudioStream?.streamProcessor(vita)
-//      } else {
-//        remoteRxAudioStream?.streamProcessor(vita)
-//      }
       
     case .meter:
-//      if meterStream == nil { meterStream = MeterStream(vita.streamId, _objectModel) }
+      if meterStream == nil { meterStream = MeterStream(vita.streamId) }
       meterStream?.streamProcessor(vita)
-//      ObjectModel.shared.streamProcessor(vita)
 
     case .opus:
-//      print(vita.payloadData.count)
-      rxAudioOutput?.audioProcessor(vita)
+      Task {
+       await rxAudioOutput?.audioProcessor(vita)
+      }
       
     default:
 //      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
@@ -228,35 +231,49 @@ final public class StreamModel: StreamProcessor {
 //    default: return
 //    }
 //  }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: Public DAX Rx methods
+  
   public func daxRxAudioStart(_ streamId: UInt32, _ channel: Int)  {
-    daxAudioOutputs[channel] = DaxAudioPlayer(streamId)
-    daxAudioOutputs[channel]?.start()
+    Task {
+      daxAudioOutputs[channel] = DaxAudioPlayer(streamId)
+      await daxAudioOutputs[channel]?.start()
+    }
   }
   
   public func daxRxAudioStop(_ channel: Int)  {
-    daxAudioOutputs[channel]?.stop()
-    if let streamId = daxAudioOutputs[channel]?.streamId {
-      Task { await MainActor.run {
-        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
-      }}
+    Task {
+      await daxAudioOutputs[channel]?.stop()
+      if let streamId = await daxAudioOutputs[channel]?.streamId {
+        await MainActor.run {
+          ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
+        }
+      }
+      daxAudioOutputs[channel] = nil
     }
-    daxAudioOutputs[channel] = nil
   }
-
+  
+  // ----------------------------------------------------------------------------
+  // MARK: Public Remote Rx methods
+  
   public func remoteRxAudioStart(_ streamId: UInt32)  {
-    rxAudioOutput = RxAudioPlayer(streamId)
-    rxAudioOutput?.start()
+    Task {
+      rxAudioOutput = RxAudioOutput(streamId)
+      await rxAudioOutput?.start()
+    }
   }
   
   public func remoteRxAudioStop()  {
-    rxAudioOutput?.stop()
-    if let streamId = rxAudioOutput?.streamId {
-      Task { await MainActor.run {
-        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
-      }}
+    Task {
+      await rxAudioOutput?.stop()
+      if let streamId = await rxAudioOutput?.streamId {
+        await MainActor.run {
+          ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
+        }
+      }
+      rxAudioOutput = nil
     }
-    rxAudioOutput = nil
   }
 
 //  public func remove(_ streamId: UInt32?)  {
@@ -281,26 +298,6 @@ final public class StreamModel: StreamProcessor {
 //    }
 //  }
 //
-//  private func daxMicAudioStreamStatus(_ properties: KeyValuesArray) {
-//    // get the id
-//    if let id = properties[0].key.streamId {
-//      // add it if not already present
-//      if daxMicAudioStream == nil { daxMicAudioStream = DaxMicAudioStream(id) }
-//      // parse the properties
-//      daxMicAudioStream?.parse( Array(properties.dropFirst(1)) )
-//    }
-//  }
-//
-//  private func daxRxAudioStreamStatus(_ properties: KeyValuesArray) {
-//    // get the id
-//    if let id = properties[0].key.streamId {
-//      // add it if not already present
-//      if daxRxAudioStreams[id: id] == nil { daxRxAudioStreams.append( DaxRxAudioStream(id) ) }
-//      // parse the properties
-//      daxRxAudioStreams[id: id]!.parse( Array(properties.dropFirst(1)) )
-//    }
-//  }
-//
 //  private func daxTxAudioStreamStatus(_ properties: KeyValuesArray) {
 //    // get the id
 //    if let id = properties[0].key.streamId {
@@ -308,16 +305,6 @@ final public class StreamModel: StreamProcessor {
 //      if daxTxAudioStream == nil { daxTxAudioStream = DaxTxAudioStream(id) }
 //      // parse the properties
 //      daxTxAudioStream?.parse( Array(properties.dropFirst(1)) )
-//    }
-//  }
-//
-//  private func remoteRxAudioStreamStatus(_ properties: KeyValuesArray) {
-//    // get the id
-//    if let id = properties[0].key.streamId {
-//      // add it if not already present
-//      if remoteRxAudioStream == nil { remoteRxAudioStream = RemoteRxAudioStream(id) }
-//      // parse the properties
-//      remoteRxAudioStream?.parse( Array(properties.dropFirst(2)) )
 //    }
 //  }
 //

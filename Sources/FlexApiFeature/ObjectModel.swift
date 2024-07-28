@@ -20,9 +20,8 @@ final public class ObjectModel: TcpProcessor {
   
   public static var shared = ObjectModel()
     private init() {
-//  public init() {
     _tcp = Tcp(delegate: self)
-    _udp = Udp(delegate: StreamModel.shared)
+    _udp = Udp()
     atu = Atu(self)
     cwx = Cwx(self)
     gps = Gps(self)
@@ -332,24 +331,6 @@ final public class ObjectModel: TcpProcessor {
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
-  
-  
-  
-  
-  
-  public func remoteRxAudioReplyHandler(_ command: String, _ reply: String) {
-    if let streamId = reply.streamId {
-      //      Task {
-      remoteRxAudio?.start(streamId)
-      //      }
-    }
-  }
-  
-  
-  
-  
-  
-  
   
   public func clientInitialized(_ state: Bool) {
     clientInitialized = state
@@ -1151,28 +1132,28 @@ final public class ObjectModel: TcpProcessor {
       apiLog.warning("ApiModel: incomplete reply, r\(reply)")
       return
     }
-    
-    // get the sequence number, reply and any additional data
-    //    let seqNum = components[0].sequenceNumber
-    let replyValue = components[1]
-    //    let suffix = components.count < 3 ? "" : components[2]
-    
-    let adjReplyValue = replyValue.replacingOccurrences(of: "\"", with: "")
-    
-    // process replies to the internal "sendCommands"?
-    switch command {
-    case "radio uptime":  keyValues = "uptime=\(adjReplyValue)".keyValuesArray()
-    case "version":       keyValues = adjReplyValue.keyValuesArray(delimiter: "#")
-    case "ant list":      keyValues = "ant_list=\(adjReplyValue)".keyValuesArray()
-    case "mic list":      keyValues = "mic_list=\(adjReplyValue)".keyValuesArray()
-    case "info":          keyValues = adjReplyValue.keyValuesArray(delimiter: ",")
-    default: return
+    if components[1] != kNoError {
+      apiLog.warning("ApiModel: non-zero reply for command \(command), \(reply)")
+      return
     }
     
-    //    let properties = keyValues
-    
-    //    radio?.parse(properties)
-    radio?.parse(keyValues)
+    // get any additional data
+    if components.count > 2 {
+      print(components[2])
+//      let additionalData = components[2].replacingOccurrences(of: "\"", with: "\"")
+      let additionalData = components[2]
+
+      // process replies to the internal "sendCommands"?
+      switch command {
+      case "radio uptime":  keyValues = "uptime=\(additionalData)".keyValuesArray()
+      case "version":       keyValues = additionalData.keyValuesArray(delimiter: "#")
+      case "ant list":      keyValues = "ant_list=\(additionalData)".keyValuesArray()
+      case "mic list":      keyValues = "mic_list=\(additionalData)".keyValuesArray()
+      case "info":          keyValues = additionalData.keyValuesArray(delimiter: ",")
+      default: return
+      }
+      radio?.parse(keyValues)
+    }
   }
   
   private func ipReplyHandler(_ command: String, _ reply: String) {

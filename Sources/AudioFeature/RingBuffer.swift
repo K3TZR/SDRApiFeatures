@@ -28,7 +28,7 @@ final public actor RingBuffer{
 
   private static let bufferCapacity = 20      // number of AudioBufferLists in the Ring buffer
   private static let bufferOverage = 2_048    // allowance for Ring buffer metadata (in Bytes)
-  private static let bufferSize = (RxAudioPlayer.frameCountOpus * MemoryLayout<Float>.size * RxAudioPlayer.channelCount * bufferCapacity) + bufferOverage
+  private static let bufferSize = (RxAudioOutput.frameCountOpus * MemoryLayout<Float>.size * RxAudioOutput.channelCount * bufferCapacity) + bufferOverage
 
   // ----------------------------------------------------------------------------
   // MARK: - Private properties

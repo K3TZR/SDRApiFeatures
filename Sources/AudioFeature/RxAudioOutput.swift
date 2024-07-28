@@ -1,6 +1,6 @@
 //
-//  RxAudioPlayer.swift
-//  AudioFeature/RxAudioPlayer
+//  RxAudioOutput.swift
+//  AudioFeature/RxAudioOutput
 //
 //  Created by Douglas Adams on 11/29/23.
 //  Copyright © 2023 Douglas Adams. All rights reserved.
@@ -34,7 +34,8 @@ import VitaFeature
 //                   2 channels        2 channels        2 channels
 //                   interleaved       non-interleaved   non-interleaved
 
-public final class RxAudioPlayer: AudioProcessor {
+//public final class RxAudioOutput: AudioProcessor {
+public actor RxAudioOutput {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
@@ -58,13 +59,13 @@ public final class RxAudioPlayer: AudioProcessor {
   private var _ringBuffer: RingBuffer!
 
   // PCM, Float32, Host, 2 channel, non-interleaved
-  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
                                                             mFormatID: kAudioFormatLinearPCM,
                                                             mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
                                                             mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
                                                             mFramesPerPacket: 1,
                                                             mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
-                                                            mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                            mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
                                                             mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
                                                             mReserved: 0)
   private var _srcNode: AVAudioSourceNode!
@@ -82,37 +83,42 @@ public final class RxAudioPlayer: AudioProcessor {
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func start(isCompressed: Bool = true) {
+  public func start() {
     
-    Task {
-      let availableFrames = await _ringBuffer.availableFrames()
-      apiLog.debug("RxAudioPlayer start: available frames = \(availableFrames)")
-    }
-
-    _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
-      // retrieve the requested number of frames
-      Task { await self._ringBuffer.deque(audioBufferList, frameCount) }
-      return noErr
-    }
-    
-    _engine.attach(_srcNode)
-    _engine.connect(_srcNode, 
-                   to: _engine.mainMixerNode,
-                   format: AVAudioFormat(commonFormat: .pcmFormatFloat32,
-                                         sampleRate: RxAudioPlayer.sampleRate,
-                                         channels: AVAudioChannelCount(RxAudioPlayer.channelCount),
-                                         interleaved: false)!)
-    active = true
-    
-    // empty the ring buffer
-    Task { await self._ringBuffer.clear() }
-    
-    // start processing
-    do {
-      try _engine.start()
-      apiLog.debug("RxAudioPlayer: audioOutput STARTED")
-    } catch {
-      apiLog.error("RxAudioPlayer: Failed to start, error = \(error)")
+    // empty the Ring Buffer
+    Task { 
+      await self._ringBuffer.clear()
+      
+      //    Task {
+      //      let availableFrames = await _ringBuffer.availableFrames()
+      //      apiLog.debug("RxAudioPlayer start: available frames = \(availableFrames)")
+      //    }
+      
+      // create the Audio Source for the Engine (i.e. data from the Ring Buffer)
+      _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
+        // retrieve the requested number of frames
+        Task { await self._ringBuffer.deque(audioBufferList, frameCount) }
+        return noErr
+      }
+      
+      // setup the Engine
+      _engine.attach(_srcNode)
+      _engine.connect(_srcNode, 
+                      to: _engine.mainMixerNode,
+                      format: AVAudioFormat(commonFormat: .pcmFormatFloat32,
+                                            sampleRate: RxAudioOutput.sampleRate,
+                                            channels: AVAudioChannelCount(RxAudioOutput.channelCount),
+                                            interleaved: false)!)
+      active = true
+      
+      
+      // start the Engine
+      do {
+        try _engine.start()
+        apiLog.debug("RxAudioPlayer: audioOutput STARTED")
+      } catch {
+        apiLog.error("RxAudioPlayer: Failed to start, error = \(error)")
+      }
     }
   }
   
@@ -121,10 +127,10 @@ public final class RxAudioPlayer: AudioProcessor {
     apiLog.debug("RxAudioPlayer: audioOutput STOPPED")
     _engine.stop()
 
-    Task {
-      let availableFrames = await _ringBuffer.availableFrames()
-      apiLog.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
-    }
+//    Task {
+//      let availableFrames = await _ringBuffer.availableFrames()
+//      apiLog.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
+//    }
   }
   
   // ----------------------------------------------------------------------------

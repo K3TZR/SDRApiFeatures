@@ -23,14 +23,14 @@ final public actor OpusProcessor {
     
     // ----- Buffers -----
     // OPUS Float32, Host, 2 Channel, non-interleaved
-    opusBuffer = AVAudioCompressedBuffer(format: AVAudioFormat(streamDescription: &self.opusAsbd)!, packetCapacity: 1, maximumPacketSize: RxAudioPlayer.frameCountOpus)
+    opusBuffer = AVAudioCompressedBuffer(format: AVAudioFormat(streamDescription: &self.opusAsbd)!, packetCapacity: 1, maximumPacketSize: RxAudioOutput.frameCountOpus)
     
     // PCM Float32, Host, 2 Channel, interleaved
-    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.interleavedAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountOpus * RxAudioPlayer.channelCount))!
+    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.interleavedAsbd)!, frameCapacity: UInt32(RxAudioOutput.frameCountOpus * RxAudioOutput.channelCount))!
     interleavedBuffer.frameLength = interleavedBuffer.frameCapacity
 
     // PCM Float32, Host, 2 Channel, non-interleaved
-    nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.ringBufferAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountOpus * RxAudioPlayer.channelCount))!
+    nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.ringBufferAsbd)!, frameCapacity: UInt32(RxAudioOutput.frameCountOpus * RxAudioOutput.channelCount))!
     nonInterleavedBuffer.frameLength = nonInterleavedBuffer.frameCapacity
 
     // ----- Converters -----
@@ -47,24 +47,24 @@ final public actor OpusProcessor {
   // MARK: - Private properties
   
   // Opus, UInt8, 2 channel (buffer used to store incoming Opus encoded samples)
-  private var opusAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+  private var opusAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
                                                      mFormatID: kAudioFormatOpus,
                                                      mFormatFlags: 0,
                                                      mBytesPerPacket: 0,
-                                                     mFramesPerPacket: UInt32(RxAudioPlayer.frameCountOpus),
+                                                     mFramesPerPacket: UInt32(RxAudioOutput.frameCountOpus),
                                                      mBytesPerFrame: 0,
-                                                     mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                     mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
                                                      mBitsPerChannel: 0,
                                                      mReserved: 0)
   
   // PCM, Float32, Host, 2 channel, interleaved
-  private var interleavedAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+  private var interleavedAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
                                                             mFormatID: kAudioFormatLinearPCM,
                                                             mFormatFlags: kAudioFormatFlagIsFloat,
-                                                            mBytesPerPacket: UInt32(MemoryLayout<Float>.size * RxAudioPlayer.channelCount),
+                                                            mBytesPerPacket: UInt32(MemoryLayout<Float>.size * RxAudioOutput.channelCount),
                                                             mFramesPerPacket: 1,
-                                                            mBytesPerFrame: UInt32(MemoryLayout<Float>.size * RxAudioPlayer.channelCount),
-                                                            mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                            mBytesPerFrame: UInt32(MemoryLayout<Float>.size * RxAudioOutput.channelCount),
+                                                            mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
                                                             mBitsPerChannel: UInt32(MemoryLayout<Float>.size * 8),
                                                             mReserved: 0)
   
@@ -81,6 +81,11 @@ final public actor OpusProcessor {
   
   public func process(_ payload: [UInt8]) {
   
+    
+     
+     print(payload.count)
+     
+     
     // copy the payload data into an AVAudioCompressedBuffer
     if payload.count != 0 {
       // Valid packet: copy the data and save the count
@@ -98,7 +103,7 @@ final public actor OpusProcessor {
     // Convert Opus UInt8 -> PCM Float32, Host, 2 channel, interleaved
     var error: NSError?
     _ = opusConverter.convert(to: interleavedBuffer, error: &error, withInputFrom: { (_, outputStatus) -> AVAudioBuffer? in
-     outputStatus.pointee = .haveData
+      outputStatus.pointee = .haveData
       return self.opusBuffer
     })
     
@@ -108,7 +113,7 @@ final public actor OpusProcessor {
     do {
       try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       // append the data to the Ring buffer
-      Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioPlayer.frameCountOpus))  }
+      Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountOpus))  }
     } catch {
       apiLog.error("OpusProcessor: Interleave conversion error = \(error)")
     }

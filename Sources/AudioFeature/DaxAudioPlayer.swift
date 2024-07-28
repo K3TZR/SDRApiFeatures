@@ -36,8 +36,9 @@ import VitaFeature
 //                  2 channels         2 channels        2 channels
 //                  interleaved        non-interleaved   non-interleave
 
-@Observable
-final public class DaxAudioPlayer: Equatable, AudioProcessor {
+//@Observable
+//final public class DaxAudioPlayer: Equatable, AudioProcessor {
+public actor DaxAudioPlayer {
   public static func == (lhs: DaxAudioPlayer, rhs: DaxAudioPlayer) -> Bool {
     lhs === rhs
   }
@@ -62,13 +63,13 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
   private var _ringBuffer: RingBuffer!
 
   // PCM, Float32, Host, 2 channel, non-interleaved
-  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
                                                             mFormatID: kAudioFormatLinearPCM,
                                                             mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
                                                             mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
                                                             mFramesPerPacket: 1,
                                                             mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
-                                                            mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                            mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
                                                             mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
                                                             mReserved: 0)
   private var _srcNode: AVAudioSourceNode!
@@ -100,8 +101,8 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
     _engine.connect(_srcNode, 
                     to: _engine.mainMixerNode,
                     format: AVAudioFormat(commonFormat: .pcmFormatFloat32,
-                                          sampleRate: _sampleRate,
-                                          channels: AVAudioChannelCount(RxAudioPlayer.channelCount),
+                                          sampleRate: sampleRate,
+                                          channels: AVAudioChannelCount(RxAudioOutput.channelCount),
                                           interleaved: false)!)
     
     active = true
@@ -119,9 +120,9 @@ final public class DaxAudioPlayer: Equatable, AudioProcessor {
           guard buffer.floatChannelData?[0] != nil else {return}
           
           // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
-          Task { await MainActor.run {
-            self.levels = self.levelCalc(buffer)
-          }}
+//          Task { await MainActor.run {
+//            self.levels = self.levelCalc(buffer)
+//          }}
         }
       }
       

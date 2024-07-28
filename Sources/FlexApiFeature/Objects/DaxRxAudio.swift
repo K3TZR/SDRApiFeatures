@@ -29,7 +29,7 @@ public final class DaxRxAudio: Identifiable {
   // MARK: - Public properties
   
   public let id: UInt32
-  public var audioOutput: RxAudioPlayer?
+  public var audioOutput: RxAudioOutput?
 
   public var clientHandle: UInt32 = 0
   public var ip = ""

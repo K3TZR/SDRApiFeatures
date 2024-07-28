@@ -38,7 +38,7 @@ public final class RemoteRxAudio: Identifiable {
   public var ip = ""
 
   
-  public var rxAudioOutput: RxAudioPlayer?
+//  public var rxAudioOutput: RxAudioOutput?
 
   
   
@@ -104,18 +104,18 @@ public final class RemoteRxAudio: Identifiable {
 
   
   
-  public func start(_ streamId: UInt32)  {
-    rxAudioOutput = RxAudioPlayer(streamId)
-    rxAudioOutput?.start()
-  }
-  
-  public func stop()  {
-    rxAudioOutput?.stop()
-    if let streamId = rxAudioOutput?.streamId {
-      Task { await MainActor.run {
-        _objectModel.sendTcp("stream remove \(streamId.hex)")
-      }}
-    }
-    rxAudioOutput = nil
-  }
+//  public func start(_ streamId: UInt32)  {
+//    rxAudioOutput = RxAudioOutput(streamId)
+//    rxAudioOutput?.start()
+//  }
+//  
+//  public func stop()  {
+//    rxAudioOutput?.stop()
+//    if let streamId = rxAudioOutput?.streamId {
+//      Task { await MainActor.run {
+//        _objectModel.sendTcp("stream remove \(streamId.hex)")
+//      }}
+//    }
+//    rxAudioOutput = nil
+//  }
 }

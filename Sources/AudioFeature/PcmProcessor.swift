@@ -22,11 +22,11 @@ final public actor PcmProcessor {
     self.ringBuffer = ringBuffer
 
     // Float32, BigEndian, 2 Channel, interleaved
-    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &interleavedBigEndianAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountPcm * RxAudioPlayer.channelCount))!
+    interleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &interleavedBigEndianAsbd)!, frameCapacity: UInt32(RxAudioOutput.frameCountPcm * RxAudioOutput.channelCount))!
     interleavedBuffer.frameLength = interleavedBuffer.frameCapacity
 
     // Float32, BigEndian, 2 Channel, interleaved
-    nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.ringBufferAsbd)!, frameCapacity: UInt32(RxAudioPlayer.frameCountPcm * RxAudioPlayer.channelCount))!
+    nonInterleavedBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(streamDescription: &self.ringBufferAsbd)!, frameCapacity: UInt32(RxAudioOutput.frameCountPcm * RxAudioOutput.channelCount))!
     nonInterleavedBuffer.frameLength = nonInterleavedBuffer.frameCapacity
 
     // PCM, Float32, BigEndian, 2 channel, interleaved -> PCM, Float32, Host, 2 channel, non-interleaved
@@ -38,13 +38,13 @@ final public actor PcmProcessor {
   // MARK: - Private properties
   
   // PCM, Float32, BigEndian, 2 channel, interleaved
-  private var interleavedBigEndianAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioPlayer.sampleRate,
+  private var interleavedBigEndianAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
                                                                      mFormatID: kAudioFormatLinearPCM,
                                                                      mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsBigEndian,
-                                                                     mBytesPerPacket: UInt32(MemoryLayout<Float>.size * RxAudioPlayer.channelCount),
+                                                                     mBytesPerPacket: UInt32(MemoryLayout<Float>.size * RxAudioOutput.channelCount),
                                                                      mFramesPerPacket: 1,
-                                                                     mBytesPerFrame: UInt32(MemoryLayout<Float>.size * RxAudioPlayer.channelCount),
-                                                                     mChannelsPerFrame: UInt32(RxAudioPlayer.channelCount),
+                                                                     mBytesPerFrame: UInt32(MemoryLayout<Float>.size * RxAudioOutput.channelCount),
+                                                                     mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
                                                                      mBitsPerChannel: UInt32(MemoryLayout<Float>.size * 8),
                                                                      mReserved: 0)
 
@@ -94,6 +94,6 @@ final public actor PcmProcessor {
       }
     }
     // append the data to the Ring buffer
-    Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioPlayer.frameCountPcm))  }
+    Task { await self.ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountPcm))  }
   }
 }

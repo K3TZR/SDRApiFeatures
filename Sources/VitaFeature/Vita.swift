@@ -8,7 +8,7 @@ import Foundation
 
 public protocol StreamProcessor: AnyObject {
 //  func streamProcessor(_ vita: Vita)
-  func streamProcessor(_ vita: Vita) async
+  func streamProcessor(_ vita: Vita)
 }
 
 public protocol AudioProcessor: AnyObject {
