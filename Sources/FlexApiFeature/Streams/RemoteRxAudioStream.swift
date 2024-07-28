@@ -39,13 +39,12 @@ public actor RemoteRxAudioStream {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public var active = false
-  public var streamId: UInt32?
+  public let id: UInt32
+  public let sampleRate: Double
 
   // ----------------------------------------------------------------------------
   // MARK: - Public Static properties
 
-  public static let sampleRate: Double = 24_000
   public static let frameCountOpus = 240
   public static let frameCountPcm = 128
   public static let channelCount = 2
@@ -59,22 +58,24 @@ public actor RemoteRxAudioStream {
   private var _ringBuffer: RingBuffer!
 
   // PCM, Float32, Host, 2 channel, non-interleaved
-  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
-                                                            mFormatID: kAudioFormatLinearPCM,
-                                                            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
-                                                            mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
-                                                            mFramesPerPacket: 1,
-                                                            mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
-                                                            mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
-                                                            mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
-                                                            mReserved: 0)
+  private var _ringBufferAsbd: AudioStreamBasicDescription
   private var _srcNode: AVAudioSourceNode!
  
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ streamId: UInt32) {
-    self.streamId = streamId
+  public init(_ id: UInt32, sampleRate: Double = 24_000) {
+    self.id = id
+    self.sampleRate = sampleRate
+    _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: sampleRate,
+                                                  mFormatID: kAudioFormatLinearPCM,
+                                                  mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
+                                                  mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
+                                                  mFramesPerPacket: 1,
+                                                  mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
+                                                  mChannelsPerFrame: UInt32(RemoteRxAudioStream.channelCount),
+                                                  mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
+                                                  mReserved: 0)
     _ringBuffer = RingBuffer(_ringBufferAsbd)
     _opusProcessor = OpusProcessor(_ringBufferAsbd, _ringBuffer)
     _pcmProcessor = PcmProcessor(_ringBufferAsbd, _ringBuffer)
@@ -88,7 +89,7 @@ public actor RemoteRxAudioStream {
     _ringBuffer.clear()
     
     let availableFrames = _ringBuffer.availableFrames()
-    apiLog.debug("RxAudioPlayer start: available frames = \(availableFrames)")
+    apiLog.debug("RemoteRxAudioStream start: available frames = \(availableFrames)")
     
     // create the Audio Source for the Engine (i.e. data from the Ring Buffer)
     _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
@@ -102,12 +103,9 @@ public actor RemoteRxAudioStream {
     _engine.connect(_srcNode,
                     to: _engine.mainMixerNode,
                     format: AVAudioFormat(commonFormat: .pcmFormatFloat32,
-                                          sampleRate: RxAudioOutput.sampleRate,
-                                          channels: AVAudioChannelCount(RxAudioOutput.channelCount),
+                                          sampleRate: sampleRate,
+                                          channels: AVAudioChannelCount(RemoteRxAudioStream.channelCount),
                                           interleaved: false)!)
-    active = true
-    
-    
     // start the Engine
     do {
       try _engine.start()
@@ -122,14 +120,12 @@ public actor RemoteRxAudioStream {
     apiLog.debug("RemoteRxAudioStream: audioOutput STOPPED")
     _engine.stop()
 
-    if let streamId {
-      Task { await MainActor.run {
-        ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
-      }}
-    }
+    Task { await MainActor.run {
+      ObjectModel.shared.sendTcp("stream remove \(self.id.hex)")
+    }}
 
     let availableFrames = _ringBuffer.availableFrames()
-    apiLog.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
+    apiLog.debug("RemoteRxAudioStream stop: available frames = \(availableFrames)")
   }
   
   // ----------------------------------------------------------------------------
