@@ -21,7 +21,7 @@ final public class ObjectModel: TcpProcessor {
   public static var shared = ObjectModel()
     private init() {
     _tcp = Tcp(delegate: self)
-    _udp = Udp()
+      _udp = Udp(delegate: StreamModel.shared)
     atu = Atu(self)
     cwx = Cwx(self)
     gps = Gps(self)
@@ -50,6 +50,7 @@ final public class ObjectModel: TcpProcessor {
   public var gps: Gps!
   public var interlock: Interlock!
   public var remoteRxAudio: RemoteRxAudio?
+  public var remoteTxAudio: RemoteTxAudio?
   public var transmit: Transmit!
   public var wan: Wan!
   public var waveform: Waveform!
@@ -71,8 +72,8 @@ final public class ObjectModel: TcpProcessor {
   // single stream objects
   public var daxMicAudio: DaxMicAudio?
   public var daxTxAudio: DaxTxAudio?
-  public var meterStream: MeterStream?
-  public var remoteTxAudio: RemoteTxAudio?
+//  public var meterStream: MeterStream?
+//  public var remoteTxAudioStream: RemoteTxAudioStream?
   
   // collection stream objects
   public var daxIqs = IdentifiedArrayOf<DaxIq>()
@@ -648,7 +649,9 @@ final public class ObjectModel: TcpProcessor {
     // get the id
     if let id = properties[0].key.streamId {
       // add it if not already present
-      if remoteTxAudio == nil { remoteTxAudio = RemoteTxAudio(id)  }
+      if remoteTxAudio == nil {
+        remoteTxAudio = RemoteTxAudio(id)
+      }
       // parse the properties
       remoteTxAudio?.parse( Array(properties.dropFirst(2)) )
     }
@@ -1139,7 +1142,6 @@ final public class ObjectModel: TcpProcessor {
     
     // get any additional data
     if components.count > 2 {
-      print(components[2])
 //      let additionalData = components[2].replacingOccurrences(of: "\"", with: "\"")
       let additionalData = components[2]
 
@@ -1220,22 +1222,6 @@ final public class ObjectModel: TcpProcessor {
     parse(statusType, statusMessage, self.connectionHandle)
   }
   
-  
-  // FIXME: Remove when no longer needed
-  
-  
-  //extension Thread {
-  //  public var threadName: String {
-  //    if isMainThread {
-  //      return "main"
-  //    } else if let threadName = Thread.current.name, !threadName.isEmpty {
-  //      return threadName
-  //    } else {
-  //      return description
-  //    }
-  //  }
-  //}
-  
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Removal methods
   
@@ -1288,105 +1274,6 @@ final public class ObjectModel: TcpProcessor {
     }
     return false
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  /// Process the Vita struct containing Meter data
-  /// - Parameters:
-  ///   - vita:        a Vita struct
-  public nonisolated func streamProcessor(_ vita: Vita) {
-    let kDbDbmDbfsSwrDenom: Float = 128.0   // denominator for Db, Dbm, Dbfs, Swr
-    let kDegDenom: Float = 64.0             // denominator for Degc, Degf
-    
-    var meterIds = [UInt32]()
-    
-    //    if isStreaming == false {
-    //      isStreaming = true
-    //      streamId = vita.streamId
-    //      // log the start of the stream
-    //      log("Meter \(vita.streamId.hex) stream: STARTED", .info, #function, #file, #line)
-    //    }
-    
-    // NOTE:  there is a bug in the Radio (as of v2.2.8) that sends
-    //        multiple copies of meters, this code ignores the duplicates
-    
-    vita.payloadData.withUnsafeBytes { payloadPtr in
-      // four bytes per Meter
-      let numberOfMeters = Int(vita.payloadSize / 4)
-      
-      // pointer to the first Meter number / Meter value pair
-      let ptr16 = payloadPtr.bindMemory(to: UInt16.self)
-      
-      // for each meter in the Meters packet
-      for i in 0..<numberOfMeters {
-        // get the Meter id and the Meter value
-        let id: UInt32 = UInt32(CFSwapInt16BigToHost(ptr16[2 * i]))
-        let value: UInt16 = CFSwapInt16BigToHost(ptr16[(2 * i) + 1])
-        
-        // is this a duplicate?
-        if !meterIds.contains(id) {
-          // NO, add it to the list
-          meterIds.append(id)
-          
-          // find the meter (if present) & update it
-          // NOTE: ObjectModel is @MainActor therefore it's methods and properties must be accessed asynchronously
-          Task {
-            if let meter = await meters[id: id] {
-              //          meter.streamHandler( value)
-              let newValue = Int16(bitPattern: value)
-              let previousValue = await meter.value
-              
-              // check for unknown Units
-              guard let token = await MeterUnits(rawValue: meter.units) else {
-                //      // log it and ignore it
-                //      log("Meter \(desc) \(description) \(group) \(name) \(source): unknown units - \(units))", .warning, #function, #file, #line)
-                return
-              }
-              var adjNewValue: Float = 0.0
-              switch token {
-                
-              case .db, .dbm, .dbfs, .swr:        adjNewValue = Float(exactly: newValue)! / kDbDbmDbfsSwrDenom
-              case .volts, .amps:                 adjNewValue = Float(exactly: newValue)! / 256.0
-              case .degc, .degf:                  adjNewValue = Float(exactly: newValue)! / kDegDenom
-              case .rpm, .watts, .percent, .none: adjNewValue = Float(exactly: newValue)!
-              }
-              // did it change?
-              if adjNewValue != previousValue {
-                let value = adjNewValue
-                await meter.setValue(value)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 }
 
 //  public func altAntennaName(for stdName: String) -> String {

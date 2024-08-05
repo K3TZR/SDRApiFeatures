@@ -45,8 +45,9 @@ public final class Udp: NSObject {
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(receivePort: UInt16 = 4991) {
-    self._receivePort = receivePort
+  public init(delegate: StreamProcessor, receivePort: UInt16 = 4991) {
+    _delegate = delegate
+    _receivePort = receivePort
     
     super.init()
     
@@ -68,17 +69,14 @@ public final class Udp: NSObject {
   private var _statusStream: (UdpStatus) -> Void = { _ in }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Internal properties
-  
-  var _socket: GCDAsyncUdpSocket!
-  
-  // ----------------------------------------------------------------------------
   // MARK: - Private properties
   
+  private var _delegate: StreamProcessor
   private var _isBound = false
   private var _receivePort: UInt16 = 0
   private let _receiveQ = DispatchQueue(label: "UdpStream.ReceiveQ", qos: .userInteractive)
-  
+  private var _socket: GCDAsyncUdpSocket!
+
   private let kMaxBindAttempts = 20
   
   // ----------------------------------------------------------------------------
@@ -130,11 +128,9 @@ public final class Udp: NSObject {
     if success {
       // YES, save the actual port & ip in use
       _receivePort = portToUse
-      
-      
+            
       sendPort = portToUse
-      
-      
+            
       sendIp = publicIp
       _isBound = true
       
@@ -166,8 +162,6 @@ public final class Udp: NSObject {
     
     // tell the receive socket to close
     _socket.close()
-    
-//    _isRegistered = false
     
     _statusStream( UdpStatus(.didUnBind, receivePort: _receivePort, sendPort: sendPort, error: nil ))
   }
@@ -203,7 +197,7 @@ extension Udp: GCDAsyncUdpSocketDelegate {
   public func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
     if let vita = Vita.decode(from: data) {
       Task {
-        await StreamModel.shared.streamProcessor(vita)
+        await _delegate.streamProcessor(vita)
       }
     }
   }

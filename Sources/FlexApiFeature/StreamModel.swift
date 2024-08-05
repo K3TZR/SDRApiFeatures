@@ -27,7 +27,7 @@ public enum StreamType: String {
 final public class StreamStatus: ObservableObject, Identifiable {
   public var type: Vita.ClassCode
   public var name: String
-//  @Published public var packets = 0
+  @Published public var packets = 0
   @Published public var errors = 0
   
   public var id: Vita.ClassCode { type }
@@ -59,7 +59,7 @@ final public class StreamStatistics {
   ]
 }
 
-public actor StreamModel {
+public actor StreamModel: StreamProcessor {  
   // ----------------------------------------------------------------------------
   // MARK: - Singleton
 
@@ -71,209 +71,91 @@ public actor StreamModel {
   
   // single streams
 //  public var daxMicAudioStream: DaxMicAudioStream?
-//  public var daxTxAudioStream: DaxTxAudioStream?
+  public var daxTxAudioStream: DaxTxAudioStream?
   public var meterStream: MeterStream?
   public var remoteRxAudioStream: RemoteRxAudioStream?
 //  public var remoteTxAudioStream: RemoteTxAudioStream?
-//
-//  // collection streams
-//  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
-  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
-//  public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
-//  public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
-  
-  public var rxAudioOutput: RxAudioOutput?
-  public var daxAudioOutputs: [DaxAudioPlayer?] = Array(repeating: nil, count: 5)
 
-  // ----------------------------------------------------------------------------
-  // MARK: - Private properties
+//  // collection streams
+  public var daxIqStreams = IdentifiedArrayOf<DaxIqStream>()
+  public var daxRxAudioStreams = IdentifiedArrayOf<DaxRxAudioStream>()
+  public var panadapterStreams = IdentifiedArrayOf<PanadapterStream>()
+  public var waterfallStreams = IdentifiedArrayOf<WaterfallStream>()
   
-//  private let _objectModel: ObjectModel
+//  public var rxAudioOutput: RxAudioOutput?
+//  public var daxAudioOutputs: [DaxAudioPlayer?] = Array(repeating: nil, count: 5)
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
   
-  public func streamProcessor(_ vita: Vita) {
-    // NOTE: StreamStatistics is @Observable therefore requires async updating on the MainActor
-//    Task {
-//      // update the statistics
-//      await MainActor.run { StreamStatistics.shared.stats[id: vita.classCode]?.packets += 1  }
-//    }
+  public func streamProcessor(_ vita: Vita) async {
+    // update the statistics
+    await MainActor.run { StreamStatistics.shared.stats[id: vita.classCode]?.packets += 1  }
+    
     // pass Stream data to the appropriate Object
     switch vita.classCode {
-//    case .panadapter:
-//      if let object = panadapterStreams[id: vita.streamId] { object.streamProcessor(vita) }
+    case .panadapter:
+      //      if let object = panadapterStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      break
       
-//    case .waterfall:
-//      if let object = await waterfallStreams[id: vita.streamId] { object.streamProcessor(vita) }
+    case .waterfall:
+      //      if let object = await waterfallStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      break
       
-//    case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
-//      if let object = daxIqStreams[id: vita.streamId] { object.streamProcessor(vita) }
+    case .daxIq24, .daxIq48, .daxIq96, .daxIq192:
+      //      if let object = daxIqStreams[id: vita.streamId] { object.streamProcessor(vita) }
+      break
       
     case .daxAudio, .daxAudioReducedBw:
       if daxRxAudioStreams[id: vita.streamId] == nil { daxRxAudioStreams.append( DaxRxAudioStream(vita.streamId)) }
-      Task {
-        await daxRxAudioStreams[id: vita.streamId]?.streamProcessor(vita)
-      }
-//      Task {
-//        for output in daxAudioOutputs where await output?.streamId == vita.streamId {
-//          await output?.audioProcessor(vita)
-//        }
-//        if let object = daxRxAudioStreams[id: vita.streamId] {
-//          object.streamProcessor(vita)
-//        } else if daxMicAudioStream?.id == vita.streamId {
-//          daxMicAudioStream?.streamProcessor(vita)
-//        } else {
-//          remoteRxAudioStream?.streamProcessor(vita)
-//        }
-//      }
+      await daxRxAudioStreams[id: vita.streamId]?.streamProcessor(vita)
       
     case .meter:
       if meterStream == nil { meterStream = MeterStream(vita.streamId) }
-      Task {
-        await meterStream?.streamProcessor(vita)
-      }
-
+      await meterStream?.streamProcessor(vita)
+      
     case .opus:
       if remoteRxAudioStream == nil { remoteRxAudioStream = RemoteRxAudioStream(vita.streamId) }
-      Task {
-       await remoteRxAudioStream?.streamProcessor(vita)
-      }
+      await remoteRxAudioStream?.streamProcessor(vita)
       
     default:
-//      log("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)", .error, #function, #file, #line)
-      break
+      apiLog.debug("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)")
     }
-    //    }
   }
-  
-//  public func add(_ type: StreamType, _ id: UInt32) {
-//    switch type {
-//    case .panadapter:     panadapterStreams[id: id] = PanadapterStream(id)
-//    case .waterfall:      waterfallStreams[id: id] = WaterfallStream(id)
-////    case .meter:          meterStream = MeterStream(id)
-//    case .remoteRxAudioStream:    remoteRxAudioStream = RemoteRxAudioStream(id)
-//    case .daxIqStream:
-//      break
-//    case .daxMicAudioStream:
-//      break
-//    case .daxRxAudioStream:
-//      break
-//    case .daxTxAudioStream:
-//      break
-//    case .remoteTxAudioStream:
-//      break
-//    }
-//  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Public Stream parse methods
-
-//  public func parse(_ statusMessage: String, _ connectionHandle: UInt32?, _ testMode: Bool) {
-//    enum Property: String {
-//      case daxIq            = "dax_iq"
-//      case daxMic           = "dax_mic"
-//      case daxRx            = "dax_rx"
-//      case daxTx            = "dax_tx"
-//      case remoteRx         = "remote_audio_rx"
-//      case remoteTx         = "remote_audio_tx"
-//    }
-//    
-//    let properties = statusMessage.keyValuesArray()
-//    
-//    // is the 1st KeyValue a StreamId?
-//    if let id = properties[0].key.streamId {
-//      
-//      // is it a removal?
-//      if statusMessage.contains(kRemoved) {
-//        // YES
-//        removeStream(having: id)
-//        
-//      } else {
-//        // NO is it for me?
-//        if isForThisClient(properties, connectionHandle, testMode) {
-//          // YES
-//          guard properties.count > 1 else {
-//            log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
-//            return
-//          }
-//          guard let token = Property(rawValue: properties[1].value) else {
-//            // log it and ignore the Key
-//            log("StreamModel: unknown Stream type: \(properties[1].value)", .warning, #function, #file, #line)
-//            return
-//          }
-//          switch token {
-//            
-//          case .daxIq:      daxIqStreamStatus(properties)
-//          case .daxMic:     daxMicAudioStreamStatus(properties)
-//          case .daxRx:      daxRxAudioStreamStatus(properties)
-//          case .daxTx:      daxTxAudioStreamStatus(properties)
-//          case .remoteRx:   remoteRxAudioStreamStatus(properties)
-//          case .remoteTx:   remoteTxAudioStreamStatus(properties)
-//          }
-//        }
-//      }
-//    } else {
-//      log("StreamModel: invalid Stream message: \(statusMessage)", .warning, #function, #file, #line)
-//    }
-//  }
-
-  
-  // ----------------------------------------------------------------------------
-  // MARK: Public Stream request/remove methods
-  
-//  public func requestStream(_ streamType: StreamType, daxChannel: Int = 0, isCompressed: Bool = false, replyTo callback: ReplyHandler? = nil)  {
-//    switch streamType {
-//    case .remoteRxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) compression=\(isCompressed ? "opus" : "none")", replyTo: callback)
-//    case .remoteTxAudioStream:  ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxMicAudioStream:    ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxRxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-//    case .daxTxAudioStream:     ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue)", replyTo: callback)
-//    case .daxIqStream:          ApiModel.shared.sendTcp("stream create type=\(streamType.rawValue) dax_channel=\(daxChannel)", replyTo: callback)
-//    default: return
-//    }
-//  }
   
   // ----------------------------------------------------------------------------
   // MARK: Public DAX Rx methods
-  
-//  public func daxRxAudioStart(_ streamId: UInt32, _ channel: Int)  {
-//    Task {
-//      daxAudioOutputs[channel] = DaxAudioPlayer(streamId)
-//      await daxAudioOutputs[channel]?.start()
-//    }
-//  }
-//  
-//  public func daxRxAudioStop(_ channel: Int)  {
-//    Task {
-//      await daxAudioOutputs[channel]?.stop()
-//      if let streamId = await daxAudioOutputs[channel]?.streamId {
-//        await MainActor.run {
-//          ObjectModel.shared.sendTcp("stream remove \(streamId.hex)")
-//        }
-//      }
-//      daxAudioOutputs[channel] = nil
-//    }
-//  }
   
   public func daxRxAudioStop(_ channel: Int) {
     Task {
       for stream in daxRxAudioStreams where await stream.channel == channel {
         await stream.stop()
+        await MainActor.run { ObjectModel.shared.sendTcp("stream remove \(stream.id.hex)") }
         daxRxAudioStreams.remove(id: stream.id)
       }
     }
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: Public Remote Rx methods
+  // MARK: Public Remote Audio methods
   
   public func remoteRxAudioStop()  {
     Task {
-      await remoteRxAudioStream?.stop()
+      if let id = await remoteRxAudioStream?.stop() {
+        await MainActor.run { ObjectModel.shared.sendTcp("stream remove \(id.hex)")  }
+      }
       remoteRxAudioStream = nil
     }
   }
+
+//  public func remoteTxAudioStop()  {
+//    Task {
+//      if let id = await remoteTxAudioStream.stop() {
+//        await MainActor.run { ObjectModel.shared.sendTcp("stream remove \(id.hex)")  }
+//      }
+//      remoteTxAudioStream = nil
+//    }
+//  }
 
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Status methods
@@ -310,85 +192,8 @@ public actor StreamModel {
 //      remoteTxAudioStream?.parse( Array(properties.dropFirst(2)) )
 //    }
 //  }
-  
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Stream Removal methods
-
-//  private func removeStream(having id: UInt32) {
-//    if daxIqStreams[id: id] != nil {
-//      daxIqStreams.remove(id: id)
-//      log("StreamModel: DaxIqStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//    }
-//    else if daxMicAudioStream?.id == id {
-//      daxMicAudioStream = nil
-//      log("StreamModel: DaxMicAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//    }
-//    else if daxRxAudioStreams[id: id] != nil {
-//      daxRxAudioStreams.remove(id: id)
-//      log("StreamModel: DaxRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//
-//    } else if daxTxAudioStream?.id == id {
-//      daxTxAudioStream = nil
-//      log("StreamModel: DaxTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//    }
-//    else if remoteRxAudioStream?.id == id {
-//      remoteRxAudioStream = nil
-//      log("StreamModel: RemoteRxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//    }
-//    else if remoteTxAudioStream?.id == id {
-//      remoteTxAudioStream = nil
-//      log("StreamModel: RemoteTxAudioStream \(id.hex): REMOVED", .debug, #function, #file, #line)
-//    }
-//  }
-
   // ----------------------------------------------------------------------------
   // MARK: - Private Stream Helper methods
-
-  /// Determine if status is for this client
-  /// - Parameters:
-  ///   - properties:     a KeyValuesArray
-  ///   - clientHandle:   the handle of ???
-  /// - Returns:          true if a mtch
-//  private func isForThisClient(_ properties: KeyValuesArray, _ connectionHandle: UInt32?, _ testMode: Bool) -> Bool {
-//    var clientHandle : UInt32 = 0
-//    
-//    guard testMode == false else { return true }
-//    
-//    if let connectionHandle {
-//      // find the handle property
-//      for property in properties.dropFirst(2) where property.key == "client_handle" {
-//        clientHandle = property.value.handle ?? 0
-//      }
-//      return clientHandle == connectionHandle
-//    }
-//    return false
-//  }
-
-  // ----------------------------------------------------------------------------
-  // MARK: - Private Udp subscription methods
-
-  // Process the AsyncStream of UDP status changes
-//  private func subscribeToUdpStatus() {
-//    Task(priority: .high) {
-//      log("StreamModel: UdpStatus subscription STARTED", .debug, #function, #file, #line)
-//      for await status in Udp.shared.statusStream {
-//        udpStatus(status)
-//      }
-//      log("StreamModel: UdpStatus subscription STOPPED", .debug, #function, #file, #line)
-//    }
-//  }
-
-//  private func udpStatus(_ status: UdpStatus) {
-//    switch status.statusType {
-//      
-//    case .didUnBind:
-//      log("StreamModel: Udp unbound from port, \(status.receivePort)", .debug, #function, #file, #line)
-//    case .failedToBind:
-//      log("StreamModel: Udp failed to bind, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
-//    case .readError:
-//      log("StreamModel: Udp read error, " + (status.error?.localizedDescription ?? "unknown error"), .warning, #function, #file, #line)
-//    }
-//  }
 
   /*
    "stream set 0x" + _streamId.ToString("X") + " daxiq_rate=" + _sampleRate

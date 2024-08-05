@@ -13,7 +13,6 @@ import AudioFeature
 import SharedFeature
 import VitaFeature
 
-
 //  DATA FLOW (Reduced Bandwidth)
 //
 //  Audio Processor  ->  PcmProcessor  ->  Ring Buffer   ->  Output device
@@ -36,8 +35,6 @@ import VitaFeature
 //                  2 channels         2 channels        2 channels
 //                  interleaved        non-interleaved   non-interleave
 
-//@Observable
-//final public class DaxAudioPlayer: Equatable, AudioProcessor {
 public actor DaxRxAudioStream: Identifiable {
   // ----------------------------------------------------------------------------
   // MARK: - Public properties
@@ -46,8 +43,9 @@ public actor DaxRxAudioStream: Identifiable {
   public var channel = 0
   public let sampleRate: Double
   public let levelsEnabled: Bool
+  public let channelCount = 2
   
-  @MainActor public var levels = SignalLevel(rms: -50,peak: -50) // accessed by a View
+  public var levels = SignalLevel(rms: -50,peak: -50) // accessed by a View
   public var status = "Off"
   
   // ----------------------------------------------------------------------------
@@ -58,26 +56,27 @@ public actor DaxRxAudioStream: Identifiable {
   private var _pcmProcessor: PcmProcessor!
   private var _ringBuffer: RingBuffer!
 
-  // PCM, Float32, Host, 2 channel, non-interleaved
-  private var _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: RxAudioOutput.sampleRate,
-                                                            mFormatID: kAudioFormatLinearPCM,
-                                                            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
-                                                            mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
-                                                            mFramesPerPacket: 1,
-                                                            mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
-                                                            mChannelsPerFrame: UInt32(RxAudioOutput.channelCount),
-                                                            mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
-                                                            mReserved: 0)
+  private var _ringBufferAsbd: AudioStreamBasicDescription
   private var _srcNode: AVAudioSourceNode!
 
   // ----------------------------------------------------------------------------
   // MARK: - Initialization
   
-  public init(_ id: UInt32, sampleRate: Int = 24_000, levelsEnabled: Bool = true) {
+  public init(_ id: UInt32, sampleRate: Double = 24_000, levelsEnabled: Bool = true) {
     self.id = id
-    self.sampleRate = Double(sampleRate)
+    self.sampleRate = sampleRate
     self.levelsEnabled = levelsEnabled
 
+    // PCM, Float32, Host, 2 channel, non-interleaved
+    _ringBufferAsbd = AudioStreamBasicDescription(mSampleRate: sampleRate,
+                                                  mFormatID: kAudioFormatLinearPCM,
+                                                  mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsNonInterleaved,
+                                                  mBytesPerPacket: UInt32(MemoryLayout<Float>.size ),
+                                                  mFramesPerPacket: 1,
+                                                  mBytesPerFrame: UInt32(MemoryLayout<Float>.size ),
+                                                  mChannelsPerFrame: UInt32(channelCount),
+                                                  mBitsPerChannel: UInt32(MemoryLayout<Float>.size  * 8) ,
+                                                  mReserved: 0)
     _ringBuffer = RingBuffer(_ringBufferAsbd)
     _pcmProcessor = PcmProcessor(_ringBufferAsbd, _ringBuffer)
   }
@@ -110,20 +109,19 @@ public actor DaxRxAudioStream: Identifiable {
       apiLog.debug("DaxRxAudioStream: output STARTED, Stream Id = \(self.id.hex)")
 
       let availableFrames = _ringBuffer.availableFrames()
-      apiLog.debug("RemoteRxAudioStream start: available frames = \(availableFrames)")
+      apiLog.debug("DaxRxAudioStream start: available frames = \(availableFrames)")
       
-
-//      if levelsEnabled {
-//        // use a Tap to inspect the data and calculate average and peak levels
-//        _engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) {(buffer, time) in
-//          guard buffer.floatChannelData?[0] != nil else {return}
-//          
-//          // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
+      if levelsEnabled {
+        // use a Tap to inspect the data and calculate average and peak levels
+        _engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) {(buffer, time) in
+          guard buffer.floatChannelData?[0] != nil else {return}
+          
+          // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
 //          Task { await MainActor.run {
-//            self.levels = self.levelCalc(buffer)
+          self.levels = self.levelCalc(buffer)
 //          }}
-//        }
-//      }
+        }
+      }
       
     } catch {
       apiLog.error("DaxRxAudioStream: Failed to start, error = \(error)")
@@ -139,13 +137,12 @@ public actor DaxRxAudioStream: Identifiable {
     //    if levelsEnabled {
     //      // NOTE: the levels property is marked @MainActor therefore this requires async updating on the MainActor
     //      Task { await MainActor.run {
-    //        levels = SignalLevel(rms: _minDbLevel, peak: _minDbLevel)
+    levels = SignalLevel(rms: _minDbLevel, peak: _minDbLevel)
     //      }}
     //    }
-    
-    Task { await MainActor.run {
-      ObjectModel.shared.sendTcp("stream remove \(id.hex)")
-    }}
+
+    let availableFrames = _ringBuffer.availableFrames()
+    apiLog.debug("DaxRxAudioStream stop: available frames = \(availableFrames)")
   }
   
   // ----------------------------------------------------------------------------

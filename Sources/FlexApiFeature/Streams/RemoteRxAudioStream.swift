@@ -115,17 +115,14 @@ public actor RemoteRxAudioStream {
     }
   }
   
-  public func stop() {
+  public func stop() -> UInt32 {
     // stop processing
     apiLog.debug("RemoteRxAudioStream: audioOutput STOPPED")
     _engine.stop()
 
-    Task { await MainActor.run {
-      ObjectModel.shared.sendTcp("stream remove \(self.id.hex)")
-    }}
-
     let availableFrames = _ringBuffer.availableFrames()
     apiLog.debug("RemoteRxAudioStream stop: available frames = \(availableFrames)")
+    return id
   }
   
   // ----------------------------------------------------------------------------

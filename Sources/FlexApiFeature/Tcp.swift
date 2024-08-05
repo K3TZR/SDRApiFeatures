@@ -40,10 +40,6 @@ public struct TcpStatus: Identifiable, Equatable {
   public var reason: String?
 }
 
-//public protocol TcpProcessor: AnyObject {
-//  func tcpProcessor(_ text: String , isInput: Bool)
-//}
-
 ///  Tcp Command Class implementation
 ///      manages all Tcp communication with a Radio
 public final class Tcp: NSObject {
@@ -68,17 +64,14 @@ public final class Tcp: NSObject {
   public private(set) var interfaceIpAddress = "0.0.0.0"
   
   // ----------------------------------------------------------------------------
-  // MARK: - Internal properties
+  // MARK: - Private properties
 
-  var _delegate: TcpProcessor
-  var _isWan: Bool = false
-  let _receiveQ = DispatchQueue(label: "TcpStream.receiveQ")
-  var _socket: GCDAsyncSocket!
-  var _timeout = 0.0   // seconds
-  var _startTime: Date?
-//  var _seq = Sequence()
-
-//  @MainActor var sequenceNumber: Int = -1
+  private var _delegate: TcpProcessor
+  private var _isWan: Bool = false
+  private let _receiveQ = DispatchQueue(label: "TcpStream.receiveQ")
+  private var _socket: GCDAsyncSocket!
+  private var _timeout = 0.0   // seconds
+  private var _startTime: Date?
   
   // ----------------------------------------------------------------------------
   // MARK: - Public methods
@@ -124,9 +117,7 @@ public final class Tcp: NSObject {
       apiLog.debug("Tcp: connection failed")
       success = false
     }
-    //        if success { _isWan = packet.isWan ; _seqNum = 0 }
     if success {
-//      _sequenceNumber = 0
       apiLog.debug("Tcp: connection successful")
     }
     return success
