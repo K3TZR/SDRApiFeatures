@@ -66,7 +66,7 @@ public final class Amplifier: Identifiable {
       // check for unknown Keys
       guard let token = Amplifier.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Amplifier \(self.id.hex): unknown propety, \(property.key) = \(property.value)")
+        log.warning("Amplifier \(self.id.hex): unknown propety, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -84,7 +84,7 @@ public final class Amplifier: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        apiLog.debug("Amplifier \(self.id.hex): ADDED, model = \(self.model)")
+        log.debug("Amplifier \(self.id.hex): ADDED, model = \(self.model)")
       }
     }
   }

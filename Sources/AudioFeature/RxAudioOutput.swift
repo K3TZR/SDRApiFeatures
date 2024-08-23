@@ -91,7 +91,7 @@ public actor RxAudioOutput {
       
       //    Task {
       //      let availableFrames = await _ringBuffer.availableFrames()
-      //      apiLog.debug("RxAudioPlayer start: available frames = \(availableFrames)")
+      //      log.debug("RxAudioPlayer start: available frames = \(availableFrames)")
       //    }
       
       // create the Audio Source for the Engine (i.e. data from the Ring Buffer)
@@ -115,21 +115,21 @@ public actor RxAudioOutput {
       // start the Engine
       do {
         try _engine.start()
-        apiLog.debug("RxAudioPlayer: audioOutput STARTED")
+        log.debug("RxAudioPlayer: audioOutput STARTED")
       } catch {
-        apiLog.error("RxAudioPlayer: Failed to start, error = \(error)")
+        log.error("RxAudioPlayer: Failed to start, error = \(error)")
       }
     }
 //  }
   
   public func stop() {
     // stop processing
-    apiLog.debug("RxAudioPlayer: audioOutput STOPPED")
+    log.debug("RxAudioPlayer: audioOutput STOPPED")
     _engine.stop()
 
 //    Task {
 //      let availableFrames = await _ringBuffer.availableFrames()
-//      apiLog.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
+//      log.debug("RxAudioPlayer stop: available frames = \(availableFrames)")
 //    }
   }
   

@@ -112,7 +112,7 @@ public actor DaxAudioPlayer {
     
     do {
       try _engine.start()
-      apiLog.debug("DaxAudioPlayer: output STARTED, Stream Id = \(self.streamId!.hex)")
+      log.debug("DaxAudioPlayer: output STARTED, Stream Id = \(self.streamId!.hex)")
       
       if levelsEnabled {
         // use a Tap to inspect the data and calculate average and peak levels
@@ -127,13 +127,13 @@ public actor DaxAudioPlayer {
       }
       
     } catch {
-      apiLog.error("DaxAudioPlayer: Failed to start, error = \(error)")
+      log.error("DaxAudioPlayer: Failed to start, error = \(error)")
     }
     
   }
   
   public func stop() {
-    apiLog.debug("DaxAudioPlayer: output STOPPED, Stream Id = \(self.streamId!.hex)")
+    log.debug("DaxAudioPlayer: output STOPPED, Stream Id = \(self.streamId!.hex)")
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
     active = false

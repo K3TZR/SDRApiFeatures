@@ -98,7 +98,7 @@ public final class Waterfall: Identifiable {
       // check for unknown Keys
       guard let token = Waterfall.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Waterfall \(self.id.hex): unknown property, \(property.key) = \(property.value)")
+        log.warning("Waterfall \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -120,7 +120,7 @@ public final class Waterfall: Identifiable {
     if _initialized == false && panadapterId != 0 {
       // NO, it is now
       _initialized = true
-      apiLog.debug("Waterfall \(self.id.hex): ADDED handle = \(self.clientHandle.hex)")
+      log.debug("Waterfall \(self.id.hex): ADDED handle = \(self.clientHandle.hex)")
     }
   }
   

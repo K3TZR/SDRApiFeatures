@@ -23,7 +23,7 @@ public final class WaterfallStream: Identifiable, StreamProcessor {
   
   public init(_ id: UInt32) {
     self.id = id
-    apiLog.debug("WaterfallStream \(id.hex) ADDED")
+    log.debug("WaterfallStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

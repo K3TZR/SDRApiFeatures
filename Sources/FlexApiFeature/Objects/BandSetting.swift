@@ -72,7 +72,7 @@ public final class BandSetting: Identifiable {
       // check for unknown Keys
       guard let token = BandSetting.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("BandSetting \(self.id): unknown property, \(property.key) = \(property.value)")
+        log.warning("BandSetting \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -94,7 +94,7 @@ public final class BandSetting: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        apiLog.debug("BandSetting \(self.id): ADDED, name = \(self.name)")
+        log.debug("BandSetting \(self.id): ADDED, name = \(self.name)")
       }
     }
   }

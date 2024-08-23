@@ -159,7 +159,7 @@ public final class Transmit {
       // Check for Unknown Keys
       guard let token = Transmit.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Transmit: unknown property, \(property.key) = \(property.value)")
+        log.warning("Transmit: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -217,7 +217,7 @@ public final class Transmit {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        apiLog.debug("Transmit: initialized")
+        log.debug("Transmit: initialized")
       }
     }
   }

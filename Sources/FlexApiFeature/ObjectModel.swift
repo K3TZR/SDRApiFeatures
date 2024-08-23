@@ -148,11 +148,12 @@ final public class ObjectModel: TcpProcessor {
       // Instantiate a Radio
       radio = Radio(packet, isGui, self)
       guard radio != nil else { throw ApiError.instantiation }
-      apiLog.debug("ApiModel: Radio instantiated \(packet.nickname), \(packet.source.rawValue)")
+      log.debug("ApiModel: Radio instantiated \(packet.nickname), \(packet.source.rawValue)")
       
       guard connect(using: packet) else { throw ApiError.connection }
-      apiLog.debug("ApiModel: Tcp connection established")
-      
+//      log.debug("ApiModel: Tcp connection established")
+      log.debug("ApiModel: Tcp connection established")
+
       if disconnectHandle != nil {
         // pending disconnect
         sendTcp("client disconnect \(disconnectHandle!.hex)")
@@ -162,7 +163,7 @@ final public class ObjectModel: TcpProcessor {
       try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
         await awaitFirstStatusMessage()
       }
-      apiLog.debug("ApiModel: First status message received")
+      log.debug("ApiModel: First status message received")
       
       // is this a Wan connection?
       if packet.source == .smartlink {
@@ -171,10 +172,10 @@ final public class ObjectModel: TcpProcessor {
           try await ListenerModel.shared.smartlinkConnect(for: serial, holePunchPort: negotiatedHolePunchPort)
         }
         
-        apiLog.debug("ApiModel: wanHandle received")
+        log.debug("ApiModel: wanHandle received")
         
         // send Wan Validate & wait for the reply
-        apiLog.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
+        log.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
         sendTcp("wan validate handle=\(_wanHandle)", replyTo: wanValidationReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           //          _ = try await sendCommandAwaitReply("wan validate handle=\(_wanHandle)")
@@ -182,7 +183,7 @@ final public class ObjectModel: TcpProcessor {
           
           await wanValidation()
         }
-        apiLog.debug("ApiModel: Wan validation = \(reply)")
+        log.debug("ApiModel: Wan validation = \(reply)")
       }
       // bind UDP
       let ports = _udp.bind(packet.source == .smartlink,
@@ -192,33 +193,34 @@ final public class ObjectModel: TcpProcessor {
                             packet.publicUdpPort)
       
       guard ports != nil else { _tcp.disconnect() ; throw ApiError.udpBind }
-      apiLog.debug("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)")
+      log.debug("ApiModel: UDP bound, receive port = \(ports!.0), send port = \(ports!.1)")
       
       // is this a Wan connection?
       if packet.source == .smartlink {
         // send Wan Register (no reply)
         sendUdp("client udp_register handle=" + connectionHandle!.hex )
-        apiLog.debug("ApiModel: UDP registration sent")
+        log.debug("ApiModel: UDP registration sent")
         
         // send Client Ip & wait for the reply
         sendTcp("client ip", replyTo: ipReplyHandler)
         let reply = try await withTimeout(seconds: 5.0, errorToThrow: ApiError.statusTimeout) { [self] in
           await clientIpValidation()
         }
-        apiLog.debug("ApiModel: Client ip = \(reply)")
+        log.debug("ApiModel: Client ip = \(reply)")
       }
       
       // send the initial commands
       sendInitialCommands(isGui, programName, station, mtuValue, lowBandwidthDax, lowBandwidthConnect)
-      apiLog.info("ApiModel: initial commands sent (isGui = \(isGui))")
-      
+//      log.info("ApiModel: initial commands sent (isGui = \(isGui))")
+      log.info("ApiModel: initial commands sent (isGui = \(isGui))")
+
       startPinging()
-      apiLog.debug("ApiModel: pinging \(packet.publicIp)")
+      log.debug("ApiModel: pinging \(packet.publicIp)")
       
       // set the UDP port for a Local connection
       if packet.source == .local {
         sendTcp("client udpport " + "\(_udp.sendPort)")
-        apiLog.info("ApiModel: Client Udp port set to \(self._udp.sendPort)")
+        log.info("ApiModel: Client Udp port set to \(self._udp.sendPort)")
       }
     }
   }
@@ -227,20 +229,20 @@ final public class ObjectModel: TcpProcessor {
   /// - Parameter reason: an optional reason
   public func disconnect(_ reason: String? = nil) {
     if reason == nil {
-      apiLog.debug("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))")
+      log.debug("ApiModel: Disconnect, \((reason == nil ? "User initiated" : reason!))")
     }
     
     _firstStatusMessageReceived = false
     
     // stop pinging (if active)
     stopPinging()
-    apiLog.debug("ApiModel: Pinging STOPPED")
+    log.debug("ApiModel: Pinging STOPPED")
     
     connectionHandle = nil
     
     // stop udp
     _udp.unbind()
-    apiLog.debug("ApiModel: Disconnect, UDP unbound")
+    log.debug("ApiModel: Disconnect, UDP unbound")
     
     _tcp.disconnect()
     
@@ -249,7 +251,7 @@ final public class ObjectModel: TcpProcessor {
     removeAllObjects()
     
     Task { await _replyDictionary.removeAll() }
-    apiLog.debug("ApiModel: Disconnect, Objects removed")
+    log.debug("ApiModel: Disconnect, Objects removed")
   }
   
   // ----------------------------------------------------------------------------
@@ -263,12 +265,12 @@ final public class ObjectModel: TcpProcessor {
     // the first character indicates the type of message
     switch msg.prefix(1).uppercased() {
       
-    case "H":  connectionHandle = String(msg.dropFirst()).handle ; apiLog.debug("Api: connectionHandle = \(self.connectionHandle?.hex ?? "missing")")
+    case "H":  connectionHandle = String(msg.dropFirst()).handle ; log.debug("Api: connectionHandle = \(self.connectionHandle?.hex ?? "missing")")
     case "M":  parseMessage( msg.dropFirst() )
     case "R":  defaultReplyProcessor( msg.dropFirst() )
     case "S":  parseStatus( msg.dropFirst() )
     case "V":  hardwareVersion = String(msg.dropFirst())
-    default:   apiLog.warning("ApiModel: unexpected message = \(msg)")
+    default:   log.warning("ApiModel: unexpected message = \(msg)")
     }
   }
   
@@ -342,7 +344,7 @@ final public class ObjectModel: TcpProcessor {
     // Check for unknown Object Types
     guard let objectType = ObjectType(rawValue: statusType)  else {
       // log it and ignore the message
-      apiLog.warning("ObjectModel: unknown status token = \(statusType)")
+      log.warning("ObjectModel: unknown status token = \(statusType)")
       return
     }
     
@@ -459,7 +461,7 @@ final public class ObjectModel: TcpProcessor {
     case .xvtr:                 xvtrs.removeAll()
     default:            break
     }
-    apiLog.debug("ObjectModel: removed all \(type.rawValue) objects")
+    log.debug("ObjectModel: removed all \(type.rawValue) objects")
   }
   
   // ----------------------------------------------------------------------------
@@ -482,7 +484,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         amplifiers.remove(id: id)
-        apiLog.debug("Amplifier \(id.hex): REMOVED")
+        log.debug("Amplifier \(id.hex): REMOVED")
       }
     }
   }
@@ -499,7 +501,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         bandSettings.remove(id: id)
-        apiLog.debug("BandSetting \(id): REMOVED")
+        log.debug("BandSetting \(id): REMOVED")
       }
     }
   }
@@ -558,7 +560,7 @@ final public class ObjectModel: TcpProcessor {
     } else {
       // NO, remove it
       equalizers.remove(id: id)
-      apiLog.debug("Equalizer \(id): REMOVED")
+      log.debug("Equalizer \(id): REMOVED")
     }
   }
   
@@ -575,7 +577,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         memories.remove(id: id)
-        apiLog.debug("Memory \(id): REMOVED")
+        log.debug("Memory \(id): REMOVED")
       }
     }
   }
@@ -593,7 +595,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         meters.remove(id: id)
-        apiLog.debug("Meter \(id): REMOVED")
+        log.debug("Meter \(id): REMOVED")
       }
     }
   }
@@ -613,7 +615,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         panadapters.remove(id: id)
-        apiLog.debug("Panadapter \(id.hex): REMOVED")
+        log.debug("Panadapter \(id.hex): REMOVED")
       }
     }
   }
@@ -631,7 +633,7 @@ final public class ObjectModel: TcpProcessor {
     } else {
       // NO, remove it
       profiles.remove(id: id)
-      apiLog.debug("Profile \(id): REMOVED")
+      log.debug("Profile \(id): REMOVED")
     }
   }
   
@@ -671,7 +673,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         slices.remove(id: id)
-        apiLog.debug("Slice \(id) REMOVED")
+        log.debug("Slice \(id) REMOVED")
       }
     }
   }
@@ -689,7 +691,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         tnfs.remove(id: id)
-        apiLog.debug("Tnf \(id): REMOVED")
+        log.debug("Tnf \(id): REMOVED")
       }
     }
   }
@@ -707,7 +709,7 @@ final public class ObjectModel: TcpProcessor {
     } else {
       // NO, remove it
       usbCables.remove(id: id)
-      apiLog.debug("USBCable \(id): REMOVED")
+      log.debug("USBCable \(id): REMOVED")
     }
   }
   
@@ -726,7 +728,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         waterfalls.remove(id: id)
-        apiLog.debug("Waterfall \(id.hex): REMOVED")
+        log.debug("Waterfall \(id.hex): REMOVED")
       }
     }
   }
@@ -744,7 +746,7 @@ final public class ObjectModel: TcpProcessor {
       } else {
         // NO, remove it
         xvtrs.remove(id: id)
-        apiLog.debug("Xvtr \(id): REMOVED")
+        log.debug("Xvtr \(id): REMOVED")
       }
     }
   }
@@ -868,12 +870,12 @@ final public class ObjectModel: TcpProcessor {
         if isForThisClient(properties, connectionHandle) {
           // YES
           guard properties.count > 1 else {
-            apiLog.warning("StreamModel: invalid Stream message: \(statusMessage)")
+            log.warning("StreamModel: invalid Stream message: \(statusMessage)")
             return
           }
           guard let token = StreamType(rawValue: properties[1].value) else {
             // log it and ignore the Key
-            apiLog.warning("StreamModel: unknown Stream type: \(properties[1].value)")
+            log.warning("StreamModel: unknown Stream type: \(properties[1].value)")
             return
           }
           switch token {
@@ -890,7 +892,7 @@ final public class ObjectModel: TcpProcessor {
         }
       }
     } else {
-      apiLog.warning("StreamModel: invalid Stream message: \(statusMessage)")
+      log.warning("StreamModel: invalid Stream message: \(statusMessage)")
     }
   }
   
@@ -949,7 +951,7 @@ final public class ObjectModel: TcpProcessor {
       // check for unknown properties
       guard let token = Property(rawValue: property.key) else {
         // log it and ignore this Key
-        apiLog.warning("ObjectModel: unknown client property, \(property.key)=\(property.value)")
+        log.warning("ObjectModel: unknown client property, \(property.key)=\(property.value)")
         continue
       }
       // Known properties, in alphabetical order
@@ -975,12 +977,12 @@ final public class ObjectModel: TcpProcessor {
         //        activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        apiLog.info("ObjectModel: guiClient UPDATED, \(handle.hex), \(station), \(program), \(clientId)")
+        log.info("ObjectModel: guiClient UPDATED, \(handle.hex), \(station), \(program), \(clientId)")
         
         if radio!.isGui == false && station == activeStation {
           boundClientId = clientId
           sendTcp("client bind client_id=\(clientId)")
-          apiLog.debug("ObjectModel: NonGui bound to \(station), \(program)")
+          log.debug("ObjectModel: NonGui bound to \(station), \(program)")
         }
         //        }
       } else {
@@ -994,7 +996,7 @@ final public class ObjectModel: TcpProcessor {
         activePacket!.guiClients[id: handle] = guiClient
         
         // log the addition
-        apiLog.info("ObjectModel: guiClient ADDED, \(handle.hex), \(station), \(program), \(clientId)")
+        log.info("ObjectModel: guiClient ADDED, \(handle.hex), \(station), \(program), \(clientId)")
         
         if !clientId.isEmpty && !program.isEmpty && !station.isEmpty {
           // the fields are populated
@@ -1004,7 +1006,7 @@ final public class ObjectModel: TcpProcessor {
           if radio!.isGui == false && station == activeStation {
             boundClientId = clientId
             sendTcp("client bind client_id=\(clientId)")
-            apiLog.debug("ObjectModel: NonGui bound to \(station), \(program)")
+            log.debug("ObjectModel: NonGui bound to \(station), \(program)")
           }
         }
       }
@@ -1031,7 +1033,7 @@ final public class ObjectModel: TcpProcessor {
         // check for unknown property
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore this Key
-          apiLog.warning("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)")
+          log.warning("ObjectModel: unknown client disconnection property, \(property.key)=\(property.value)")
           continue
         }
         // Known properties, in alphabetical order
@@ -1042,7 +1044,7 @@ final public class ObjectModel: TcpProcessor {
         case .wanValidationFailed:  if property.value.bValue { reason = "Wan validation failed" }
         }
       }
-      apiLog.warning("ObjectModel: client disconnection, reason = \(reason)")
+      log.warning("ObjectModel: client disconnection, reason = \(reason)")
       
       clientInitialized = false
       
@@ -1058,21 +1060,21 @@ final public class ObjectModel: TcpProcessor {
   private func awaitFirstStatusMessage() async {
     return await withCheckedContinuation{ continuation in
       _awaitFirstStatusMessage = continuation
-      apiLog.debug("ApiModel: waiting for first status message")
+      log.debug("ApiModel: waiting for first status message")
     }
   }
   
   private func clientIpValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitClientIpValidation = continuation
-      apiLog.debug("Api: Client ip request sent")
+      log.debug("Api: Client ip request sent")
     }
   }
   
   private func wanValidation() async -> (String) {
     return await withCheckedContinuation{ continuation in
       _awaitWanValidation = continuation
-      apiLog.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
+      log.debug("Api: Wan validate sent for handle=\(self._wanHandle)")
     }
   }
   
@@ -1088,7 +1090,7 @@ final public class ObjectModel: TcpProcessor {
     let components = reply.components(separatedBy: "|")
     // ignore incorrectly formatted replies
     if components.count < 2 {
-      apiLog.warning("ApiModel: incomplete reply, r\(reply)")
+      log.warning("ApiModel: incomplete reply, r\(reply)")
       return
     }
     
@@ -1112,7 +1114,7 @@ final public class ObjectModel: TcpProcessor {
         // Anything other than kNoError is an error, log it
         // ignore non-zero reply from "client program" command
         if replyValue != kNoError && !command.hasPrefix("client program ") {
-          apiLog.error("ApiModel: replyValue >\(replyValue)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: replyValue)), \(suffix)")
+          log.error("ApiModel: replyValue >\(replyValue)<, to c\(seqNum), \(command), \(flexErrorString(errorCode: replyValue)), \(suffix)")
         }
         // did the replyTuple include a callback?
         if let callback = replyTuple.callback{
@@ -1120,7 +1122,7 @@ final public class ObjectModel: TcpProcessor {
           callback(command, String(reply))
         }
       } else {
-        apiLog.error("ApiModel: \(reply) replyValue >\(replyValue)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: replyValue)), \(suffix)")
+        log.error("ApiModel: \(reply) replyValue >\(replyValue)<, unknown sequence number c\(seqNum), \(flexErrorString(errorCode: replyValue)), \(suffix)")
       }
     }
   }
@@ -1132,11 +1134,11 @@ final public class ObjectModel: TcpProcessor {
     let components = reply.components(separatedBy: "|")
     // ignore incorrectly formatted replies
     if components.count < 2 {
-      apiLog.warning("ApiModel: incomplete reply, r\(reply)")
+      log.warning("ApiModel: incomplete reply, r\(reply)")
       return
     }
     if components[1] != kNoError {
-      apiLog.warning("ApiModel: non-zero reply for command \(command), \(reply)")
+      log.warning("ApiModel: non-zero reply for command \(command), \(reply)")
       return
     }
     
@@ -1180,7 +1182,7 @@ final public class ObjectModel: TcpProcessor {
     
     // ignore incorrectly formatted messages
     if components.count < 2 {
-      apiLog.warning("ApiModel: incomplete message = c\(msg)")
+      log.warning("ApiModel: incomplete message = c\(msg)")
       return
     }
     
@@ -1200,7 +1202,7 @@ final public class ObjectModel: TcpProcessor {
     
     // ignore incorrectly formatted status
     guard components.count > 1 else {
-      apiLog.warning("ApiModel: incomplete status = c\(commandSuffix)")
+      log.warning("ApiModel: incomplete status = c\(commandSuffix)")
       return
     }
     
@@ -1228,27 +1230,27 @@ final public class ObjectModel: TcpProcessor {
   private func removeStream(having id: UInt32) {
     if daxIqs[id: id] != nil {
       daxIqs.remove(id: id)
-      apiLog.debug("ObjectModel: DaxIq \(id.hex): REMOVED")
+      log.debug("ObjectModel: DaxIq \(id.hex): REMOVED")
     }
     else if daxMicAudio?.id == id {
       daxMicAudio = nil
-      apiLog.debug("ObjectModel: DaxMicAudio \(id.hex): REMOVED")
+      log.debug("ObjectModel: DaxMicAudio \(id.hex): REMOVED")
     }
     else if daxRxAudios[id: id] != nil {
       daxRxAudios.remove(id: id)
-      apiLog.debug("ObjectModel: DaxRxAudio \(id.hex): REMOVED")
+      log.debug("ObjectModel: DaxRxAudio \(id.hex): REMOVED")
       
     } else if daxTxAudio?.id == id {
       daxTxAudio = nil
-      apiLog.debug("ObjectModel: DaxTxAudio \(id.hex): REMOVED")
+      log.debug("ObjectModel: DaxTxAudio \(id.hex): REMOVED")
     }
     else if remoteRxAudio?.id == id {
       remoteRxAudio = nil
-      apiLog.debug("ObjectModel: RemoteRxAudio \(id.hex): REMOVED")
+      log.debug("ObjectModel: RemoteRxAudio \(id.hex): REMOVED")
     }
     else if remoteTxAudio?.id == id {
       remoteTxAudio = nil
-      apiLog.debug("ObjectModel: RemoteTxAudio \(id.hex): REMOVED")
+      log.debug("ObjectModel: RemoteTxAudio \(id.hex): REMOVED")
     }
   }
   

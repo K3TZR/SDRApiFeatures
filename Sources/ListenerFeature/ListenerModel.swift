@@ -122,7 +122,7 @@ final public class ListenerModel: Equatable {
     _smartlinkListener = SmartlinkListener()
     let tokens = await _smartlinkListener!.start(Tokens(previousIdToken, refreshToken))
     if !tokens.idToken.isEmpty {
-      apiLog.debug("Smartlink Listener: STARTED")
+      log.debug("Smartlink Listener: STARTED")
       return tokens
     } else {
       _smartlinkListener = nil
@@ -134,10 +134,10 @@ final public class ListenerModel: Equatable {
     _smartlinkListener = SmartlinkListener()
     let tokens = await _smartlinkListener!.start(user: user, pwd: pwd)
     if !tokens.idToken.isEmpty {
-      apiLog.debug("Smartlink Listener: Login SUCCESS")
+      log.debug("Smartlink Listener: Login SUCCESS")
       return tokens
     } else {
-      apiLog.debug("Smartlink Listener: Login FAILURE")
+      log.debug("Smartlink Listener: Login FAILURE")
       _smartlinkListener = nil
       return Tokens("", "")
     }
@@ -155,7 +155,7 @@ final public class ListenerModel: Equatable {
   /// - Returns:              success / failure
   public func smartlinkTest(_ selection: String) {
     let serial = selection.prefix(19)
-    apiLog.debug("Smartlink Listener: test initiated to serial number, \(serial)")
+    log.debug("Smartlink Listener: test initiated to serial number, \(serial)")
     // send a command to SmartLink to test the connection for the specified Radio
     _smartlinkListener?.sendTlsCommand("application test_connection serial=\(serial)")
   }
@@ -169,7 +169,7 @@ final public class ListenerModel: Equatable {
     
     return try await withCheckedThrowingContinuation{ continuation in
       _smartlinkListener?.awaitWanHandle = continuation
-      apiLog.debug("Smartlink Listener: Connect sent to serial \(serial)")
+      log.debug("Smartlink Listener: Connect sent to serial \(serial)")
       // send a command to SmartLink to request a connection to the specified Radio
       _smartlinkListener?.sendTlsCommand("application connect serial=\(serial) hole_punch_port=\(holePunchPort))")
     }
@@ -178,7 +178,7 @@ final public class ListenerModel: Equatable {
   /// Disconnect a smartlink Radio
   /// - Parameter serialNumber:         the serial number of the Radio
   public func smartlinkDisconnect(for serial: String) {
-    apiLog.debug("Smartlink Listener: Disconnect sent to serial \(serial)")
+    log.debug("Smartlink Listener: Disconnect sent to serial \(serial)")
     // send a command to SmartLink to request disconnection from the specified Radio
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial)")
   }
@@ -188,7 +188,7 @@ final public class ListenerModel: Equatable {
   ///   - serialNumber:         the serial number of the Radio
   ///   - handle:               the handle of the Client
   public func smartlinkDisconnectClient(for serial: String, handle: UInt32) {
-    apiLog.debug("Smartlink Listener: Disconnect sent to serial \(serial), handle \(handle.hex)")
+    log.debug("Smartlink Listener: Disconnect sent to serial \(serial), handle \(handle.hex)")
     // send a command to SmartLink to request disconnection from the specified Radio
     _smartlinkListener?.sendTlsCommand("application disconnect_users serial=\(serial) handle=\(handle.hex)")
   }
@@ -232,7 +232,7 @@ final public class ListenerModel: Equatable {
     } else {
       // UNKNOWN packet
       updatePacketData(nil, newPacket)
-      apiLog.info("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)")
+      log.info("\(newPacket.source == .local ? "Local" : "Smartlink") Listener: NEW packet, \(newPacket.nickname), \(newPacket.serial)")
     }
   }
   
@@ -249,7 +249,7 @@ final public class ListenerModel: Equatable {
 //        guiClients[id: guiClient.handle] = guiClient
         
         _clientStream( ClientEvent(.added, client: guiClient))
-        apiLog.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
+        log.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
       }
       
     } else {
@@ -263,7 +263,7 @@ final public class ListenerModel: Equatable {
 //            guiClients[id: guiClient.handle] = guiClient
 
             _clientStream( ClientEvent(.added, client: guiClient))
-            apiLog.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
+            log.info("Listener: guiClient ADDED, \(guiClient.station), \(guiClient.program)")
           }
         }
         for guiClient in oldPacket!.guiClients {
@@ -278,7 +278,7 @@ final public class ListenerModel: Equatable {
 //            }
 
             _clientStream( ClientEvent(.removed, client: guiClient))
-            apiLog.info("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)")
+            log.info("Listener: guiClient REMOVED, \(guiClient.station), \(guiClient.program)")
           }
         }
       }
@@ -295,11 +295,11 @@ final public class ListenerModel: Equatable {
       // update Stations
       for station in stations where condition(station.packet) {
         stations.remove(station)
-        apiLog.info("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp )")
+        log.info("\(station.packet.source == .local ? "Local" : "Smartlink") Listener: station REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp )")
       }
       // update Packets
       packets.remove(packet)
-      apiLog.info("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp)")
+      log.info("\(packet.source == .local ? "Local" : "Smartlink") Listener: packet REMOVED, \(packet.nickname) \(packet.serial) @ \(timeStamp)")
     }
   }
   

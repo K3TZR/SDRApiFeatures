@@ -72,7 +72,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
       // check for unknown Keys
       guard let token = Tnf.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Tnf \(self.id): unknown property, \(property.key) = \(property.value)")
+        log.warning("Tnf \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -87,7 +87,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
       if _initialized == false && frequency != 0 {
         // NO, it is now
         _initialized = true
-        apiLog.debug("Tnf \(self.id): ADDED, frequency = \(self.frequency.hzToMhz)")
+        log.debug("Tnf \(self.id): ADDED, frequency = \(self.frequency.hzToMhz)")
       }
     }
   }
@@ -97,7 +97,7 @@ public final class Tnf: Identifiable, Equatable, Comparable {
 
     // remove it immediately (Tnf does not send status on removal)
     _objectModel.tnfs.remove(id: id)
-    apiLog.debug("Tnf, removed: id = \(self.id)")
+    log.debug("Tnf, removed: id = \(self.id)")
   }
   
   // ----------------------------------------------------------------------------

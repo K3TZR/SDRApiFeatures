@@ -94,7 +94,7 @@ public final class Memory: Identifiable {
       // check for unknown Keys
       guard let token = Memory.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Memory \(self.id): unknown property, \(property.key) = \(property.value)")
+        log.warning("Memory \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -128,7 +128,7 @@ public final class Memory: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        apiLog.debug("Memory \(self.id): ADDED")
+        log.debug("Memory \(self.id): ADDED")
       }
     }
   }

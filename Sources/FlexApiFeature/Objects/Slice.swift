@@ -142,7 +142,7 @@ public final class Slice: Identifiable {
       // check for unknown Keys
       guard let token = Slice.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Slice \(self.id.hex): unknown property, \(property.key) = \(property.value)")
+        log.warning("Slice \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -237,7 +237,7 @@ public final class Slice: Identifiable {
     if _initialized == false && panadapterId != 0 && frequency != 0 && mode != "" {
       // NO, it is now
       _initialized = true
-      apiLog.debug("Slice \(self.id): ADDED, frequency = \(self.frequency.hzToMhz), panadapter = \(self.panadapterId.hex)")
+      log.debug("Slice \(self.id): ADDED, frequency = \(self.frequency.hzToMhz), panadapter = \(self.panadapterId.hex)")
     }
   }
   

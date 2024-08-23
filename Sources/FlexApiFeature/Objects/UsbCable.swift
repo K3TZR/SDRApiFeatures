@@ -101,7 +101,7 @@ public final class UsbCable: Identifiable {
         // check for unknown Keys
         guard let token = UsbCable.Property(rawValue: property.key) else {
           // log it and ignore the Key
-          apiLog.warning("USBCable \(self.id): unknown property, \(property.key) = \(property.value)")
+          log.warning("USBCable \(self.id): unknown property, \(property.key) = \(property.value)")
           continue
         }
         // Known keys, in alphabetical order
@@ -137,7 +137,7 @@ public final class UsbCable: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      apiLog.debug("USBCable \(self.id): ADDED, name = \(self.name)")
+      log.debug("USBCable \(self.id): ADDED, name = \(self.name)")
     }
   }
   

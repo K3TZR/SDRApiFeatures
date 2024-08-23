@@ -24,13 +24,13 @@ public func logFlexError(errorCode: String, msgText: String) {
   let number = UInt32(errorCode, radix: 16) ?? 0
   
   switch number {
-  case 0x10000001...0x10000003: apiLog.info("ApiModel: message = \(msgText)")
-  case 0x31000001...0x31000009: apiLog.warning("ApiModel: message = \(msgText)")
-  case 0x50000001...0x500000A3: apiLog.error("ApiModel: message = \(msgText)")
-  case 0x50001000...0x50001017: apiLog.error("ApiModel: message = \(msgText)")
-  case 0xE2000000:              apiLog.error("ApiModel: message = \(msgText)")
-  case 0xF3000001...0xF3000004: apiLog.error("ApiModel: message = \(msgText)")
-  default:                      apiLog.info("ApiModel: message = \(msgText)")
+  case 0x10000001...0x10000003: log.info("ApiModel: message = \(msgText)")
+  case 0x31000001...0x31000009: log.warning("ApiModel: message = \(msgText)")
+  case 0x50000001...0x500000A3: log.error("ApiModel: message = \(msgText)")
+  case 0x50001000...0x50001017: log.error("ApiModel: message = \(msgText)")
+  case 0xE2000000:              log.error("ApiModel: message = \(msgText)")
+  case 0xF3000001...0xF3000004: log.error("ApiModel: message = \(msgText)")
+  default:                      log.info("ApiModel: message = \(msgText)")
   }
 }
 

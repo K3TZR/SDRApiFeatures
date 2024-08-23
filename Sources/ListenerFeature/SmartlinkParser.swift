@@ -29,7 +29,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it
-      apiLog.warning("Smartlink Listener: \(msg)")
+      log.warning("Smartlink Listener: \(msg)")
       return
     }
     // which primary message type?
@@ -56,7 +56,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it and ignore the message
-      apiLog.warning("Smartlink Listener: unknown application property, \(properties[1].key)")
+      log.warning("Smartlink Listener: unknown application property, \(properties[1].key)")
       return
     }
     switch token {
@@ -79,7 +79,7 @@ extension SmartlinkListener {
     // Check for unknown properties
     guard let token = Property(rawValue: properties[0].key)  else {
       // log it and ignore the message
-      apiLog.warning("Smartlink Listener: unknown radio property, \(properties[1].key)")
+      log.warning("Smartlink Listener: unknown radio property, \(properties[1].key)")
       return
     }
     // which secondary message type?
@@ -99,14 +99,14 @@ extension SmartlinkListener {
       case publicIp = "public_ip"
     }
 
-    apiLog.debug("Smartlink Listener: ApplicationInfo received")
+    log.debug("Smartlink Listener: ApplicationInfo received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Smartlink Listener: unknown info property, \(property.key)")
+        log.warning("Smartlink Listener: unknown info property, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -128,7 +128,7 @@ extension SmartlinkListener {
   /// Respond to an Invalid registration
   /// - Parameter msg:                the message text
   private func parseRegistrationInvalid(_ properties: KeyValuesArray) {
-    apiLog.warning("Smartlink Listener: invalid registration: \(properties.count == 3 ? properties[2].key : "")")
+    log.warning("Smartlink Listener: invalid registration: \(properties.count == 3 ? properties[2].key : "")")
   }
   
   /// Parse a received "user settings" message
@@ -140,14 +140,14 @@ extension SmartlinkListener {
       case lastName     = "last_name"
     }
 
-    apiLog.debug("Smartlink Listener: UserSettings received")
+    log.debug("Smartlink Listener: UserSettings received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for Unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Smartlink Listener: unknown user setting, \(property.key)")
+        log.warning("Smartlink Listener: unknown user setting, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -175,14 +175,14 @@ extension SmartlinkListener {
       case serial
     }
 
-    apiLog.debug("Smartlink Listener: ConnectReady received")
+    log.debug("Smartlink Listener: ConnectReady received")
 
     // process each key/value pair, <key=value>
     for property in properties {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Smartlink Listener: unknown connect property, \(property.key)")
+        log.warning("Smartlink Listener: unknown connect property, \(property.key)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -243,7 +243,7 @@ extension SmartlinkListener {
 
       Task { await ListenerModel.shared.process(newPacket) }
 
-      apiLog.debug("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)")
+      log.debug("Smartlink Listener: RadioList RECEIVED, \(packet.nickname)")
     }
   }
   
@@ -266,7 +266,7 @@ extension SmartlinkListener {
       // Check for unknown properties
       guard let token = Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Smartlink Listener: unknown testConnection property, \(property.key)")
+        log.warning("Smartlink Listener: unknown testConnection property, \(property.key)")
         continue
       }
       
@@ -289,9 +289,9 @@ extension SmartlinkListener {
     }
     // log the result
     if result.success {
-      apiLog.debug("Smartlink Listener: Test result received, SUCCESS")
+      log.debug("Smartlink Listener: Test result received, SUCCESS")
     } else {
-      apiLog.warning("Smartlink Listener: Test result received, FAILURE")
+      log.warning("Smartlink Listener: Test result received, FAILURE")
     }
   
   }

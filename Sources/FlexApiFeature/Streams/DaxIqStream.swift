@@ -72,7 +72,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        apiLog.warning("DaxIqStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
+        log.warning("DaxIqStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -91,7 +91,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      apiLog.debug("DaxIqStream \(self.id.hex) ADDED: channel = \(self.channel)")
+      log.debug("DaxIqStream \(self.id.hex) ADDED: channel = \(self.channel)")
     }
   }
   
@@ -142,7 +142,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
     case (let expected, let received) where received < expected:
       // from a previous group, ignore it
-      apiLog.warning("DaxIqStream, delayed frame(s) ignored: expected \(expected), received \(received)")
+      log.warning("DaxIqStream, delayed frame(s) ignored: expected \(expected), received \(received)")
       return
       
     case (let expected, let received) where received > expected:
@@ -150,7 +150,7 @@ public final class DaxIqStream: Identifiable, StreamProcessor {
       
       // from a later group, jump forward
       let lossPercent = String(format: "%04.2f", (Float(_rxLostPacketCount)/Float(_rxPacketCount)) * 100.0 )
-      apiLog.warning("DaxIqStream, missing frame(s) skipped: expected \(expected), received \(received), loss = \(lossPercent) %")
+      log.warning("DaxIqStream, missing frame(s) skipped: expected \(expected), received \(received), loss = \(lossPercent) %")
       
       _rxSequenceNumber = received
       fallthrough

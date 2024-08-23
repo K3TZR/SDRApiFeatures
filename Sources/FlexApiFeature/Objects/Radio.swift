@@ -233,7 +233,7 @@ public final class Radio {
         // Check for Unknown Keys
         guard let token = Radio.Property(rawValue: property.key)  else {
           // log it and ignore the Key
-          apiLog.warning("Radio: unknown property, \(property.key) = \(property.value)")
+          log.warning("Radio: unknown property, \(property.key) = \(property.value)")
           continue
         }
         // Known tokens, in alphabetical order
@@ -328,14 +328,14 @@ public final class Radio {
         case .psocMbTrx:    psocMbtrxVersion = property.value
         case .psocMbPa100:  psocMbPa100Version = property.value
         case .fpgaMb:       fpgaMbVersion = property.value
-        default:            apiLog.warning("Radio: token not processed, \(property.key)")
+        default:            log.warning("Radio: token not processed, \(property.key)")
         }
       }
     // is the Radio initialized?
     if !_initialized {
       // YES, notify all observers
       _initialized = true
-      apiLog.debug("Radio: initialized, name = \(self.name)")
+      log.debug("Radio: initialized, name = \(self.name)")
     }
   }
   

@@ -73,7 +73,7 @@ public final class DaxIq: Identifiable {
       
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        apiLog.warning("DaxIq \(self.id.hex): unknown property, \(property.key) = \(property.value)")
+        log.warning("DaxIq \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -92,7 +92,7 @@ public final class DaxIq: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      apiLog.debug("DaxIq \(self.id.hex) ADDED: channel = \(self.channel)")
+      log.debug("DaxIq \(self.id.hex) ADDED: channel = \(self.channel)")
     }
   }
 }

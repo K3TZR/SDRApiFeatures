@@ -106,10 +106,10 @@ public actor DaxRxAudioStream: Identifiable {
     
     do {
       try _engine.start()
-      apiLog.debug("DaxRxAudioStream: output STARTED, Stream Id = \(self.id.hex)")
+      log.debug("DaxRxAudioStream: output STARTED, Stream Id = \(self.id.hex)")
 
       let availableFrames = _ringBuffer.availableFrames()
-      apiLog.debug("DaxRxAudioStream start: available frames = \(availableFrames)")
+      log.debug("DaxRxAudioStream start: available frames = \(availableFrames)")
       
       if levelsEnabled {
         // use a Tap to inspect the data and calculate average and peak levels
@@ -124,13 +124,13 @@ public actor DaxRxAudioStream: Identifiable {
       }
       
     } catch {
-      apiLog.error("DaxRxAudioStream: Failed to start, error = \(error)")
+      log.error("DaxRxAudioStream: Failed to start, error = \(error)")
     }
     
   }
   
   public func stop() {
-    apiLog.debug("DaxRxAudioStream: output STOPPED, Stream Id = \(self.id.hex)")
+    log.debug("DaxRxAudioStream: output STOPPED, Stream Id = \(self.id.hex)")
     _engine.mainMixerNode.removeTap(onBus: 0)
     _engine.stop()
     
@@ -142,7 +142,7 @@ public actor DaxRxAudioStream: Identifiable {
     //    }
 
     let availableFrames = _ringBuffer.availableFrames()
-    apiLog.debug("DaxRxAudioStream stop: available frames = \(availableFrames)")
+    log.debug("DaxRxAudioStream stop: available frames = \(availableFrames)")
   }
   
   // ----------------------------------------------------------------------------

@@ -86,7 +86,7 @@ public final class Equalizer: Identifiable {
       // check for unknown Keys
       guard let token = Equalizer.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Equalizer \(self.id): unknown property, \(property.key) = \(property.value)")
+        log.warning("Equalizer \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys
@@ -107,7 +107,7 @@ public final class Equalizer: Identifiable {
       if _initialized == false {
         // NO, it is now
         _initialized = true
-        apiLog.debug("Equalizer \(self.id): ADDED")
+        log.debug("Equalizer \(self.id): ADDED")
       }
     }
   }

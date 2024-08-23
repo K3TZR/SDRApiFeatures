@@ -78,7 +78,7 @@ public final class DaxTxAudioStream: Identifiable {
       // check for unknown keys
       guard let token = Property(rawValue: property.key) else {
         // unknown Key, log it and ignore the Key
-        apiLog.warning("DaxTxAudioStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
+        log.warning("DaxTxAudioStream \(self.id.hex): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // known keys, in alphabetical order
@@ -94,7 +94,7 @@ public final class DaxTxAudioStream: Identifiable {
     if _initialized == false && clientHandle != 0 {
       // NO, it is now
       _initialized = true
-      apiLog.debug("DaxTxAudioStream \(self.id.hex) ADDED: handle = \(self.clientHandle.hex)")
+      log.debug("DaxTxAudioStream \(self.id.hex) ADDED: handle = \(self.clientHandle.hex)")
     }
   }
 

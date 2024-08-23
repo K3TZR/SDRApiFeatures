@@ -74,7 +74,7 @@ public final class Xvtr: Identifiable {
       // check for unknown Keys
       guard let token = Xvtr.Property(rawValue: property.key) else {
         // log it and ignore the Key
-        apiLog.warning("Xvtr \(self.id): unknown property, \(property.key) = \(property.value)")
+        log.warning("Xvtr \(self.id): unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known keys, in alphabetical order
@@ -100,7 +100,7 @@ public final class Xvtr: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      apiLog.debug("Xvtr \(self.id): ADDED, name = \(self.name)")
+      log.debug("Xvtr \(self.id): ADDED, name = \(self.name)")
     }
   }
   

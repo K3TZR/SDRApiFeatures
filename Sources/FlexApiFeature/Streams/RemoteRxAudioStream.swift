@@ -89,7 +89,7 @@ public actor RemoteRxAudioStream {
     _ringBuffer.clear()
     
     let availableFrames = _ringBuffer.availableFrames()
-    apiLog.debug("RemoteRxAudioStream start: available frames = \(availableFrames)")
+    log.debug("RemoteRxAudioStream start: available frames = \(availableFrames)")
     
     // create the Audio Source for the Engine (i.e. data from the Ring Buffer)
     _srcNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
@@ -109,19 +109,19 @@ public actor RemoteRxAudioStream {
     // start the Engine
     do {
       try _engine.start()
-      apiLog.debug("RemoteRxAudioStream: audioOutput STARTED")
+      log.debug("RemoteRxAudioStream: audioOutput STARTED")
     } catch {
-      apiLog.error("RemoteRxAudioStream: Failed to start, error = \(error)")
+      log.error("RemoteRxAudioStream: Failed to start, error = \(error)")
     }
   }
   
   public func stop() -> UInt32 {
     // stop processing
-    apiLog.debug("RemoteRxAudioStream: audioOutput STOPPED")
+    log.debug("RemoteRxAudioStream: audioOutput STOPPED")
     _engine.stop()
 
     let availableFrames = _ringBuffer.availableFrames()
-    apiLog.debug("RemoteRxAudioStream stop: available frames = \(availableFrames)")
+    log.debug("RemoteRxAudioStream stop: available frames = \(availableFrames)")
     return id
   }
   

@@ -90,7 +90,7 @@ final public actor PcmProcessor {
       do {
         try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       } catch {
-        apiLog.error("PcmProcessor: Interleave conversion error = \(error)")
+        log.error("PcmProcessor: Interleave conversion error = \(error)")
       }
     }
     // append the data to the Ring buffer

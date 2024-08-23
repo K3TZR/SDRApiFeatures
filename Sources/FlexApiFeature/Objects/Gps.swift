@@ -70,7 +70,7 @@ public final class Gps {
       // Check for Unknown Keys
       guard let token = Gps.Property(rawValue: property.key)  else {
         // log it and ignore the Key
-        apiLog.warning("Gps: unknown property, \(property.key) = \(property.value)")
+        log.warning("Gps: unknown property, \(property.key) = \(property.value)")
         continue
       }
       // Known tokens, in alphabetical order
@@ -92,7 +92,7 @@ public final class Gps {
     if _initialized == false{
       // NO, it is now
       _initialized = true
-      apiLog.debug("Gps: initialized")
+      log.debug("Gps: initialized")
     }
   }
   

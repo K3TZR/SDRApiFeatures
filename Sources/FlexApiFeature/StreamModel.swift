@@ -119,7 +119,7 @@ public actor StreamModel: StreamProcessor {
       await remoteRxAudioStream?.streamProcessor(vita)
       
     default:
-      apiLog.debug("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)")
+      log.debug("StreamModel: unknown Vita class code: \(vita.classCode.description()) Stream Id = \(vita.streamId.hex)")
     }
   }
   

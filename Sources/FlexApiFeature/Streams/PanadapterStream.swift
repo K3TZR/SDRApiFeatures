@@ -23,7 +23,7 @@ public final class PanadapterStream: Identifiable, StreamProcessor {
   
   public init(_ id: UInt32) {
     self.id = id
-    apiLog.debug("PanadapterStream \(id.hex) ADDED")
+    log.debug("PanadapterStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

@@ -59,7 +59,7 @@ public final class Profile: Identifiable {
     // check for unknown Key
     guard let token = Profile.Property(rawValue: properties[1].key) else {
       // log it and ignore the Key
-      apiLog.warning("Profile \(id): unknown property, \(properties[1].key)")
+      log.warning("Profile \(id): unknown property, \(properties[1].key)")
       return
     }
     // known keys
@@ -85,7 +85,7 @@ public final class Profile: Identifiable {
     if _initialized == false {
       // NO, it is now
       _initialized = true
-      apiLog.debug("Profile \(id): ADDED")
+      log.debug("Profile \(id): ADDED")
     }
   }
   

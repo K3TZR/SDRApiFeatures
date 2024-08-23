@@ -87,7 +87,7 @@ public final class Cwx {
         // Check for Unknown Keys
         guard let token = Property(rawValue: property.key) else {
           // log it and ignore the Key
-          apiLog.warning("Cwx: unknown property, \(property.key) = \(property.value)")
+          log.warning("Cwx: unknown property, \(property.key) = \(property.value)")
           return
         }
         // Known tokens, in alphabetical order
@@ -113,7 +113,7 @@ public final class Cwx {
       if _initialized == false{
         // NO, it is now
         _initialized = true
-        apiLog.debug("Cwx: initialized")
+        log.debug("Cwx: initialized")
       }
     }
   }
@@ -138,7 +138,7 @@ public final class Cwx {
     
     // if zero or anything greater than 2 it's an error, log it and ignore the Reply
     guard components == 1 || components == 2 else {
-      apiLog.warning("Cwx, Invalid reply: to \(command)")
+      log.warning("Cwx, Invalid reply: to \(command)")
       return
     }
     // get the character position
@@ -146,7 +146,7 @@ public final class Cwx {
     
     // if not an integer, log it and ignore the Reply
     guard charPos != nil else {
-      apiLog.warning("Cwx, Invalid character position: for \(command)")
+      log.warning("Cwx, Invalid character position: for \(command)")
       return
     }
     
@@ -163,7 +163,7 @@ public final class Cwx {
       // not an integer, log it and ignore the Reply
       guard block != nil else {
         
-        apiLog.warning("Cwx, Invalid block: for \(command)")
+        log.warning("Cwx, Invalid block: for \(command)")
         return
       }
       // inform the Event Handler (if any)

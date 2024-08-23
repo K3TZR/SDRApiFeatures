@@ -71,31 +71,31 @@ public final class Authentication {
       // has it expired?
       if isValid(currentTokens.idToken) {
         // NO, use it
-        apiLog.debug("Authentication: Unexpired previous token")
+        log.debug("Authentication: Unexpired previous token")
         updateClaims(from: currentTokens.idToken)
         return currentTokens
         
       } else {
         // YES, try to use the refreshToken
-        apiLog.debug("Authentication: Expired previous token")
+        log.debug("Authentication: Expired previous token")
       }
     }
     
     // is there a refresh token?
     if !currentTokens.refreshToken.isEmpty {
       // YES, can we get an Id Token from the Refresh Token?
-      apiLog.debug("Authentication: Refresh token found")
+      log.debug("Authentication: Refresh token found")
       if let idToken = await requestIdToken(from: currentTokens.refreshToken) {
         // YES, is it valid?
         if isValid(idToken) {
           // YES, update the claims and use the Id Token
-          apiLog.debug("Authentication: Valid Id Token obtained from Refresh token")
+          log.debug("Authentication: Valid Id Token obtained from Refresh token")
                     updateClaims(from: idToken)
           return Tokens(idToken, currentTokens.refreshToken)
           
         } else {
           // NO
-          apiLog.debug("Authentication: Invalid Id Token obtained from Refresh token")
+          log.debug("Authentication: Invalid Id Token obtained from Refresh token")
         }
       }
     }

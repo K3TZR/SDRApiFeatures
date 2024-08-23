@@ -20,7 +20,7 @@ public actor MeterStream {
   
   public init(_ id: UInt32) {
     self.id = id
-    apiLog.debug("MeterStream \(id.hex) ADDED")
+    log.debug("MeterStream \(id.hex) ADDED")
   }
   
   // ------------------------------------------------------------------------------

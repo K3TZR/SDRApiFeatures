@@ -102,14 +102,14 @@ final public actor OpusProcessor {
     })
     
     // check for decode errors
-    if error != nil { apiLog.error("OpusProcessor: Opus conversion error: \(error!)") }
+    if error != nil { log.error("OpusProcessor: Opus conversion error: \(error!)") }
     
     do {
       try interleaveConverter.convert(to: nonInterleavedBuffer, from: interleavedBuffer)
       // append the data to the Ring buffer
       ringBuffer.enque(nonInterleavedBuffer.mutableAudioBufferList, UInt32(RxAudioOutput.frameCountOpus))
     } catch {
-      apiLog.error("OpusProcessor: Interleave conversion error = \(error)")
+      log.error("OpusProcessor: Interleave conversion error = \(error)")
     }
   }
 }
